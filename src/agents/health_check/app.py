@@ -6,7 +6,7 @@ def handler(event, context):
     A simple handler that returns a success message.
     This acts as a health check for the API.
     """
-    print("Health check endpoint was invoked successfully. The system is healthy.")
+    print("Health check endpoint was invoked successfully via CI/CD test.")
 
     return {
         "statusCode": 200,
