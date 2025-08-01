@@ -24,8 +24,8 @@ jobs:
       - name: Configure AWS Credentials # <-- ADDED: The plan step now needs credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::ACCOUNT-ID:role/GitHubAction-AssumeRole-BuildingOS # TODO: Replace with your AWS IAM Role ARN
-          aws-region: us-east-1 # TODO: Change to your preferred region
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: us-east-1 
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -45,6 +45,17 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v3
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+      
+      - name: Run TFLint
+        run: tflint --format compact
 
       - name: Terraform Init
         working-directory: ./terraform/environments/dev
@@ -91,7 +102,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::ACCOUNT-ID:role/GitHubAction-AssumeRole-BuildingOS # TODO: Replace with your AWS IAM Role ARN
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
           aws-region: us-east-1 # TODO: Change to your preferred region
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
