@@ -11,3 +11,6 @@ __pycache__/
 
 # VSCode
 .vscode/
+
+# enviroment variables setup script for tests purposes
+env.ps1
