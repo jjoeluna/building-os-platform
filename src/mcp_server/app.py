@@ -3,6 +3,19 @@ import json
 from flask import Flask, jsonify, request
 import requests  # Import the requests library
 
+# --- DEBUGGING BLOCK ---
+print("--- STARTING MCP SERVER ---")
+print("Attempting to read environment variables...")
+api_key = os.getenv("NOTION_API_KEY")
+adr_db_id = os.getenv("NOTION_ADR_DATABASE_ID")
+print(f"NOTION_API_KEY is present: {isinstance(api_key, str) and len(api_key) > 0}")
+print(
+    f"NOTION_ADR_DATABASE_ID is present: {isinstance(adr_db_id, str) and len(adr_db_id) > 0}"
+)
+print("--- FINISHED READING ENV VARS ---")
+# --- END OF DEBUGGING BLOCK ---
+
+
 # Initialize the Flask App
 app = Flask(__name__)
 
