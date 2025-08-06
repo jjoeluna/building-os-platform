@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Polling - BuildingOS</title>
+</head>
+<body>
+    <h1>Teste de Polling</h1>
+    <div id="results"></div>
+    <button onclick="testPolling()">Testar Polling</button>
+    <button onclick="setCorrectUserId()">Definir USER_ID Correto</button>
+    
+    <script>
+        function testPolling() {
+            const userId = localStorage.getItem('building_os_user_id') || 'NONE';
+            document.getElementById('results').innerHTML = `
+                <p><strong>USER_ID no localStorage:</strong> ${userId}</p>
+                <p><strong>USER_ID esperado:</strong> user_436grfndm</p>
+                <p><strong>Match:</strong> ${userId === 'user_436grfndm' ? '✅ SIM' : '❌ NÃO'}</p>
+            `;
+            
+            // Testar polling
+            fetch('https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona?user_id=' + userId)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('results').innerHTML += `
+                        <p><strong>Resposta da API:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('results').innerHTML += `
+                        <p><strong>Erro:</strong> ${error}</p>
+                    `;
+                });
+        }
+        
+        function setCorrectUserId() {
+            localStorage.setItem('building_os_user_id', 'user_436grfndm');
+            alert('USER_ID definido para: user_436grfndm');
+            testPolling();
+        }
+    </script>
+</body>
+</html>

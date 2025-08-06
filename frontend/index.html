@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildingOS - Sistema de Gestão Predial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .option {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .option:hover {
+            background: #764ba2;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e8f5e8;
+            color: #2d5a2d;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 BuildingOS</h1>
+        <p>Sistema Inteligente de Gestão Predial</p>
+        
+        <a href="chat-with-notifications.html" class="option">💬 Chat BuildingOS</a>
+        
+        <div class="status" id="status">
+            ✅ Sistema Operacional
+        </div>
+        
+        <script>
+            // Test system connectivity
+            const API_BASE = 'https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com';
+            
+            async function testSystemStatus() {
+                console.log('Testing system status...');
+                try {
+                    const response = await fetch(`${API_BASE}/health`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    console.log('Response:', response);
+                    console.log('Response status:', response.status);
+                    console.log('Response ok:', response.ok);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Response data:', data);
+                        document.getElementById('status').innerHTML = '✅ Sistema Online - Todos os serviços operacionais';
+                        document.getElementById('status').style.background = '#e8f5e8';
+                        document.getElementById('status').style.color = '#2d5a2d';
+                    } else {
+                        document.getElementById('status').innerHTML = '⚠️ Sistema com problemas - Verifique conectividade';
+                        document.getElementById('status').style.background = '#ffeaa7';
+                        document.getElementById('status').style.color = '#8b4513';
+                    }
+                } catch (error) {
+                    console.error('Test error:', error);
+                    document.getElementById('status').innerHTML = `❌ Sistema Offline - ${error.message}`;
+                    document.getElementById('status').style.background = '#fab1a0';
+                    document.getElementById('status').style.color = '#8b0000';
+                }
+            }
+            
+            // Test on page load
+            window.onload = function() {
+                testSystemStatus();
+            };
+            
+            // Retest every 30 seconds
+            setInterval(testSystemStatus, 30000);
+        </script>
+    </div>
+</body>
+</html>

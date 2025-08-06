@@ -1,31 +1,205 @@
-# --- Provider and Backend Configuration ---
-terraform {
-  required_version = ">= 1.5" # Specifies a minimum Terraform CLI version
-
-  required_providers {
-    aws = {
-      source = "hashicorp/aws"
-      # This locks the provider to the latest major version series (v6).
-      # It will allow updates within the 6.x line (e.g., 6.7.0 -> 6.8.0)
-      # but will prevent an automatic, potentially breaking update to v7.0.
-      # This is the correct, modern application of the best practice.
-      version = "~> 6.0"
-    }
-  }
-}
-
 # --- Data Sources ---
-# This block packages our Python code into a .zip file that Lambda can use.
+# These packages our Python code into a .zip file that Lambda can use.
 data "archive_file" "health_check_zip" {
   type        = "zip"
   source_dir  = "../../../src/agents/health_check" # Path to our Python code
   output_path = "${path.module}/.terraform/health_check.zip"
 }
 
-# --- IAM Role for Lambda ---
-# This defines the permissions our Lambda function will have.
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "bos-lambda-exec-role-dev"
+data "archive_file" "persona_agent_zip" {
+  type        = "zip"
+  source_dir  = "../../../src/agents/persona_agent" # Path to our Python code
+  output_path = "${path.module}/.terraform/persona_agent.zip"
+}
+
+data "archive_file" "director_agent_zip" {
+  type        = "zip"
+  source_dir  = "../../../src/agents/director" # Path to our Python code
+  output_path = "${path.module}/.terraform/director.zip"
+}
+
+data "archive_file" "agent_elevator_zip" {
+  type        = "zip"
+  source_dir  = "../../../src/agents/agent_elevator" # Path to our Python code
+  output_path = "${path.module}/.terraform/agent_elevator.zip"
+}
+
+data "archive_file" "agent_psim_zip" {
+  type        = "zip"
+  source_dir  = "../../../src/agents/agent_psim" # Path to our Python code
+  output_path = "${path.module}/.terraform/agent_psim.zip"
+}
+
+
+
+data "archive_file" "coordinator_agent_zip" {
+  type        = "zip"
+  source_dir  = "../../../src/agents/coordinator" # Path to our Python code
+  output_path = "${path.module}/.terraform/coordinator.zip"
+}
+
+# --- IAM Policies ---
+resource "aws_iam_policy" "dynamodb_short_term_memory_policy" {
+  name        = "bos-dynamodb-short-term-memory-policy-${var.environment}"
+  description = "Allows Lambda to read/write to the short-term memory table."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        Effect   = "Allow",
+        Resource = module.short_term_memory_db.table_arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "dynamodb_mission_state_policy" {
+  name        = "bos-dynamodb-mission-state-policy-${var.environment}"
+  description = "Allows Lambda to read/write to the mission state table."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        Effect   = "Allow",
+        Resource = module.mission_state_db.table_arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "sns_publish_policy" {
+  name        = "bos-sns-publish-policy-${var.environment}"
+  description = "Allows Lambda to publish to SNS topics."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sns:Publish",
+        Effect = "Allow",
+        Resource = [
+          module.intention_topic.topic_arn,
+          module.mission_topic.topic_arn,
+          module.mission_result_topic.topic_arn,
+          module.task_completion_topic.topic_arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "bedrock_invoke_policy" {
+  name        = "bos-bedrock-invoke-policy-${var.environment}"
+  description = "Allows Lambda to invoke Bedrock models."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action   = "bedrock:InvokeModel",
+        Effect   = "Allow",
+        Resource = "*" # Bedrock does not support resource-level permissions for models
+      }
+    ]
+  })
+}
+
+
+
+resource "aws_iam_policy" "lambda_invoke_policy" {
+  name        = "bos-lambda-invoke-policy-${var.environment}"
+  description = "Allows Lambda functions to invoke other Lambda functions."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "lambda:InvokeFunction",
+        Effect = "Allow",
+        Resource = [
+          aws_lambda_function.health_check.arn,
+          aws_lambda_function.persona_agent.arn,
+          aws_lambda_function.director_agent.arn,
+          aws_lambda_function.coordinator_agent.arn,
+          aws_lambda_function.agent_elevator.arn,
+          aws_lambda_function.agent_psim.arn
+        ]
+      }
+    ]
+  })
+}
+
+# --- IAM Policy for Elevator Monitoring ---
+resource "aws_iam_policy" "elevator_monitoring_policy" {
+  name        = "bos-elevator-monitoring-policy-${var.environment}"
+  description = "Policy for elevator monitoring operations"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Scan",
+          "dynamodb:Query"
+        ]
+        Resource = module.elevator_monitoring_db.table_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "events:PutRule",
+          "events:DeleteRule",
+          "events:PutTargets",
+          "events:RemoveTargets",
+          "events:DescribeRule"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:AddPermission",
+          "lambda:RemovePermission"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+  }
+}
+
+# --- IAM Roles ---
+module "lambda_exec_role" {
+  source    = "../../modules/iam_role"
+  role_name = "bos-lambda-exec-role-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -37,25 +211,169 @@ resource "aws_iam_role" "lambda_exec_role" {
       }
     }]
   })
+
+  policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.dynamodb_short_term_memory_policy.arn,
+    aws_iam_policy.dynamodb_mission_state_policy.arn,
+    aws_iam_policy.sns_publish_policy.arn,
+    aws_iam_policy.bedrock_invoke_policy.arn,
+    aws_iam_policy.lambda_invoke_policy.arn,
+    aws_iam_policy.elevator_monitoring_policy.arn
+  ]
 }
 
-# --- Lambda Function Resource ---
+
+
+# --- Lambda Function Resources ---
 # This is the core resource that creates our Lambda function in AWS.
 resource "aws_lambda_function" "health_check" {
-  function_name = "bos-health-check-dev"
-  role          = aws_iam_role.lambda_exec_role.arn
+  function_name = "bos-health-check-${var.environment}"
+  role          = module.lambda_exec_role.role_arn
   handler       = "app.handler" # File is app.py, function is handler
   runtime       = "python3.11"
 
   filename         = data.archive_file.health_check_zip.output_path
   source_code_hash = data.archive_file.health_check_zip.output_base64sha256
+  layers           = [module.common_utils_layer.layer_arn]
+}
+
+resource "aws_lambda_function" "persona_agent" {
+  function_name = "bos-persona-agent-${var.environment}"
+  role          = module.lambda_exec_role.role_arn
+  handler       = "app.handler"
+  runtime       = "python3.11"
+
+  filename         = data.archive_file.persona_agent_zip.output_path
+  source_code_hash = data.archive_file.persona_agent_zip.output_base64sha256
+  layers           = [module.common_utils_layer.layer_arn]
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE_NAME      = module.short_term_memory_db.table_name
+      SNS_TOPIC_ARN            = module.intention_topic.topic_arn
+      MISSION_RESULT_TOPIC_ARN = module.mission_result_topic.topic_arn
+    }
+  }
+}
+
+resource "aws_lambda_function" "director_agent" {
+  function_name = "bos-director-agent-${var.environment}"
+  role          = module.lambda_exec_role.role_arn
+  handler       = "app.handler"
+  runtime       = "python3.11"
+  timeout       = 30 # Increased timeout for potential LLM latency
+
+  filename         = data.archive_file.director_agent_zip.output_path
+  source_code_hash = data.archive_file.director_agent_zip.output_base64sha256
+  layers           = [module.common_utils_layer.layer_arn]
+
+  environment {
+    variables = {
+      MISSION_TOPIC_ARN        = module.mission_topic.topic_arn
+      MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
+    }
+  }
+}
+
+
+
+resource "aws_lambda_function" "coordinator_agent" {
+  function_name = "bos-coordinator-agent-${var.environment}"
+  role          = module.lambda_exec_role.role_arn
+  handler       = "app.handler"
+  runtime       = "python3.11"
+  timeout       = 30
+  layers        = [module.common_utils_layer.layer_arn]
+
+  filename         = data.archive_file.coordinator_agent_zip.output_path
+  source_code_hash = data.archive_file.coordinator_agent_zip.output_base64sha256
+
+  environment {
+    variables = {
+      MISSION_STATE_TABLE_NAME  = module.mission_state_db.table_name
+      TASK_COMPLETION_TOPIC_ARN = module.task_completion_topic.topic_arn
+      MISSION_RESULT_TOPIC_ARN  = module.mission_result_topic.topic_arn
+      ENVIRONMENT               = var.environment
+    }
+  }
+}
+
+resource "aws_lambda_function" "agent_elevator" {
+  function_name = "bos-agent-elevator-${var.environment}"
+  role          = module.lambda_exec_role.role_arn
+  handler       = "app.handler"
+  runtime       = "python3.11"
+  layers        = [module.common_utils_layer.layer_arn]
+  timeout       = 360 # 6 minutes - enough for 5 minute monitoring + buffer
+
+  filename         = data.archive_file.agent_elevator_zip.output_path
+  source_code_hash = data.archive_file.agent_elevator_zip.output_base64sha256
+
+  environment {
+    variables = {
+      ELEVATOR_API_BASE_URL     = "https://anna-minimal-api.neomot.com"
+      ELEVATOR_API_SECRET       = "t3hILevRdzfFyd05U2g+XT4lPZCmT6CB+ytaQljWWOk="
+      TASK_COMPLETION_TOPIC_ARN = module.task_completion_topic.topic_arn
+      MONITORING_TABLE_NAME     = module.elevator_monitoring_db.table_name
+      LAMBDA_FUNCTION_NAME      = "bos-agent-elevator-${var.environment}"
+      ACCOUNT_ID                = data.aws_caller_identity.current.account_id
+      REGION_NAME               = data.aws_region.current.name
+    }
+  }
+}
+
+# Allow EventBridge to invoke the elevator Lambda
+resource "aws_lambda_permission" "allow_eventbridge_elevator" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_elevator.function_name
+  principal     = "events.amazonaws.com"
+}
+
+resource "aws_lambda_function" "agent_psim" {
+  function_name = "bos-agent-psim-${var.environment}"
+  role          = module.lambda_exec_role.role_arn
+  handler       = "app.handler"
+  runtime       = "python3.11"
+  layers        = [module.common_utils_layer.layer_arn]
+
+  filename         = data.archive_file.agent_psim_zip.output_path
+  source_code_hash = data.archive_file.agent_psim_zip.output_base64sha256
+
+  environment {
+    variables = {
+      PSIM_API_BASE_URL         = "http://psim.clevertown.io:9091"
+      PSIM_API_USERNAME         = "integration_blubrain"
+      PSIM_API_PASSWORD         = "Blubrain@4565"
+      TASK_COMPLETION_TOPIC_ARN = module.task_completion_topic.topic_arn
+    }
+  }
+}
+
+# --- Lambda Layers ---
+module "common_utils_layer" {
+  source = "../../modules/lambda_layer"
+
+  layer_name        = "bos-common-utils-${var.environment}"
+  requirements_file = "../../../src/layers/common_utils/requirements.txt"
+  runtime           = "python3.11"
 }
 
 # --- API Gateway to Expose the Lambda ---
 # This creates a public URL that triggers our Lambda function.
 resource "aws_apigatewayv2_api" "http_api" {
-  name          = "bos-api-dev"
+  name          = "bos-api-${var.environment}"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_credentials = false
+    allow_headers     = ["*"]
+    allow_methods     = ["*"]
+    allow_origins     = ["*"]
+    expose_headers    = ["*"]
+    max_age           = 86400
+  }
 }
 
 resource "aws_apigatewayv2_integration" "health_check_integration" {
@@ -70,6 +388,49 @@ resource "aws_apigatewayv2_route" "health_check_route" {
   target    = "integrations/${aws_apigatewayv2_integration.health_check_integration.id}"
 }
 
+resource "aws_apigatewayv2_integration" "persona_agent_integration" {
+  api_id           = aws_apigatewayv2_api.http_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.persona_agent.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "persona_agent_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /persona" # The path will be /persona
+  target    = "integrations/${aws_apigatewayv2_integration.persona_agent_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "persona_agent_get_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /persona" # The path will be /persona for conversation history
+  target    = "integrations/${aws_apigatewayv2_integration.persona_agent_integration.id}"
+}
+
+resource "aws_apigatewayv2_integration" "director_agent_integration" {
+  api_id           = aws_apigatewayv2_api.http_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.director_agent.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "director_agent_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /director" # The path will be /director
+  target    = "integrations/${aws_apigatewayv2_integration.director_agent_integration.id}"
+}
+
+# API Gateway Integration for Elevator Agent
+resource "aws_apigatewayv2_integration" "agent_elevator_integration" {
+  api_id           = aws_apigatewayv2_api.http_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.agent_elevator.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "agent_elevator_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /elevator/call"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_elevator_integration.id}"
+}
+
 # --- Lambda Permission ---
 # This allows the API Gateway to invoke our Lambda function.
 resource "aws_lambda_permission" "api_gateway_permission" {
@@ -80,33 +441,344 @@ resource "aws_lambda_permission" "api_gateway_permission" {
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "api_gateway_permission_persona" {
+  statement_id  = "AllowAPIGatewayInvokePersona"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.persona_agent.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_permission_director" {
+  statement_id  = "AllowAPIGatewayInvokeDirector"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.director_agent.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_permission_elevator" {
+  statement_id  = "AllowAPIGatewayInvokeElevator"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_elevator.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
+# --- SNS Subscription for Director Agent ---
+# This subscribes the Director Agent Lambda to the intention topic.
+resource "aws_sns_topic_subscription" "director_agent_subscription" {
+  topic_arn = module.intention_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.director_agent.arn
+}
+
+# --- SNS Subscription for Mission Result Topic ---
+resource "aws_sns_topic_subscription" "director_agent_result_subscription" {
+  topic_arn = module.mission_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.director_agent.arn
+}
+
+# --- SNS Subscription for Persona Agent Mission Results ---
+resource "aws_sns_topic_subscription" "persona_agent_result_subscription" {
+  topic_arn = module.mission_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.persona_agent.arn
+}
+
+# --- SNS Subscription for Coordinator Agent ---
+resource "aws_sns_topic_subscription" "coordinator_agent_subscription" {
+  topic_arn = module.mission_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.coordinator_agent.arn
+}
+
+# --- SNS Subscription for Task Completion ---
+resource "aws_sns_topic_subscription" "coordinator_task_completion_subscription" {
+  topic_arn = module.task_completion_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.coordinator_agent.arn
+}
+
+# --- Lambda Permission for SNS ---
+# This allows the SNS topic to invoke our Director Agent Lambda function.
+resource "aws_lambda_permission" "sns_permission_director" {
+  statement_id  = "AllowSNSInvokeDirector"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.director_agent.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.intention_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "sns_permission_director_result" {
+  statement_id  = "AllowSNSInvokeDirectorResult"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.director_agent.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.mission_result_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "sns_permission_persona_result" {
+  statement_id  = "AllowSNSInvokePersonaResult"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.persona_agent.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.mission_result_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "sns_permission_coordinator" {
+  statement_id  = "AllowSNSInvokeCoordinator"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.coordinator_agent.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.mission_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "sns_permission_coordinator_completion" {
+  statement_id  = "AllowSNSInvokeCoordinatorCompletion"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.coordinator_agent.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.task_completion_topic.topic_arn
+}
+
+
+
+# --- SNS Topic for Intentions ---
+module "intention_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-intention-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+  }
+}
+
+# --- SNS Topic for Missions ---
+module "mission_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-mission-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+  }
+}
+
+# --- SNS Topic for Mission Results ---
+module "mission_result_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-mission-result-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+  }
+}
+
+# --- SNS Topic for Task Completion ---
+module "task_completion_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-task-completion-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+  }
+}
+
 # --- API Gateway Stage ---
-# This creates the default stage and enables automatic deployment.
-# THIS WAS THE MISSING PIECE.
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http_api.id
   name        = "$default"
   auto_deploy = true
 }
 
-# --- CloudWatch Log Group for Lambda ---
-# It's a best practice to create a log group for our Lambda function
-# so we can see its output (like our "print" statement).
-resource "aws_cloudwatch_log_group" "health_check_logs" {
-  name              = "/aws/lambda/${aws_lambda_function.health_check.function_name}"
-  retention_in_days = 7 # Keep logs for 7 days
+# --- S3 Bucket for Static Website Hosting ---
+resource "aws_s3_bucket" "frontend_bucket" {
+  bucket = "bos-frontend-${var.environment}-${random_string.bucket_suffix.result}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "StaticWebsiteHosting"
+  }
 }
 
-# We also need to attach the logging policy to our IAM role.
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+resource "random_string" "bucket_suffix" {
+  length  = 8
+  special = false
+  upper   = false
 }
 
+resource "aws_s3_bucket_website_configuration" "frontend_bucket_website" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  index_document {
+    suffix = "chat-working.html"
+  }
+
+  error_document {
+    key = "error.html"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "frontend_bucket_pab" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend_bucket.arn}/*"
+      }
+    ]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.frontend_bucket_pab]
+}
+
+# Upload frontend files to S3
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.frontend_bucket.id
+  key          = "index.html"
+  source       = "../../../frontend/index.html"
+  etag         = filemd5("../../../frontend/index.html")
+  content_type = "text/html"
+}
+
+resource "aws_s3_object" "chat_with_notifications" {
+  bucket       = aws_s3_bucket.frontend_bucket.id
+  key          = "chat-with-notifications.html"
+  source       = "../../../frontend/chat-with-notifications.html"
+  etag         = filemd5("../../../frontend/chat-with-notifications.html")
+  content_type = "text/html"
+}
+
+resource "aws_s3_object" "error" {
+  bucket       = aws_s3_bucket.frontend_bucket.id
+  key          = "error.html"
+  source       = "../../../frontend/error.html"
+  etag         = filemd5("../../../frontend/error.html")
+  content_type = "text/html"
+}
 
 # --- Outputs ---
 # This will print the public URL of our API after it's deployed.
 output "api_endpoint" {
   description = "The public invoke URL for the API Gateway."
   value       = aws_apigatewayv2_api.http_api.api_endpoint
+}
+
+output "website_url" {
+  description = "The public URL for the static website."
+  value       = "http://${aws_s3_bucket.frontend_bucket.bucket}.s3-website-${data.aws_region.current.name}.amazonaws.com"
+}
+
+output "bucket_name" {
+  description = "The name of the S3 bucket hosting the website."
+  value       = aws_s3_bucket.frontend_bucket.bucket
+}
+
+# Data source to get current AWS region
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
+
+
+# --- DynamoDB Table for Short-Term Memory ---
+module "short_term_memory_db" {
+  source = "../../modules/dynamodb_table"
+
+  table_name = "bos-short-term-memory-${var.environment}"
+  hash_key   = "SessionId"
+
+  attributes = [
+    {
+      name = "SessionId"
+      type = "S"
+    }
+  ]
+
+  ttl_attribute = "ExpiresAt"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "ShortTermMemory"
+  }
+}
+
+# --- DynamoDB Table for Mission State ---
+module "mission_state_db" {
+  source = "../../modules/dynamodb_table"
+
+  table_name = "bos-mission-state-${var.environment}"
+  hash_key   = "mission_id"
+
+  attributes = [
+    {
+      name = "mission_id"
+      type = "S"
+    }
+  ]
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "MissionState"
+  }
+}
+
+# --- DynamoDB Table for Elevator Monitoring ---
+module "elevator_monitoring_db" {
+  source = "../../modules/dynamodb_table"
+
+  table_name = "bos-elevator-monitoring-${var.environment}"
+  hash_key   = "mission_id"
+
+  attributes = [
+    {
+      name = "mission_id"
+      type = "S"
+    }
+  ]
+
+  ttl_attribute = "ttl"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "ElevatorMonitoring"
+  }
 }
