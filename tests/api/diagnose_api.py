@@ -25,6 +25,8 @@ class APIDiagnostics:
         self.base_url = base_url
         self.session = requests.Session()
         self.session.timeout = 10
+        # Capture start time for log filtering - only check logs from test execution
+        self.start_time = datetime.now()
 
         # Test results from our pytest run
         self.known_issues = {
@@ -105,10 +107,10 @@ class APIDiagnostics:
         return any(header in headers_lower for header in cors_headers)
 
     def check_aws_logs(self, function_name: str, hours_back: int = 1) -> Dict[str, Any]:
-        """Check AWS CloudWatch logs for a Lambda function"""
+        """Check AWS CloudWatch logs for a Lambda function from test start time"""
         try:
-            since_time = datetime.now() - timedelta(hours=hours_back)
-            since_timestamp = int(since_time.timestamp() * 1000)
+            # Use start time of test execution instead of fixed hours back
+            since_timestamp = int(self.start_time.timestamp() * 1000)
 
             cmd = [
                 "aws",
@@ -128,9 +130,22 @@ class APIDiagnostics:
                 log_data = json.loads(result.stdout)
                 events = log_data.get("events", [])
 
+                # Look for actual ERROR level logs, not just messages containing "Error"
                 error_events = [
-                    e for e in events if "ERROR" in e.get("message", "").upper()
+                    e
+                    for e in events
+                    if e.get("message", "").strip().startswith(("[ERROR]", "ERROR"))
                 ]
+
+                # Filter recent errors (since test started)
+                start_timestamp_ms = int(self.start_time.timestamp() * 1000)
+
+                recent_error_events = []
+                for e in error_events:
+                    event_timestamp = e.get("timestamp", 0)
+                    if event_timestamp >= start_timestamp_ms:
+                        recent_error_events.append(e)
+
                 duration_events = [
                     e for e in events if "Duration:" in e.get("message", "")
                 ]
@@ -139,7 +154,7 @@ class APIDiagnostics:
                     "function_name": function_name,
                     "total_events": len(events),
                     "error_events": len(error_events),
-                    "recent_errors": error_events[-3:] if error_events else [],
+                    "recent_errors": len(recent_error_events),
                     "avg_duration": self._calculate_avg_duration(duration_events),
                     "accessible": True,
                 }
@@ -241,10 +256,18 @@ class APIDiagnostics:
             if not result["has_cors"]:
                 warnings.append(f"{endpoint}: Missing CORS headers")
 
-        # Analyze log results
+        # Analyze log results - only consider errors from test execution period
         for func, logs in log_results.items():
             if logs.get("accessible") and logs.get("error_events", 0) > 0:
-                critical_issues.append(f"{func}: {logs['error_events']} errors in logs")
+                # Only report as critical if errors occurred during test execution
+                if logs.get("recent_errors", 0) > 0:
+                    critical_issues.append(
+                        f"{func}: {logs['recent_errors']} recent errors in logs"
+                    )
+                else:
+                    warnings.append(
+                        f"{func}: {logs['error_events']} older errors found (not from current test)"
+                    )
 
         return {
             "total_endpoints": total_endpoints,
