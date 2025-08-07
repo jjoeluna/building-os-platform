@@ -15,21 +15,11 @@ SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
 MISSION_RESULT_TOPIC_ARN = os.environ.get("MISSION_RESULT_TOPIC_ARN")
 
 
-def decimal_to_native(obj):
-    """
-    Convert DynamoDB Decimal types to native Python types for JSON serialization
-    """
+def decimal_default(obj):
+    """JSON serializer function that handles Decimal objects"""
     if isinstance(obj, Decimal):
-        if obj % 1 == 0:
-            return int(obj)
-        else:
-            return float(obj)
-    elif isinstance(obj, dict):
-        return {k: decimal_to_native(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [decimal_to_native(item) for item in obj]
-    else:
-        return obj
+        return float(obj)
+    raise TypeError
 
 
 def handler(event, context):
@@ -44,11 +34,21 @@ def handler(event, context):
     print(f"Persona Agent invoked with event: {event}")
 
     try:
-        # Check if this is an SNS event (mission result)
+        # Check if this is an SNS event
         if "Records" in event:
             for record in event["Records"]:
                 if record.get("EventSource") == "aws:sns":
-                    return handle_mission_result(record["Sns"]["Message"])
+                    topic_arn = record["Sns"]["TopicArn"]
+                    message = record["Sns"]["Message"]
+
+                    # Determine which topic and handle accordingly
+                    if "mission-result-topic" in topic_arn:
+                        return handle_mission_result(message)
+                    elif "intention-result-topic" in topic_arn:
+                        return handle_intention_result(message)
+                    else:
+                        print(f"Unknown SNS topic: {topic_arn}")
+                        return {"status": "ERROR", "error": "Unknown topic"}
 
         # Check if this is a GET request for conversation history
         if event.get("httpMethod") == "GET":
@@ -117,9 +117,6 @@ def handle_get_conversation(event, context):
         # Sort messages by timestamp
         messages = sorted(messages, key=lambda x: x.get("Timestamp", 0))
 
-        # Convert Decimal types to native Python types for JSON serialization
-        messages = decimal_to_native(messages)
-
         return {
             "statusCode": 200,
             "headers": {
@@ -129,7 +126,8 @@ def handle_get_conversation(event, context):
                 "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
             },
             "body": json.dumps(
-                {"messages": messages, "user_id": user_id, "session_id": session_id}
+                {"messages": messages, "user_id": user_id, "session_id": session_id},
+                default=decimal_default,
             ),
         }
 
@@ -190,12 +188,6 @@ def handle_mission_result(message):
                 assistant_message = f"Mission completed successfully! Results: {'; '.join(successful_results)}"
             else:
                 assistant_message = "Mission completed successfully!"
-        elif status == "notification":
-            # Handle notification messages (e.g., elevator arrival)
-            notification_message = mission_result.get(
-                "message", "Notification received"
-            )
-            assistant_message = notification_message
         else:
             assistant_message = f"Mission failed to complete. Status: {status}"
 
@@ -209,24 +201,16 @@ def handle_mission_result(message):
             Limit=50,
         )
 
-        # Find the most recent session for this user (within the last hour to be relevant)
+        # Find the most recent session for this user
         original_session_id = None
-        current_time = int(time.time())
-        one_hour_ago = current_time - 3600  # 1 hour ago
-
         if response["Items"]:
             # Sort by timestamp to get most recent
             sorted_items = sorted(
                 response["Items"], key=lambda x: x["Timestamp"], reverse=True
             )
-            # Look for a session within the last hour
-            for item in sorted_items:
-                if item["Timestamp"] >= one_hour_ago:
-                    original_session_id = item.get("SessionId")
-                    break
+            original_session_id = sorted_items[0].get("SessionId")
 
         if not original_session_id:
-            # If no recent session found, create a new one
             original_session_id = f"session-{uuid.uuid4()}"
 
         # Save assistant response to conversation history using original session
@@ -248,6 +232,70 @@ def handle_mission_result(message):
 
     except Exception as e:
         print(f"Error processing mission result: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def handle_intention_result(message):
+    """
+    Handle intention result from director (elaborated response)
+    """
+    try:
+        intention_result = json.loads(message)
+        user_id = intention_result.get("user_id")
+        mission_id = intention_result.get("mission_id")
+        status = intention_result.get("status")
+        response_text = intention_result.get(
+            "response", "Your request has been processed."
+        )
+
+        print(f"Received intention result for mission {mission_id}, user {user_id}")
+
+        # Save the director's elaborated response to conversation history
+        table = dynamodb.Table(TABLE_NAME)
+        timestamp = int(time.time())
+        expires_at = timestamp + (24 * 60 * 60)  # TTL for 24 hours
+
+        # Find the original session ID from recent conversations
+        response = table.scan(
+            FilterExpression="UserId = :user_id AND #role = :role",
+            ExpressionAttributeNames={"#role": "Role"},
+            ExpressionAttributeValues={":user_id": user_id, ":role": "user"},
+            Limit=50,
+        )
+
+        # Find the most recent session for this user
+        original_session_id = None
+        if response["Items"]:
+            sorted_items = sorted(
+                response["Items"], key=lambda x: x["Timestamp"], reverse=True
+            )
+            original_session_id = sorted_items[0].get("SessionId")
+
+        if not original_session_id:
+            original_session_id = f"session-{uuid.uuid4()}"
+
+        # Save director's response to conversation history
+        conversation_item = {
+            "SessionId": original_session_id,
+            "UserId": user_id,
+            "Timestamp": timestamp,
+            "Role": "assistant",
+            "Message": response_text,
+            "MissionId": mission_id,
+            "MissionStatus": status,
+            "Source": "director",
+            "ExpiresAt": expires_at,
+        }
+
+        table.put_item(Item=conversation_item)
+        print(
+            f"Saved director's intention result to conversation history for user {user_id}"
+        )
+
+        return {"status": "SUCCESS", "message": "Intention result processed"}
+
+    except Exception as e:
+        print(f"Error processing intention result: {str(e)}")
         return {"status": "ERROR", "error": str(e)}
 
 

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>api-test-report-20250807-131541.html</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (show details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (hide details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>api-test-report-20250807-131541.html</h1>
+    <p>Report generated on 07-Aug-2025 at 13:16:57 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Summary</h2>
+    <p>24 tests ran in 75.47 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">13 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">11 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_valid_message</td>
+          <td class="col-duration">0.83</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestPersonaEndpoint object at 0x000002035AD6A5D0&gt;<br/><br/>    def test_persona_valid_message(self):<br/>        &quot;&quot;&quot;Test persona with valid message&quot;&quot;&quot;<br/>        payload = TestPayloads.persona_message()<br/>        response, data = client.post(&quot;/persona&quot;, json=payload)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 202 == 200</span><br/><span class="error">E        +  where 202 = &lt;Response [202]&gt;.status_code</span><br/><br/>test_endpoints.py:74: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 202 | ⏱️  Time: 835.68ms | 📦 Size: 135 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_conversations</td>
+          <td class="col-duration">6.83</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [GET]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>&gt;           resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:486: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:932: in urlopen<br/>    retries = retries.increment(method, url, response=response, _pool=self)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = Retry(total=0, connect=None, read=None, redirect=None, status=None), method = &#x27;GET&#x27;, url = &#x27;/persona/conversations?user_id=api-test-user&#x27;<br/>response = &lt;urllib3.response.HTTPResponse object at 0x000002035AE408B0&gt;, error = None, _pool = &lt;urllib3.connectionpool.HTTPSConnectionPool object at 0x000002035ADF4D70&gt;<br/>_stacktrace = None<br/><br/>    def increment(<br/>        self,<br/>        method: str | None = None,<br/>        url: str | None = None,<br/>        response: BaseHTTPResponse | None = None,<br/>        error: Exception | None = None,<br/>        _pool: ConnectionPool | None = None,<br/>        _stacktrace: TracebackType | None = None,<br/>    ) -&gt; Self:<br/>        &quot;&quot;&quot;Return a new Retry object with incremented retry counters.<br/>    <br/>        :param response: A response object, or None, if the server did not<br/>            return a response.<br/>        :type response: :class:`~urllib3.response.BaseHTTPResponse`<br/>        :param Exception error: An error encountered during the request, or<br/>            None if the response was received successfully.<br/>    <br/>        :return: A new ``Retry`` object.<br/>        &quot;&quot;&quot;<br/>        if self.total is False and error:<br/>            # Disabled, indicate to re-raise the error.<br/>            raise reraise(type(error), error, _stacktrace)<br/>    <br/>        total = self.total<br/>        if total is not None:<br/>            total -= 1<br/>    <br/>        connect = self.connect<br/>        read = self.read<br/>        redirect = self.redirect<br/>        status_count = self.status<br/>        other = self.other<br/>        cause = &quot;unknown&quot;<br/>        status = None<br/>        redirect_location = None<br/>    <br/>        if error and self._is_connection_error(error):<br/>            # Connect retry?<br/>            if connect is False:<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif connect is not None:<br/>                connect -= 1<br/>    <br/>        elif error and self._is_read_error(error):<br/>            # Read retry?<br/>            if read is False or method is None or not self._is_method_retryable(method):<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif read is not None:<br/>                read -= 1<br/>    <br/>        elif error:<br/>            # Other retry?<br/>            if other is not None:<br/>                other -= 1<br/>    <br/>        elif response and response.get_redirect_location():<br/>            # Redirect retry?<br/>            if redirect is not None:<br/>                redirect -= 1<br/>            cause = &quot;too many redirects&quot;<br/>            response_redirect_location = response.get_redirect_location()<br/>            if response_redirect_location:<br/>                redirect_location = response_redirect_location<br/>            status = response.status<br/>    <br/>        else:<br/>            # Incrementing because of a server error like a 500 in<br/>            # status_forcelist and the given method is in the allowed_methods<br/>            cause = ResponseError.GENERIC_ERROR<br/>            if response and response.status:<br/>                if status_count is not None:<br/>                    status_count -= 1<br/>                cause = ResponseError.SPECIFIC_ERROR.format(status_code=response.status)<br/>                status = response.status<br/>    <br/>        history = self.history + (<br/>            RequestHistory(method, url, error, status, redirect_location),<br/>        )<br/>    <br/>        new_retry = self.new(<br/>            total=total,<br/>            connect=connect,<br/>            read=read,<br/>            redirect=redirect,<br/>            status=status_count,<br/>            other=other,<br/>            history=history,<br/>        )<br/>    <br/>        if new_retry.is_exhausted():<br/>            reason = error or ResponseError(cause)<br/>&gt;           raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]<br/><span class="error">E           urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /persona/conversations?user_id=api-test-user (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\urllib3\util\retry.py:519: MaxRetryError<br/><br/>During handling of the above exception, another exception occurred:<br/><br/>self = &lt;api.test_endpoints.TestPersonaEndpoint object at 0x000002035AD36780&gt;<br/><br/>    def test_persona_conversations(self):<br/>        &quot;&quot;&quot;Test persona conversations endpoint&quot;&quot;&quot;<br/>        user_id = config.test_user_id<br/>&gt;       response, data = client.get(f&quot;/persona/conversations?user_id={user_id}&quot;)<br/><br/>test_endpoints.py:101: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>client.py:119: in get<br/>    return self.make_request(&quot;GET&quot;, endpoint, **kwargs)<br/>client.py:64: in make_request<br/>    response = self.session.request(<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:589: in request<br/>    resp = self.send(prep, **send_kwargs)<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:703: in send<br/>    r = adapter.send(request, **kwargs)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [GET]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>            resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/>    <br/>        except (ProtocolError, OSError) as err:<br/>            raise ConnectionError(err, request=request)<br/>    <br/>        except MaxRetryError as e:<br/>            if isinstance(e.reason, ConnectTimeoutError):<br/>                # TODO: Remove this in 3.0.0: see #2811<br/>                if not isinstance(e.reason, NewConnectionError):<br/>                    raise ConnectTimeout(e, request=request)<br/>    <br/>            if isinstance(e.reason, ResponseError):<br/>&gt;               raise RetryError(e, request=request)<br/><span class="error">E               requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /persona/conversations?user_id=api-test-user (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:510: RetryError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /persona/conversations?user_id=api-test-user
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: 
+/persona/conversations?user_id=api-test-user (Caused by ResponseError(&#x27;too many
+500 error responses&#x27;))
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_call_basic</td>
+          <td class="col-duration">6.88</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [POST]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>&gt;           resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:486: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:932: in urlopen<br/>    retries = retries.increment(method, url, response=response, _pool=self)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = Retry(total=0, connect=None, read=None, redirect=None, status=None), method = &#x27;POST&#x27;, url = &#x27;/elevator/call&#x27;<br/>response = &lt;urllib3.response.HTTPResponse object at 0x000002035AE41ED0&gt;, error = None, _pool = &lt;urllib3.connectionpool.HTTPSConnectionPool object at 0x000002035ADF4D70&gt;<br/>_stacktrace = None<br/><br/>    def increment(<br/>        self,<br/>        method: str | None = None,<br/>        url: str | None = None,<br/>        response: BaseHTTPResponse | None = None,<br/>        error: Exception | None = None,<br/>        _pool: ConnectionPool | None = None,<br/>        _stacktrace: TracebackType | None = None,<br/>    ) -&gt; Self:<br/>        &quot;&quot;&quot;Return a new Retry object with incremented retry counters.<br/>    <br/>        :param response: A response object, or None, if the server did not<br/>            return a response.<br/>        :type response: :class:`~urllib3.response.BaseHTTPResponse`<br/>        :param Exception error: An error encountered during the request, or<br/>            None if the response was received successfully.<br/>    <br/>        :return: A new ``Retry`` object.<br/>        &quot;&quot;&quot;<br/>        if self.total is False and error:<br/>            # Disabled, indicate to re-raise the error.<br/>            raise reraise(type(error), error, _stacktrace)<br/>    <br/>        total = self.total<br/>        if total is not None:<br/>            total -= 1<br/>    <br/>        connect = self.connect<br/>        read = self.read<br/>        redirect = self.redirect<br/>        status_count = self.status<br/>        other = self.other<br/>        cause = &quot;unknown&quot;<br/>        status = None<br/>        redirect_location = None<br/>    <br/>        if error and self._is_connection_error(error):<br/>            # Connect retry?<br/>            if connect is False:<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif connect is not None:<br/>                connect -= 1<br/>    <br/>        elif error and self._is_read_error(error):<br/>            # Read retry?<br/>            if read is False or method is None or not self._is_method_retryable(method):<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif read is not None:<br/>                read -= 1<br/>    <br/>        elif error:<br/>            # Other retry?<br/>            if other is not None:<br/>                other -= 1<br/>    <br/>        elif response and response.get_redirect_location():<br/>            # Redirect retry?<br/>            if redirect is not None:<br/>                redirect -= 1<br/>            cause = &quot;too many redirects&quot;<br/>            response_redirect_location = response.get_redirect_location()<br/>            if response_redirect_location:<br/>                redirect_location = response_redirect_location<br/>            status = response.status<br/>    <br/>        else:<br/>            # Incrementing because of a server error like a 500 in<br/>            # status_forcelist and the given method is in the allowed_methods<br/>            cause = ResponseError.GENERIC_ERROR<br/>            if response and response.status:<br/>                if status_count is not None:<br/>                    status_count -= 1<br/>                cause = ResponseError.SPECIFIC_ERROR.format(status_code=response.status)<br/>                status = response.status<br/>    <br/>        history = self.history + (<br/>            RequestHistory(method, url, error, status, redirect_location),<br/>        )<br/>    <br/>        new_retry = self.new(<br/>            total=total,<br/>            connect=connect,<br/>            read=read,<br/>            redirect=redirect,<br/>            status=status_count,<br/>            other=other,<br/>            history=history,<br/>        )<br/>    <br/>        if new_retry.is_exhausted():<br/>            reason = error or ResponseError(cause)<br/>&gt;           raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]<br/><span class="error">E           urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\urllib3\util\retry.py:519: MaxRetryError<br/><br/>During handling of the above exception, another exception occurred:<br/><br/>self = &lt;api.test_endpoints.TestElevatorEndpoint object at 0x000002035AD6A850&gt;<br/><br/>    def test_elevator_call_basic(self):<br/>        &quot;&quot;&quot;Test basic elevator call&quot;&quot;&quot;<br/>        payload = TestPayloads.elevator_call()<br/>&gt;       response, data = client.post(&quot;/elevator/call&quot;, json=payload)<br/><br/>test_endpoints.py:113: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>client.py:122: in post<br/>    return self.make_request(&quot;POST&quot;, endpoint, **kwargs)<br/>client.py:64: in make_request<br/>    response = self.session.request(<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:589: in request<br/>    resp = self.send(prep, **send_kwargs)<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:703: in send<br/>    r = adapter.send(request, **kwargs)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [POST]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>            resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/>    <br/>        except (ProtocolError, OSError) as err:<br/>            raise ConnectionError(err, request=request)<br/>    <br/>        except MaxRetryError as e:<br/>            if isinstance(e.reason, ConnectTimeoutError):<br/>                # TODO: Remove this in 3.0.0: see #2811<br/>                if not isinstance(e.reason, NewConnectionError):<br/>                    raise ConnectTimeout(e, request=request)<br/>    <br/>            if isinstance(e.reason, ResponseError):<br/>&gt;               raise RetryError(e, request=request)<br/><span class="error">E               requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:510: RetryError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /elevator/call (Caused by 
+ResponseError(&#x27;too many 500 error responses&#x27;))
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_missing_mission_id</td>
+          <td class="col-duration">6.84</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [POST]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>&gt;           resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:486: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:932: in urlopen<br/>    retries = retries.increment(method, url, response=response, _pool=self)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = Retry(total=0, connect=None, read=None, redirect=None, status=None), method = &#x27;POST&#x27;, url = &#x27;/elevator/call&#x27;<br/>response = &lt;urllib3.response.HTTPResponse object at 0x000002035AE43490&gt;, error = None, _pool = &lt;urllib3.connectionpool.HTTPSConnectionPool object at 0x000002035ADF4D70&gt;<br/>_stacktrace = None<br/><br/>    def increment(<br/>        self,<br/>        method: str | None = None,<br/>        url: str | None = None,<br/>        response: BaseHTTPResponse | None = None,<br/>        error: Exception | None = None,<br/>        _pool: ConnectionPool | None = None,<br/>        _stacktrace: TracebackType | None = None,<br/>    ) -&gt; Self:<br/>        &quot;&quot;&quot;Return a new Retry object with incremented retry counters.<br/>    <br/>        :param response: A response object, or None, if the server did not<br/>            return a response.<br/>        :type response: :class:`~urllib3.response.BaseHTTPResponse`<br/>        :param Exception error: An error encountered during the request, or<br/>            None if the response was received successfully.<br/>    <br/>        :return: A new ``Retry`` object.<br/>        &quot;&quot;&quot;<br/>        if self.total is False and error:<br/>            # Disabled, indicate to re-raise the error.<br/>            raise reraise(type(error), error, _stacktrace)<br/>    <br/>        total = self.total<br/>        if total is not None:<br/>            total -= 1<br/>    <br/>        connect = self.connect<br/>        read = self.read<br/>        redirect = self.redirect<br/>        status_count = self.status<br/>        other = self.other<br/>        cause = &quot;unknown&quot;<br/>        status = None<br/>        redirect_location = None<br/>    <br/>        if error and self._is_connection_error(error):<br/>            # Connect retry?<br/>            if connect is False:<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif connect is not None:<br/>                connect -= 1<br/>    <br/>        elif error and self._is_read_error(error):<br/>            # Read retry?<br/>            if read is False or method is None or not self._is_method_retryable(method):<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif read is not None:<br/>                read -= 1<br/>    <br/>        elif error:<br/>            # Other retry?<br/>            if other is not None:<br/>                other -= 1<br/>    <br/>        elif response and response.get_redirect_location():<br/>            # Redirect retry?<br/>            if redirect is not None:<br/>                redirect -= 1<br/>            cause = &quot;too many redirects&quot;<br/>            response_redirect_location = response.get_redirect_location()<br/>            if response_redirect_location:<br/>                redirect_location = response_redirect_location<br/>            status = response.status<br/>    <br/>        else:<br/>            # Incrementing because of a server error like a 500 in<br/>            # status_forcelist and the given method is in the allowed_methods<br/>            cause = ResponseError.GENERIC_ERROR<br/>            if response and response.status:<br/>                if status_count is not None:<br/>                    status_count -= 1<br/>                cause = ResponseError.SPECIFIC_ERROR.format(status_code=response.status)<br/>                status = response.status<br/>    <br/>        history = self.history + (<br/>            RequestHistory(method, url, error, status, redirect_location),<br/>        )<br/>    <br/>        new_retry = self.new(<br/>            total=total,<br/>            connect=connect,<br/>            read=read,<br/>            redirect=redirect,<br/>            status=status_count,<br/>            other=other,<br/>            history=history,<br/>        )<br/>    <br/>        if new_retry.is_exhausted():<br/>            reason = error or ResponseError(cause)<br/>&gt;           raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]<br/><span class="error">E           urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\urllib3\util\retry.py:519: MaxRetryError<br/><br/>During handling of the above exception, another exception occurred:<br/><br/>self = &lt;api.test_endpoints.TestElevatorEndpoint object at 0x000002035AD6A990&gt;<br/><br/>    def test_elevator_missing_mission_id(self):<br/>        &quot;&quot;&quot;Test elevator call without mission_id&quot;&quot;&quot;<br/>        payload = {&quot;action&quot;: &quot;call_elevator&quot;, &quot;parameters&quot;: {&quot;floor&quot;: 3}}<br/>&gt;       response, data = client.post(&quot;/elevator/call&quot;, json=payload)<br/><br/>test_endpoints.py:124: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>client.py:122: in post<br/>    return self.make_request(&quot;POST&quot;, endpoint, **kwargs)<br/>client.py:64: in make_request<br/>    response = self.session.request(<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:589: in request<br/>    resp = self.send(prep, **send_kwargs)<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:703: in send<br/>    r = adapter.send(request, **kwargs)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [POST]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>            resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/>    <br/>        except (ProtocolError, OSError) as err:<br/>            raise ConnectionError(err, request=request)<br/>    <br/>        except MaxRetryError as e:<br/>            if isinstance(e.reason, ConnectTimeoutError):<br/>                # TODO: Remove this in 3.0.0: see #2811<br/>                if not isinstance(e.reason, NewConnectionError):<br/>                    raise ConnectTimeout(e, request=request)<br/>    <br/>            if isinstance(e.reason, ResponseError):<br/>&gt;               raise RetryError(e, request=request)<br/><span class="error">E               requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:510: RetryError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /elevator/call (Caused by 
+ResponseError(&#x27;too many 500 error responses&#x27;))
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_different_mission_id</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCoordinatorEndpoint object at 0x000002035AD6AE90&gt;<br/><br/>    def test_coordinator_different_mission_id(self):<br/>        &quot;&quot;&quot;Test coordinator with different mission ID&quot;&quot;&quot;<br/>        mission_id = f&quot;python-test-{int(time.time())}&quot;<br/>        response, data = client.get(f&quot;/coordinator/missions/{mission_id}&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:172: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/python-test-1754583392
+📊 Status: 404 | ⏱️  Time: 192.20ms | 📦 Size: 53 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/health]</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000002035AD6B250&gt;, endpoint = &#x27;/health&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /health</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 185.56ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/director]</td>
+          <td class="col-duration">9.09</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000002035AD6B390&gt;, endpoint = &#x27;/director&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /director</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+📊 Status: 200 | ⏱️  Time: 9089.89ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/persona]</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000002035AD375C0&gt;, endpoint = &#x27;/persona&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /persona</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 172.99ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/elevator/call]</td>
+          <td class="col-duration">6.73</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [POST]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>&gt;           resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:486: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:942: in urlopen<br/>    return self.urlopen(<br/>..\..\.venv\Lib\site-packages\urllib3\connectionpool.py:932: in urlopen<br/>    retries = retries.increment(method, url, response=response, _pool=self)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = Retry(total=0, connect=None, read=None, redirect=None, status=None), method = &#x27;POST&#x27;, url = &#x27;/elevator/call&#x27;<br/>response = &lt;urllib3.response.HTTPResponse object at 0x000002035AE41A50&gt;, error = None, _pool = &lt;urllib3.connectionpool.HTTPSConnectionPool object at 0x000002035ADF4D70&gt;<br/>_stacktrace = None<br/><br/>    def increment(<br/>        self,<br/>        method: str | None = None,<br/>        url: str | None = None,<br/>        response: BaseHTTPResponse | None = None,<br/>        error: Exception | None = None,<br/>        _pool: ConnectionPool | None = None,<br/>        _stacktrace: TracebackType | None = None,<br/>    ) -&gt; Self:<br/>        &quot;&quot;&quot;Return a new Retry object with incremented retry counters.<br/>    <br/>        :param response: A response object, or None, if the server did not<br/>            return a response.<br/>        :type response: :class:`~urllib3.response.BaseHTTPResponse`<br/>        :param Exception error: An error encountered during the request, or<br/>            None if the response was received successfully.<br/>    <br/>        :return: A new ``Retry`` object.<br/>        &quot;&quot;&quot;<br/>        if self.total is False and error:<br/>            # Disabled, indicate to re-raise the error.<br/>            raise reraise(type(error), error, _stacktrace)<br/>    <br/>        total = self.total<br/>        if total is not None:<br/>            total -= 1<br/>    <br/>        connect = self.connect<br/>        read = self.read<br/>        redirect = self.redirect<br/>        status_count = self.status<br/>        other = self.other<br/>        cause = &quot;unknown&quot;<br/>        status = None<br/>        redirect_location = None<br/>    <br/>        if error and self._is_connection_error(error):<br/>            # Connect retry?<br/>            if connect is False:<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif connect is not None:<br/>                connect -= 1<br/>    <br/>        elif error and self._is_read_error(error):<br/>            # Read retry?<br/>            if read is False or method is None or not self._is_method_retryable(method):<br/>                raise reraise(type(error), error, _stacktrace)<br/>            elif read is not None:<br/>                read -= 1<br/>    <br/>        elif error:<br/>            # Other retry?<br/>            if other is not None:<br/>                other -= 1<br/>    <br/>        elif response and response.get_redirect_location():<br/>            # Redirect retry?<br/>            if redirect is not None:<br/>                redirect -= 1<br/>            cause = &quot;too many redirects&quot;<br/>            response_redirect_location = response.get_redirect_location()<br/>            if response_redirect_location:<br/>                redirect_location = response_redirect_location<br/>            status = response.status<br/>    <br/>        else:<br/>            # Incrementing because of a server error like a 500 in<br/>            # status_forcelist and the given method is in the allowed_methods<br/>            cause = ResponseError.GENERIC_ERROR<br/>            if response and response.status:<br/>                if status_count is not None:<br/>                    status_count -= 1<br/>                cause = ResponseError.SPECIFIC_ERROR.format(status_code=response.status)<br/>                status = response.status<br/>    <br/>        history = self.history + (<br/>            RequestHistory(method, url, error, status, redirect_location),<br/>        )<br/>    <br/>        new_retry = self.new(<br/>            total=total,<br/>            connect=connect,<br/>            read=read,<br/>            redirect=redirect,<br/>            status=status_count,<br/>            other=other,<br/>            history=history,<br/>        )<br/>    <br/>        if new_retry.is_exhausted():<br/>            reason = error or ResponseError(cause)<br/>&gt;           raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]<br/><span class="error">E           urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\urllib3\util\retry.py:519: MaxRetryError<br/><br/>During handling of the above exception, another exception occurred:<br/><br/>self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000002035AD376F0&gt;, endpoint = &#x27;/elevator/call&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>&gt;           response, _ = client.post(endpoint, json=payload)<br/><br/>test_endpoints.py:200: <br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/>client.py:122: in post<br/>    return self.make_request(&quot;POST&quot;, endpoint, **kwargs)<br/>client.py:64: in make_request<br/>    response = self.session.request(<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:589: in request<br/>    resp = self.send(prep, **send_kwargs)<br/>..\..\.venv\Lib\site-packages\requests\sessions.py:703: in send<br/>    r = adapter.send(request, **kwargs)<br/>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ <br/><br/>self = &lt;requests.adapters.HTTPAdapter object at 0x000002035AD68F50&gt;, request = &lt;PreparedRequest [POST]&gt;, stream = False, timeout = Timeout(connect=30, read=30, total=None)<br/>verify = True, cert = None, proxies = OrderedDict()<br/><br/>    def send(<br/>        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None<br/>    ):<br/>        &quot;&quot;&quot;Sends PreparedRequest object. Returns Response object.<br/>    <br/>        :param request: The :class:`PreparedRequest &lt;PreparedRequest&gt;` being sent.<br/>        :param stream: (optional) Whether to stream the request content.<br/>        :param timeout: (optional) How long to wait for the server to send<br/>            data before giving up, as a float, or a :ref:`(connect timeout,<br/>            read timeout) &lt;timeouts&gt;` tuple.<br/>        :type timeout: float or tuple or urllib3 Timeout object<br/>        :param verify: (optional) Either a boolean, in which case it controls whether<br/>            we verify the server&#x27;s TLS certificate, or a string, in which case it<br/>            must be a path to a CA bundle to use<br/>        :param cert: (optional) Any user-provided SSL certificate to be trusted.<br/>        :param proxies: (optional) The proxies dictionary to apply to the request.<br/>        :rtype: requests.Response<br/>        &quot;&quot;&quot;<br/>    <br/>        try:<br/>            conn = self.get_connection(request.url, proxies)<br/>        except LocationValueError as e:<br/>            raise InvalidURL(e, request=request)<br/>    <br/>        self.cert_verify(conn, request.url, verify, cert)<br/>        url = self.request_url(request, proxies)<br/>        self.add_headers(<br/>            request,<br/>            stream=stream,<br/>            timeout=timeout,<br/>            verify=verify,<br/>            cert=cert,<br/>            proxies=proxies,<br/>        )<br/>    <br/>        chunked = not (request.body is None or &quot;Content-Length&quot; in request.headers)<br/>    <br/>        if isinstance(timeout, tuple):<br/>            try:<br/>                connect, read = timeout<br/>                timeout = TimeoutSauce(connect=connect, read=read)<br/>            except ValueError:<br/>                raise ValueError(<br/>                    f&quot;Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, &quot;<br/>                    f&quot;or a single float to set both timeouts to the same value.&quot;<br/>                )<br/>        elif isinstance(timeout, TimeoutSauce):<br/>            pass<br/>        else:<br/>            timeout = TimeoutSauce(connect=timeout, read=timeout)<br/>    <br/>        try:<br/>            resp = conn.urlopen(<br/>                method=request.method,<br/>                url=url,<br/>                body=request.body,<br/>                headers=request.headers,<br/>                redirect=False,<br/>                assert_same_host=False,<br/>                preload_content=False,<br/>                decode_content=False,<br/>                retries=self.max_retries,<br/>                timeout=timeout,<br/>                chunked=chunked,<br/>            )<br/>    <br/>        except (ProtocolError, OSError) as err:<br/>            raise ConnectionError(err, request=request)<br/>    <br/>        except MaxRetryError as e:<br/>            if isinstance(e.reason, ConnectTimeoutError):<br/>                # TODO: Remove this in 3.0.0: see #2811<br/>                if not isinstance(e.reason, NewConnectionError):<br/>                    raise ConnectTimeout(e, request=request)<br/>    <br/>            if isinstance(e.reason, ResponseError):<br/>&gt;               raise RetryError(e, request=request)<br/><span class="error">E               requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>..\..\.venv\Lib\site-packages\requests\adapters.py:510: RetryError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /elevator/call (Caused by 
+ResponseError(&#x27;too many 500 error responses&#x27;))
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/psim/search]</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000002035AE28170&gt;, endpoint = &#x27;/psim/search&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /psim/search</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 400 | ⏱️  Time: 172.49ms | 📦 Size: 43 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/coordinator/missions/test-123]</td>
+          <td class="col-duration">0.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000002035ADD49E0&gt;, endpoint = &#x27;/coordinator/missions/test-123&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /coordinator/missions/test-123</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-123
+📊 Status: 404 | ⏱️  Time: 198.24ms | 📦 Size: 39 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_success</td>
+          <td class="col-duration">1.30</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>
+🧪 Starting BuildingOS API Test Suite
+🌐 Base URL: https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com
+🏷️  Environment: dev
+<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 1294.16ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_performance</td>
+          <td class="col-duration">0.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 213.53ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_basic_request</td>
+          <td class="col-duration">7.24</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+📊 Status: 200 | ⏱️  Time: 7238.50ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_request</td>
+          <td class="col-duration">13.54</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_request=Test mission from Python API tests
+📊 Status: 200 | ⏱️  Time: 13537.76ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_id</td>
+          <td class="col-duration">3.77</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_id=api-test-user
+📊 Status: 200 | ⏱️  Time: 3773.14ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_user_id</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 195.09ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_message</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 187.67ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_basic</td>
+          <td class="col-duration">0.47</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 200 | ⏱️  Time: 466.65ms | 📦 Size: 223 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_with_custom_query</td>
+          <td class="col-duration">0.32</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 200 | ⏱️  Time: 322.69ms | 📦 Size: 223 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_mission_status</td>
+          <td class="col-duration">0.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-mission-123
+📊 Status: 200 | ⏱️  Time: 198.26ms | 📦 Size: 463 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_endpoint</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /invalid-endpoint
+📊 Status: 404 | ⏱️  Time: 157.43ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_method</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 DELETE /health
+📊 Status: 404 | ⏱️  Time: 161.54ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_malformed_json</td>
+          <td class="col-duration">7.94</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ----------------------------Captured stdout teardown---------------------------- <br/>
+
+📊 Test Session Complete
+                              🔍 Request Summary                               
+┌────────┬─────────────────────────────────────┬────────┬───────────┬─────────┐
+│ Method │ Endpoint                            │ Status │ Time (ms) │ Success │
+├────────┼─────────────────────────────────────┼────────┼───────────┼─────────┤
+│ GET    │ /health                             │ 200    │ 1294.16   │ ✅      │
+│ GET    │ /health                             │ 200    │ 213.53    │ ✅      │
+│ GET    │ /director                           │ 200    │ 7238.5    │ ✅      │
+│ GET    │ /director?user_request=Test mission │ 200    │ 13537.76  │ ✅      │
+│        │ from Python API tests               │        │           │         │
+│ GET    │ /director?user_id=api-test-user     │ 200    │ 3773.14   │ ✅      │
+│ POST   │ /persona                            │ 202    │ 835.68    │ ✅      │
+│ POST   │ /persona                            │ 400    │ 195.09    │ ❌      │
+│ POST   │ /persona                            │ 400    │ 187.67    │ ❌      │
+│ GET    │ /persona/conversations?user_id=api… │ 0      │ 6834.98   │ ❌      │
+│ POST   │ /elevator/call                      │ 0      │ 6882.66   │ ❌      │
+│ POST   │ /elevator/call                      │ 0      │ 6840.97   │ ❌      │
+│ POST   │ /psim/search                        │ 200    │ 466.65    │ ✅      │
+│ POST   │ /psim/search                        │ 200    │ 322.69    │ ✅      │
+│ GET    │ /coordinator/missions/test-mission… │ 200    │ 198.26    │ ✅      │
+│ GET    │ /coordinator/missions/python-test-… │ 404    │ 192.2     │ ❌      │
+│ GET    │ /health                             │ 200    │ 185.56    │ ✅      │
+│ GET    │ /director                           │ 200    │ 9089.89   │ ✅      │
+│ POST   │ /persona                            │ 400    │ 172.99    │ ❌      │
+│ POST   │ /elevator/call                      │ 0      │ 6733.69   │ ❌      │
+│ POST   │ /psim/search                        │ 400    │ 172.49    │ ❌      │
+│ GET    │ /coordinator/missions/test-123      │ 404    │ 198.24    │ ❌      │
+│ GET    │ /invalid-endpoint                   │ 404    │ 157.43    │ ❌      │
+│ DELETE │ /health                             │ 404    │ 161.54    │ ❌      │
+└────────┴─────────────────────────────────────┴────────┴───────────┴─────────┘
+┌──────────────────────────── Performance Metrics ────────────────────────────┐
+│ 📈 Avg: 3377.80ms | ⚡ Min: 185.56ms | 🐌 Max: 13537.76ms                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+💾 Results exported to: api-test-results-20250807-131657.json
+<br/></div></td></tr></tbody></table></body></html>

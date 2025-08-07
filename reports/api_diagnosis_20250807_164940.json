@@ -1,0 +1,202 @@
+{
+  "timestamp": "2025-08-07T16:49:40.317436",
+  "endpoint_results": {
+    "/health": {
+      "endpoint": "/health",
+      "status_code": 200,
+      "response_time_ms": 1686.64,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:48:51 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "60",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81tijYVoAMEbGw="
+      },
+      "has_cors": true,
+      "content_length": 60,
+      "success": true,
+      "error": null
+    },
+    "/director": {
+      "endpoint": "/director",
+      "status_code": 200,
+      "response_time_ms": 10872.93,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:49:02 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "128",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81tui6RoAMEbvw="
+      },
+      "has_cors": true,
+      "content_length": 128,
+      "success": true,
+      "error": null
+    },
+    "/persona": {
+      "endpoint": "/persona",
+      "status_code": 202,
+      "response_time_ms": 1880.68,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:49:05 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "135",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81vgjHgoAMEboQ="
+      },
+      "has_cors": true,
+      "content_length": 135,
+      "success": true,
+      "error": null
+    },
+    "/persona/conversations?user_id=diag-user": {
+      "endpoint": "/persona/conversations?user_id=diag-user",
+      "status_code": 200,
+      "response_time_ms": 240.02,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:49:06 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "3882",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81v4j2HoAMEVLg="
+      },
+      "has_cors": true,
+      "content_length": 3882,
+      "success": true,
+      "error": null
+    },
+    "/elevator/call": {
+      "endpoint": "/elevator/call",
+      "status_code": 200,
+      "response_time_ms": 1561.42,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:49:08 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "340",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81v_hk3oAMEbWw="
+      },
+      "has_cors": true,
+      "content_length": 340,
+      "success": true,
+      "error": null
+    },
+    "/psim/search": {
+      "endpoint": "/psim/search",
+      "status_code": 200,
+      "response_time_ms": 500.42,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:49:09 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "223",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81wUjTTIAMEbmw="
+      },
+      "has_cors": true,
+      "content_length": 223,
+      "success": true,
+      "error": null
+    },
+    "/coordinator/status": {
+      "endpoint": "/coordinator/status",
+      "status_code": 200,
+      "response_time_ms": 179.1,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 19:49:09 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "115",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "*",
+        "Apigw-Requestid": "O81wegIboAMEbMQ="
+      },
+      "has_cors": true,
+      "content_length": 115,
+      "success": true,
+      "error": null
+    }
+  },
+  "log_analysis": {
+    "bos-agent-elevator-dev": {
+      "function_name": "bos-agent-elevator-dev",
+      "accessible": false,
+      "error": "\n'charmap' codec can't encode character '\\u2705' in position 69: character maps to <undefined>\n"
+    },
+    "bos-agent-persona-dev": {
+      "function_name": "bos-agent-persona-dev",
+      "total_events": 169,
+      "error_events": 2,
+      "recent_errors": [
+        {
+          "logStreamName": "2025/08/07/[$LATEST]5fd594dffe3f4827887476fa5e354e09",
+          "timestamp": 1754593664898,
+          "message": "Error retrieving conversation: Object of type Decimal is not JSON serializable\n",
+          "ingestionTime": 1754593666666,
+          "eventId": "39128746247846322664512019678542157030849774879594053641"
+        },
+        {
+          "logStreamName": "2025/08/07/[$LATEST]5fd594dffe3f4827887476fa5e354e09",
+          "timestamp": 1754593859277,
+          "message": "Error retrieving conversation: Object of type Decimal is not JSON serializable\n",
+          "ingestionTime": 1754593867139,
+          "eventId": "39128750582642873609696015549470680934620473930963550216"
+        }
+      ],
+      "avg_duration": 235.38400000000001,
+      "accessible": true
+    },
+    "bos-agent-director-dev": {
+      "function_name": "bos-agent-director-dev",
+      "accessible": false,
+      "error": "\n'charmap' codec can't encode character '\\u2705' in position 21: character maps to <undefined>\n"
+    },
+    "bos-agent-coordinator-dev": {
+      "function_name": "bos-agent-coordinator-dev",
+      "total_events": 330,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 425.01899999999995,
+      "accessible": true
+    },
+    "bos-agent-psim-dev": {
+      "function_name": "bos-agent-psim-dev",
+      "total_events": 49,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 223.34,
+      "accessible": true
+    },
+    "bos-health-check-dev": {
+      "function_name": "bos-health-check-dev",
+      "total_events": 0,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 0.0,
+      "accessible": true
+    }
+  },
+  "summary": {
+    "total_endpoints": 7,
+    "working_endpoints": 7,
+    "success_rate": 100.0,
+    "critical_issues": [
+      "bos-agent-persona-dev: 2 errors in logs"
+    ],
+    "warnings": [],
+    "priority_actions": [
+      "\ud83d\udea8 URGENT: Fix Persona Conversations 500 errors"
+    ]
+  }
+}

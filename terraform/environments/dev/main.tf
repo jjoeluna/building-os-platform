@@ -1,21 +1,21 @@
 # --- Data Sources ---
 # These packages our Python code into a .zip file that Lambda can use.
-data "archive_file" "health_check_zip" {
+data "archive_file" "agent_health_check_zip" {
   type        = "zip"
-  source_dir  = "../../../src/agents/health_check" # Path to our Python code
-  output_path = "${path.module}/.terraform/health_check.zip"
+  source_dir  = "../../../src/agents/agent_health_check" # Path to our Python code
+  output_path = "${path.module}/.terraform/agent_health_check.zip"
 }
 
-data "archive_file" "persona_agent_zip" {
+data "archive_file" "agent_persona_zip" {
   type        = "zip"
-  source_dir  = "../../../src/agents/persona_agent" # Path to our Python code
-  output_path = "${path.module}/.terraform/persona_agent.zip"
+  source_dir  = "../../../src/agents/agent_persona" # Path to our Python code
+  output_path = "${path.module}/.terraform/agent_persona.zip"
 }
 
-data "archive_file" "director_agent_zip" {
+data "archive_file" "agent_director_zip" {
   type        = "zip"
-  source_dir  = "../../../src/agents/director" # Path to our Python code
-  output_path = "${path.module}/.terraform/director.zip"
+  source_dir  = "../../../src/agents/agent_director" # Path to our Python code
+  output_path = "${path.module}/.terraform/agent_director.zip"
 }
 
 data "archive_file" "agent_elevator_zip" {
@@ -30,12 +30,10 @@ data "archive_file" "agent_psim_zip" {
   output_path = "${path.module}/.terraform/agent_psim.zip"
 }
 
-
-
-data "archive_file" "coordinator_agent_zip" {
+data "archive_file" "agent_coordinator_zip" {
   type        = "zip"
-  source_dir  = "../../../src/agents/coordinator" # Path to our Python code
-  output_path = "${path.module}/.terraform/coordinator.zip"
+  source_dir  = "../../../src/agents/agent_coordinator" # Path to our Python code
+  output_path = "${path.module}/.terraform/agent_coordinator.zip"
 }
 
 # --- IAM Policies ---
@@ -99,7 +97,8 @@ resource "aws_iam_policy" "sns_publish_policy" {
           module.intention_topic.topic_arn,
           module.mission_topic.topic_arn,
           module.mission_result_topic.topic_arn,
-          module.task_completion_topic.topic_arn
+          module.task_result_topic.topic_arn,
+          module.intention_result_topic.topic_arn
         ]
       }
     ]
@@ -135,10 +134,10 @@ resource "aws_iam_policy" "lambda_invoke_policy" {
         Action = "lambda:InvokeFunction",
         Effect = "Allow",
         Resource = [
-          aws_lambda_function.health_check.arn,
-          aws_lambda_function.persona_agent.arn,
-          aws_lambda_function.director_agent.arn,
-          aws_lambda_function.coordinator_agent.arn,
+          aws_lambda_function.agent_health_check.arn,
+          aws_lambda_function.agent_persona.arn,
+          aws_lambda_function.agent_director.arn,
+          aws_lambda_function.agent_coordinator.arn,
           aws_lambda_function.agent_elevator.arn,
           aws_lambda_function.agent_psim.arn
         ]
@@ -227,25 +226,25 @@ module "lambda_exec_role" {
 
 # --- Lambda Function Resources ---
 # This is the core resource that creates our Lambda function in AWS.
-resource "aws_lambda_function" "health_check" {
-  function_name = "bos-health-check-${var.environment}"
+resource "aws_lambda_function" "agent_health_check" {
+  function_name = "bos-agent-health-check-${var.environment}"
   role          = module.lambda_exec_role.role_arn
   handler       = "app.handler" # File is app.py, function is handler
   runtime       = "python3.11"
 
-  filename         = data.archive_file.health_check_zip.output_path
-  source_code_hash = data.archive_file.health_check_zip.output_base64sha256
+  filename         = data.archive_file.agent_health_check_zip.output_path
+  source_code_hash = data.archive_file.agent_health_check_zip.output_base64sha256
   layers           = [module.common_utils_layer.layer_arn]
 }
 
-resource "aws_lambda_function" "persona_agent" {
-  function_name = "bos-persona-agent-${var.environment}"
+resource "aws_lambda_function" "agent_persona" {
+  function_name = "bos-agent-persona-${var.environment}"
   role          = module.lambda_exec_role.role_arn
   handler       = "app.handler"
   runtime       = "python3.11"
 
-  filename         = data.archive_file.persona_agent_zip.output_path
-  source_code_hash = data.archive_file.persona_agent_zip.output_base64sha256
+  filename         = data.archive_file.agent_persona_zip.output_path
+  source_code_hash = data.archive_file.agent_persona_zip.output_base64sha256
   layers           = [module.common_utils_layer.layer_arn]
 
   environment {
@@ -257,44 +256,43 @@ resource "aws_lambda_function" "persona_agent" {
   }
 }
 
-resource "aws_lambda_function" "director_agent" {
-  function_name = "bos-director-agent-${var.environment}"
+resource "aws_lambda_function" "agent_director" {
+  function_name = "bos-agent-director-${var.environment}"
   role          = module.lambda_exec_role.role_arn
   handler       = "app.handler"
   runtime       = "python3.11"
   timeout       = 30 # Increased timeout for potential LLM latency
 
-  filename         = data.archive_file.director_agent_zip.output_path
-  source_code_hash = data.archive_file.director_agent_zip.output_base64sha256
+  filename         = data.archive_file.agent_director_zip.output_path
+  source_code_hash = data.archive_file.agent_director_zip.output_base64sha256
   layers           = [module.common_utils_layer.layer_arn]
 
   environment {
     variables = {
-      MISSION_TOPIC_ARN        = module.mission_topic.topic_arn
-      MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
+      MISSION_TOPIC_ARN          = module.mission_topic.topic_arn
+      INTENTION_RESULT_TOPIC_ARN = module.intention_result_topic.topic_arn
+      MISSION_STATE_TABLE_NAME   = module.mission_state_db.table_name
     }
   }
 }
 
-
-
-resource "aws_lambda_function" "coordinator_agent" {
-  function_name = "bos-coordinator-agent-${var.environment}"
+resource "aws_lambda_function" "agent_coordinator" {
+  function_name = "bos-agent-coordinator-${var.environment}"
   role          = module.lambda_exec_role.role_arn
   handler       = "app.handler"
   runtime       = "python3.11"
   timeout       = 30
   layers        = [module.common_utils_layer.layer_arn]
 
-  filename         = data.archive_file.coordinator_agent_zip.output_path
-  source_code_hash = data.archive_file.coordinator_agent_zip.output_base64sha256
+  filename         = data.archive_file.agent_coordinator_zip.output_path
+  source_code_hash = data.archive_file.agent_coordinator_zip.output_base64sha256
 
   environment {
     variables = {
-      MISSION_STATE_TABLE_NAME  = module.mission_state_db.table_name
-      TASK_COMPLETION_TOPIC_ARN = module.task_completion_topic.topic_arn
-      MISSION_RESULT_TOPIC_ARN  = module.mission_result_topic.topic_arn
-      ENVIRONMENT               = var.environment
+      MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
+      TASK_RESULT_TOPIC_ARN    = module.task_result_topic.topic_arn
+      MISSION_RESULT_TOPIC_ARN = module.mission_result_topic.topic_arn
+      ENVIRONMENT              = var.environment
     }
   }
 }
@@ -312,13 +310,13 @@ resource "aws_lambda_function" "agent_elevator" {
 
   environment {
     variables = {
-      ELEVATOR_API_BASE_URL     = "https://anna-minimal-api.neomot.com"
-      ELEVATOR_API_SECRET       = "t3hILevRdzfFyd05U2g+XT4lPZCmT6CB+ytaQljWWOk="
-      TASK_COMPLETION_TOPIC_ARN = module.task_completion_topic.topic_arn
-      MONITORING_TABLE_NAME     = module.elevator_monitoring_db.table_name
-      LAMBDA_FUNCTION_NAME      = "bos-agent-elevator-${var.environment}"
-      ACCOUNT_ID                = data.aws_caller_identity.current.account_id
-      REGION_NAME               = data.aws_region.current.name
+      ELEVATOR_API_BASE_URL = "https://anna-minimal-api.neomot.com"
+      ELEVATOR_API_SECRET   = "t3hILevRdzfFyd05U2g+XT4lPZCmT6CB+ytaQljWWOk="
+      TASK_RESULT_TOPIC_ARN = module.task_result_topic.topic_arn
+      MONITORING_TABLE_NAME = module.elevator_monitoring_db.table_name
+      LAMBDA_FUNCTION_NAME  = "bos-agent-elevator-${var.environment}"
+      ACCOUNT_ID            = data.aws_caller_identity.current.account_id
+      REGION_NAME           = data.aws_region.current.id
     }
   }
 }
@@ -343,10 +341,10 @@ resource "aws_lambda_function" "agent_psim" {
 
   environment {
     variables = {
-      PSIM_API_BASE_URL         = "http://psim.clevertown.io:9091"
-      PSIM_API_USERNAME         = "integration_blubrain"
-      PSIM_API_PASSWORD         = "Blubrain@4565"
-      TASK_COMPLETION_TOPIC_ARN = module.task_completion_topic.topic_arn
+      PSIM_API_BASE_URL     = "http://psim.clevertown.io:9091"
+      PSIM_API_USERNAME     = "integration_blubrain"
+      PSIM_API_PASSWORD     = "Blubrain@4565"
+      TASK_RESULT_TOPIC_ARN = module.task_result_topic.topic_arn
     }
   }
 }
@@ -376,46 +374,46 @@ resource "aws_apigatewayv2_api" "http_api" {
   }
 }
 
-resource "aws_apigatewayv2_integration" "health_check_integration" {
+resource "aws_apigatewayv2_integration" "agent_health_check_integration" {
   api_id           = aws_apigatewayv2_api.http_api.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.health_check.invoke_arn
+  integration_uri  = aws_lambda_function.agent_health_check.invoke_arn
 }
 
-resource "aws_apigatewayv2_route" "health_check_route" {
+resource "aws_apigatewayv2_route" "agent_health_check_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /health" # The path will be /health
-  target    = "integrations/${aws_apigatewayv2_integration.health_check_integration.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_health_check_integration.id}"
 }
 
-resource "aws_apigatewayv2_integration" "persona_agent_integration" {
+resource "aws_apigatewayv2_integration" "agent_persona_integration" {
   api_id           = aws_apigatewayv2_api.http_api.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.persona_agent.invoke_arn
+  integration_uri  = aws_lambda_function.agent_persona.invoke_arn
 }
 
-resource "aws_apigatewayv2_route" "persona_agent_route" {
+resource "aws_apigatewayv2_route" "agent_persona_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST /persona" # The path will be /persona
-  target    = "integrations/${aws_apigatewayv2_integration.persona_agent_integration.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_persona_integration.id}"
 }
 
-resource "aws_apigatewayv2_route" "persona_agent_get_route" {
+resource "aws_apigatewayv2_route" "agent_persona_get_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /persona" # The path will be /persona for conversation history
-  target    = "integrations/${aws_apigatewayv2_integration.persona_agent_integration.id}"
+  route_key = "GET /persona/conversations" # The path will be /persona/conversations
+  target    = "integrations/${aws_apigatewayv2_integration.agent_persona_integration.id}"
 }
 
-resource "aws_apigatewayv2_integration" "director_agent_integration" {
+resource "aws_apigatewayv2_integration" "agent_director_integration" {
   api_id           = aws_apigatewayv2_api.http_api.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.director_agent.invoke_arn
+  integration_uri  = aws_lambda_function.agent_director.invoke_arn
 }
 
-resource "aws_apigatewayv2_route" "director_agent_route" {
+resource "aws_apigatewayv2_route" "agent_director_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /director" # The path will be /director
-  target    = "integrations/${aws_apigatewayv2_integration.director_agent_integration.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_director_integration.id}"
 }
 
 # API Gateway Integration for Elevator Agent
@@ -431,12 +429,44 @@ resource "aws_apigatewayv2_route" "agent_elevator_route" {
   target    = "integrations/${aws_apigatewayv2_integration.agent_elevator_integration.id}"
 }
 
+# API Gateway Integration for PSIM Agent
+resource "aws_apigatewayv2_integration" "agent_psim_integration" {
+  api_id           = aws_apigatewayv2_api.http_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.agent_psim.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "agent_psim_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /psim/search"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_psim_integration.id}"
+}
+
+# API Gateway Integration for Coordinator Agent
+resource "aws_apigatewayv2_integration" "agent_coordinator_integration" {
+  api_id           = aws_apigatewayv2_api.http_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.agent_coordinator.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "agent_coordinator_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /coordinator/missions/{mission_id}"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_coordinator_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "agent_coordinator_status_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /coordinator/status"
+  target    = "integrations/${aws_apigatewayv2_integration.agent_coordinator_integration.id}"
+}
+
 # --- Lambda Permission ---
 # This allows the API Gateway to invoke our Lambda function.
 resource "aws_lambda_permission" "api_gateway_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.health_check.function_name
+  function_name = aws_lambda_function.agent_health_check.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
@@ -444,7 +474,7 @@ resource "aws_lambda_permission" "api_gateway_permission" {
 resource "aws_lambda_permission" "api_gateway_permission_persona" {
   statement_id  = "AllowAPIGatewayInvokePersona"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.persona_agent.function_name
+  function_name = aws_lambda_function.agent_persona.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
@@ -452,7 +482,7 @@ resource "aws_lambda_permission" "api_gateway_permission_persona" {
 resource "aws_lambda_permission" "api_gateway_permission_director" {
   statement_id  = "AllowAPIGatewayInvokeDirector"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.director_agent.function_name
+  function_name = aws_lambda_function.agent_director.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
@@ -465,40 +495,62 @@ resource "aws_lambda_permission" "api_gateway_permission_elevator" {
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "api_gateway_permission_psim" {
+  statement_id  = "AllowAPIGatewayInvokePSIM"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_psim.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_permission_coordinator" {
+  statement_id  = "AllowAPIGatewayInvokeCoordinator"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_coordinator.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
 # --- SNS Subscription for Director Agent ---
 # This subscribes the Director Agent Lambda to the intention topic.
-resource "aws_sns_topic_subscription" "director_agent_subscription" {
+resource "aws_sns_topic_subscription" "agent_director_subscription" {
   topic_arn = module.intention_topic.topic_arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.director_agent.arn
+  endpoint  = aws_lambda_function.agent_director.arn
 }
 
 # --- SNS Subscription for Mission Result Topic ---
-resource "aws_sns_topic_subscription" "director_agent_result_subscription" {
+resource "aws_sns_topic_subscription" "agent_director_result_subscription" {
   topic_arn = module.mission_result_topic.topic_arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.director_agent.arn
+  endpoint  = aws_lambda_function.agent_director.arn
 }
 
 # --- SNS Subscription for Persona Agent Mission Results ---
-resource "aws_sns_topic_subscription" "persona_agent_result_subscription" {
+resource "aws_sns_topic_subscription" "agent_persona_result_subscription" {
   topic_arn = module.mission_result_topic.topic_arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.persona_agent.arn
+  endpoint  = aws_lambda_function.agent_persona.arn
+}
+
+resource "aws_sns_topic_subscription" "agent_persona_intention_result_subscription" {
+  topic_arn = module.intention_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_persona.arn
 }
 
 # --- SNS Subscription for Coordinator Agent ---
-resource "aws_sns_topic_subscription" "coordinator_agent_subscription" {
+resource "aws_sns_topic_subscription" "agent_coordinator_subscription" {
   topic_arn = module.mission_topic.topic_arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.coordinator_agent.arn
+  endpoint  = aws_lambda_function.agent_coordinator.arn
 }
 
 # --- SNS Subscription for Task Completion ---
-resource "aws_sns_topic_subscription" "coordinator_task_completion_subscription" {
-  topic_arn = module.task_completion_topic.topic_arn
+resource "aws_sns_topic_subscription" "coordinator_task_result_subscription" {
+  topic_arn = module.task_result_topic.topic_arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.coordinator_agent.arn
+  endpoint  = aws_lambda_function.agent_coordinator.arn
 }
 
 # --- Lambda Permission for SNS ---
@@ -506,7 +558,7 @@ resource "aws_sns_topic_subscription" "coordinator_task_completion_subscription"
 resource "aws_lambda_permission" "sns_permission_director" {
   statement_id  = "AllowSNSInvokeDirector"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.director_agent.function_name
+  function_name = aws_lambda_function.agent_director.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = module.intention_topic.topic_arn
 }
@@ -514,7 +566,7 @@ resource "aws_lambda_permission" "sns_permission_director" {
 resource "aws_lambda_permission" "sns_permission_director_result" {
   statement_id  = "AllowSNSInvokeDirectorResult"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.director_agent.function_name
+  function_name = aws_lambda_function.agent_director.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = module.mission_result_topic.topic_arn
 }
@@ -522,25 +574,33 @@ resource "aws_lambda_permission" "sns_permission_director_result" {
 resource "aws_lambda_permission" "sns_permission_persona_result" {
   statement_id  = "AllowSNSInvokePersonaResult"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.persona_agent.function_name
+  function_name = aws_lambda_function.agent_persona.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = module.mission_result_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "sns_permission_persona_intention_result" {
+  statement_id  = "AllowSNSInvokePersonaIntentionResult"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_persona.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.intention_result_topic.topic_arn
 }
 
 resource "aws_lambda_permission" "sns_permission_coordinator" {
   statement_id  = "AllowSNSInvokeCoordinator"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.coordinator_agent.function_name
+  function_name = aws_lambda_function.agent_coordinator.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = module.mission_topic.topic_arn
 }
 
-resource "aws_lambda_permission" "sns_permission_coordinator_completion" {
-  statement_id  = "AllowSNSInvokeCoordinatorCompletion"
+resource "aws_lambda_permission" "sns_permission_coordinator_task_result" {
+  statement_id  = "AllowSNSInvokeCoordinatorTaskResult"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.coordinator_agent.function_name
+  function_name = aws_lambda_function.agent_coordinator.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = module.task_completion_topic.topic_arn
+  source_arn    = module.task_result_topic.topic_arn
 }
 
 
@@ -587,11 +647,25 @@ module "mission_result_topic" {
   }
 }
 
-# --- SNS Topic for Task Completion ---
-module "task_completion_topic" {
+# --- SNS Topic for Task Results ---
+module "task_result_topic" {
   source = "../../modules/sns_topic"
 
-  name = "bos-task-completion-topic-${var.environment}"
+  name = "bos-task-result-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+  }
+}
+
+# --- SNS Topic for Intention Results ---
+module "intention_result_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-intention-result-topic-${var.environment}"
 
   tags = {
     Project     = "BuildingOS"
@@ -630,7 +704,7 @@ resource "aws_s3_bucket_website_configuration" "frontend_bucket_website" {
   bucket = aws_s3_bucket.frontend_bucket.id
 
   index_document {
-    suffix = "chat-working.html"
+    suffix = "index.html"
   }
 
   error_document {
@@ -665,15 +739,7 @@ resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
   depends_on = [aws_s3_bucket_public_access_block.frontend_bucket_pab]
 }
 
-# Upload frontend files to S3
-resource "aws_s3_object" "index" {
-  bucket       = aws_s3_bucket.frontend_bucket.id
-  key          = "index.html"
-  source       = "../../../frontend/index.html"
-  etag         = filemd5("../../../frontend/index.html")
-  content_type = "text/html"
-}
-
+# Upload chat files to S3
 resource "aws_s3_object" "chat_with_notifications" {
   bucket       = aws_s3_bucket.frontend_bucket.id
   key          = "chat-with-notifications.html"
@@ -690,6 +756,14 @@ resource "aws_s3_object" "error" {
   content_type = "text/html"
 }
 
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.frontend_bucket.id
+  key          = "index.html"
+  source       = "../../../frontend/index.html"
+  etag         = filemd5("../../../frontend/index.html")
+  content_type = "text/html"
+}
+
 # --- Outputs ---
 # This will print the public URL of our API after it's deployed.
 output "api_endpoint" {
@@ -699,7 +773,7 @@ output "api_endpoint" {
 
 output "website_url" {
   description = "The public URL for the static website."
-  value       = "http://${aws_s3_bucket.frontend_bucket.bucket}.s3-website-${data.aws_region.current.name}.amazonaws.com"
+  value       = "http://${aws_s3_bucket.frontend_bucket.bucket}.s3-website-${data.aws_region.current.id}.amazonaws.com"
 }
 
 output "bucket_name" {

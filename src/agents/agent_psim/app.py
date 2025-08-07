@@ -12,7 +12,7 @@ sns = boto3.client("sns")
 PSIM_API_BASE_URL = os.environ["PSIM_API_BASE_URL"]
 PSIM_API_USERNAME = os.environ["PSIM_API_USERNAME"]
 PSIM_API_PASSWORD = os.environ["PSIM_API_PASSWORD"]
-TASK_COMPLETION_TOPIC_ARN = os.environ["TASK_COMPLETION_TOPIC_ARN"]
+TASK_RESULT_TOPIC_ARN = os.environ["TASK_RESULT_TOPIC_ARN"]
 
 # Session for maintaining authentication
 session = requests.Session()
@@ -22,16 +22,38 @@ def handler(event, context):
     """
     PSIM Agent - Handles PSIM-related tasks
 
-    Receives task from Coordinator Agent and executes PSIM operations
+    Supports two types of events:
+    1. SNS events (tasks from Coordinator Agent)
+    2. API Gateway POST requests (direct API calls for debugging)
     """
     try:
         print(f"Agent PSIM received event: {json.dumps(event)}")
 
+        # Check if this is an SNS event (task from Coordinator)
+        if "Records" in event:
+            for record in event["Records"]:
+                if record.get("EventSource") == "aws:sns":
+                    message_body = json.loads(record["Sns"]["Message"])
+                    return handle_sns_task(message_body)
+
+        # Otherwise, handle as API Gateway request (direct API call)
+        return handle_api_request(event, context)
+
+    except Exception as e:
+        print(f"Error in PSIM agent: {str(e)}")
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+
+def handle_sns_task(task_data):
+    """
+    Handle task from Coordinator Agent via SNS
+    """
+    try:
         # Extract task information
-        mission_id = event["mission_id"]
-        task_id = event["task_id"]
-        action = event["action"]
-        parameters = event["parameters"]
+        mission_id = task_data["mission_id"]
+        task_id = task_data["task_id"]
+        action = task_data["action"]
+        parameters = task_data["parameters"]
 
         print(f"Processing task {task_id} for mission {mission_id}: {action}")
 
@@ -49,15 +71,93 @@ def handler(event, context):
         }
 
     except Exception as e:
-        print(f"Error in PSIM agent: {str(e)}")
+        print(f"Error processing SNS task: {str(e)}")
 
         # Try to publish failure if we have the required info
-        if "mission_id" in event and "task_id" in event:
+        if "mission_id" in task_data and "task_id" in task_data:
             publish_task_completion(
-                event["mission_id"], event["task_id"], "failed", {"error": str(e)}
+                task_data["mission_id"],
+                task_data["task_id"],
+                "failed",
+                {"error": str(e)},
             )
 
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+
+def handle_api_request(event, context):
+    """
+    Handle direct API Gateway request for debugging/testing
+    """
+    try:
+        # Add CORS headers
+        headers = {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        }
+
+        # Handle OPTIONS requests for CORS
+        if event.get("httpMethod") == "OPTIONS":
+            return {
+                "statusCode": 200,
+                "headers": headers,
+                "body": json.dumps({"message": "CORS preflight response"}),
+            }
+
+        # Parse request body
+        if "body" not in event or not event["body"]:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"error": "Request body is required"}),
+            }
+
+        body = json.loads(event["body"])
+
+        # Validate required fields
+        if "action" not in body:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"error": "Missing required field: action"}),
+            }
+
+        action = body["action"]
+        parameters = body.get("parameters", {})
+
+        print(f"Processing API request - Action: {action}, Parameters: {parameters}")
+
+        # Execute the PSIM action
+        result = execute_psim_action(action, parameters)
+
+        return {
+            "statusCode": 200,
+            "headers": headers,
+            "body": json.dumps(
+                {
+                    "message": f"PSIM action '{action}' completed successfully",
+                    "action": action,
+                    "result": result,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            ),
+        }
+
+    except json.JSONDecodeError:
+        return {
+            "statusCode": 400,
+            "headers": headers,
+            "body": json.dumps({"error": "Invalid JSON in request body"}),
+        }
+    except Exception as e:
+        print(f"Error in API request: {str(e)}")
+        return {
+            "statusCode": 500,
+            "headers": headers,
+            "body": json.dumps({"error": str(e)}),
+        }
 
 
 def execute_psim_action(action: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
@@ -235,7 +335,7 @@ def publish_task_completion(
         }
 
         sns.publish(
-            TopicArn=TASK_COMPLETION_TOPIC_ARN,
+            TopicArn=TASK_RESULT_TOPIC_ARN,
             Message=json.dumps(completion_message),
             Subject=f"Task {task_id} Completion",
         )

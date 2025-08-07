@@ -1,0 +1,188 @@
+{
+  "timestamp": "2025-08-07T15:54:56.799604",
+  "endpoint_results": {
+    "/health": {
+      "endpoint": "/health",
+      "status_code": 200,
+      "response_time_ms": 1746.44,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:17 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "60",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8tt7hOWIAMEMHA="
+      },
+      "has_cors": false,
+      "content_length": 60,
+      "success": true,
+      "error": null
+    },
+    "/director": {
+      "endpoint": "/director",
+      "status_code": 200,
+      "response_time_ms": 5962.37,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:23 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "128",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8tuHgeoIAMEYcg="
+      },
+      "has_cors": false,
+      "content_length": 128,
+      "success": true,
+      "error": null
+    },
+    "/persona": {
+      "endpoint": "/persona",
+      "status_code": 202,
+      "response_time_ms": 1846.46,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:26 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "135",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8tvIgrbIAMEYQw="
+      },
+      "has_cors": false,
+      "content_length": 135,
+      "success": true,
+      "error": null
+    },
+    "/persona/conversations": {
+      "endpoint": "/persona/conversations",
+      "status_code": 400,
+      "response_time_ms": 186.68,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:26 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "32",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8tvfhaTIAMEY8w="
+      },
+      "has_cors": false,
+      "content_length": 32,
+      "success": false,
+      "error": "HTTP 400"
+    },
+    "/elevator/call": {
+      "endpoint": "/elevator/call",
+      "status_code": 200,
+      "response_time_ms": 1637.5,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:28 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "340",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8tvmijLIAMEMZg="
+      },
+      "has_cors": false,
+      "content_length": 340,
+      "success": true,
+      "error": null
+    },
+    "/psim/search": {
+      "endpoint": "/psim/search",
+      "status_code": 200,
+      "response_time_ms": 1558.55,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:30 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "223",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8tv7jdToAMEMKg="
+      },
+      "has_cors": false,
+      "content_length": 223,
+      "success": true,
+      "error": null
+    },
+    "/coordinator/missions/diag-test": {
+      "endpoint": "/coordinator/missions/diag-test",
+      "status_code": 404,
+      "response_time_ms": 201.09,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 18:54:31 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "40",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8twQiGMIAMEYRg="
+      },
+      "has_cors": false,
+      "content_length": 40,
+      "success": false,
+      "error": "HTTP 404"
+    }
+  },
+  "log_analysis": {
+    "bos-agent-elevator-dev": {
+      "function_name": "bos-agent-elevator-dev",
+      "total_events": 26,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 590.93,
+      "accessible": true
+    },
+    "bos-agent-persona-dev": {
+      "function_name": "bos-agent-persona-dev",
+      "total_events": 17,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 214.68000000000004,
+      "accessible": true
+    },
+    "bos-agent-director-dev": {
+      "function_name": "bos-agent-director-dev",
+      "total_events": 315,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 2330.71,
+      "accessible": true
+    },
+    "bos-agent-coordinator-dev": {
+      "function_name": "bos-agent-coordinator-dev",
+      "total_events": 34,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 461.54799999999994,
+      "accessible": true
+    },
+    "bos-agent-psim-dev": {
+      "function_name": "bos-agent-psim-dev",
+      "total_events": 7,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 293.9,
+      "accessible": true
+    },
+    "bos-health-check-dev": {
+      "function_name": "bos-health-check-dev",
+      "total_events": 0,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 0.0,
+      "accessible": true
+    }
+  },
+  "summary": {
+    "total_endpoints": 7,
+    "working_endpoints": 5,
+    "success_rate": 71.4,
+    "critical_issues": [],
+    "warnings": [
+      "/health: Missing CORS headers",
+      "/director: Missing CORS headers",
+      "/persona: Missing CORS headers",
+      "/persona/conversations: HTTP 400",
+      "/persona/conversations: Missing CORS headers",
+      "/elevator/call: Missing CORS headers",
+      "/psim/search: Missing CORS headers",
+      "/coordinator/missions/diag-test: HTTP 404",
+      "/coordinator/missions/diag-test: Missing CORS headers"
+    ],
+    "priority_actions": [
+      "\u26a0\ufe0f  Add CORS headers to all endpoints",
+      "\u26a0\ufe0f  Optimize Director performance"
+    ]
+  }
+}

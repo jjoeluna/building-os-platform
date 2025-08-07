@@ -11,6 +11,7 @@ dynamodb = boto3.resource("dynamodb")
 
 # Get environment variables set by Terraform
 MISSION_TOPIC_ARN = os.environ.get("MISSION_TOPIC_ARN")
+INTENTION_RESULT_TOPIC_ARN = os.environ.get("INTENTION_RESULT_TOPIC_ARN")
 MISSION_STATE_TABLE_NAME = os.environ.get("MISSION_STATE_TABLE_NAME")
 BEDROCK_MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
 
@@ -154,7 +155,7 @@ def handle_api_gateway_request(event, context):
     """
     Handle new user request from API Gateway
     """
-    query_params = event.get("queryStringParameters", {})
+    query_params = event.get("queryStringParameters") or {}
     user_message = query_params.get("user_request", "No message provided.")
     check_mission = query_params.get("check_mission")
     user_id = query_params.get("user_id", f"api-user-{context.aws_request_id}")
@@ -248,24 +249,102 @@ def handle_new_intention(intention_manifest):
 
 def handle_mission_result(result_data):
     """
-    Handle mission result from coordinator
+    Handle mission result from coordinator and synthesize final response
     """
     mission_id = result_data["mission_id"]
     user_id = result_data["user_id"]
     status = result_data["status"]
+    tasks = result_data.get("tasks", [])
 
     print(f"Mission {mission_id} completed with status: {status}")
 
-    # Here we could:
-    # 1. Send notification to user
-    # 2. Update user interface
-    # 3. Log to analytics
-    # 4. Trigger follow-up actions
+    # Synthesize a user-friendly response using Bedrock
+    response_text = synthesize_response(result_data)
 
-    # For now, just log the completion
-    print(f"Mission result for user {user_id}: {json.dumps(result_data, indent=2)}")
+    # Create intention result message
+    intention_result = {
+        "user_id": user_id,
+        "mission_id": mission_id,
+        "status": status,
+        "response": response_text,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "agent": "agent_director",
+    }
 
-    return {"status": "SUCCESS", "message": "Mission result processed"}
+    # Publish to intention_result_topic for persona
+    try:
+        sns.publish(
+            TopicArn=INTENTION_RESULT_TOPIC_ARN,
+            Message=json.dumps(intention_result),
+            Subject=f"Intention Result for Mission {mission_id}",
+        )
+        print(f"Published intention result for mission {mission_id} to persona")
+    except Exception as e:
+        print(f"Error publishing intention result: {str(e)}")
+
+    return {
+        "status": "SUCCESS",
+        "message": "Mission result processed and response sent",
+    }
+
+
+def synthesize_response(result_data):
+    """
+    Use Bedrock to synthesize a user-friendly response from mission results
+    """
+    mission_id = result_data["mission_id"]
+    status = result_data["status"]
+    tasks = result_data.get("tasks", [])
+
+    # Build context for LLM
+    tasks_summary = []
+    for task in tasks:
+        task_info = {
+            "action": task.get("action", "unknown"),
+            "status": task.get("status", "unknown"),
+            "result": task.get("result", {}),
+        }
+        tasks_summary.append(task_info)
+
+    prompt = f"""
+    Human: You are the Director Agent in a building automation system. You need to synthesize a user-friendly response based on mission results.
+
+    Mission ID: {mission_id}
+    Overall Status: {status}
+    
+    Task Results:
+    {json.dumps(tasks_summary, indent=2)}
+
+    Create a friendly, informative response to the user explaining what was accomplished. Be specific about results but keep it conversational and helpful. If something failed, explain what happened and suggest next steps.
+
+    Response should be 1-3 sentences maximum.
+
+    Assistant: """
+
+    try:
+        response = bedrock.invoke_model(
+            modelId=BEDROCK_MODEL_ID,
+            contentType="application/json",
+            accept="application/json",
+            body=json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 200,
+                    "messages": [{"role": "user", "content": prompt}],
+                }
+            ),
+        )
+
+        response_body = json.loads(response["body"].read())
+        return response_body["content"][0]["text"].strip()
+
+    except Exception as e:
+        print(f"Error synthesizing response with Bedrock: {str(e)}")
+        # Fallback to simple response
+        if status == "completed":
+            return f"Your request has been completed successfully. Mission {mission_id} finished with all tasks done."
+        else:
+            return f"Your request encountered some issues. Mission {mission_id} completed with status: {status}."
 
 
 def create_and_publish_mission(user_message: str, user_id: str) -> str:

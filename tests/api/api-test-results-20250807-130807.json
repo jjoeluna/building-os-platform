@@ -1,0 +1,1082 @@
+[
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582781.8358076,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 2536.7,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582784.3802378,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 196.97,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director",
+    "timestamp": 1754582784.5851696,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 4472.8,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "97eee6e8-8565-42ac-b07f-c01d23f00b33",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director?user_request=Test mission from Python API tests",
+    "timestamp": 1754582789.0630343,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 6550.35,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "de5a59a5-5331-4d00-96b6-094c3576ec41",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director?user_id=api-test-user",
+    "timestamp": 1754582795.6203816,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 4704.11,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "c095369d-6351-4e48-9d14-17f47d210cca",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582800.3295836,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user",
+      "message": "Test message from Python API tests"
+    },
+    "status_code": 202,
+    "response_time_ms": 468.62,
+    "response_size": 135,
+    "response_data": {
+      "message": "Request received. The Director is analyzing the intention.",
+      "session_id": "session-d117b483-d58e-4880-ad65-cb2f3000327b"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582801.0131807,
+    "headers": {},
+    "payload": {
+      "message": "Test message"
+    },
+    "status_code": 400,
+    "response_time_ms": 198.11,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582801.2160532,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user"
+    },
+    "status_code": 400,
+    "response_time_ms": 197.93,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona/conversations?user_id=api-test-user",
+    "timestamp": 1754582801.4205554,
+    "headers": {},
+    "payload": null,
+    "status_code": 0,
+    "response_time_ms": 6945.8,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /persona/conversations?user_id=api-test-user (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754582808.495694,
+    "headers": {},
+    "payload": {
+      "mission_id": "test-mission-123",
+      "action": "call_elevator",
+      "parameters": {
+        "floor": 3,
+        "direction": "up"
+      }
+    },
+    "status_code": 0,
+    "response_time_ms": 7853.34,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754582816.480344,
+    "headers": {},
+    "payload": {
+      "action": "call_elevator",
+      "parameters": {
+        "floor": 3
+      }
+    },
+    "status_code": 0,
+    "response_time_ms": 6767.69,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/psim/search",
+    "timestamp": 1754582823.3658588,
+    "headers": {},
+    "payload": {
+      "action": "search_person",
+      "query": "test-user",
+      "parameters": {
+        "department": "IT",
+        "active_only": true
+      }
+    },
+    "status_code": 200,
+    "response_time_ms": 480.41,
+    "response_size": 223,
+    "response_data": {
+      "message": "PSIM action 'search_person' completed successfully",
+      "action": "search_person",
+      "result": {
+        "status": "error",
+        "message": "Failed to authenticate with PSIM API"
+      },
+      "timestamp": "2025-08-07T16:07:01.312223+00:00"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/psim/search",
+    "timestamp": 1754582823.8520594,
+    "headers": {},
+    "payload": {
+      "action": "search_person",
+      "query": "python-test-user",
+      "parameters": {
+        "department": "IT",
+        "active_only": true
+      }
+    },
+    "status_code": 200,
+    "response_time_ms": 325.71,
+    "response_size": 223,
+    "response_data": {
+      "message": "PSIM action 'search_person' completed successfully",
+      "action": "search_person",
+      "result": {
+        "status": "error",
+        "message": "Failed to authenticate with PSIM API"
+      },
+      "timestamp": "2025-08-07T16:07:01.635455+00:00"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/test-mission-123",
+    "timestamp": 1754582824.1830225,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 205.56,
+    "response_size": 463,
+    "response_data": {
+      "mission_id": "test-mission-123",
+      "user_id": "test-user",
+      "status": "in_progress",
+      "created_at": "2025-08-07T14:30:00Z",
+      "updated_at": "2025-08-07T14:30:00Z",
+      "statistics": {
+        "total_tasks": 1,
+        "completed_tasks": 0,
+        "failed_tasks": 0,
+        "in_progress_tasks": 0,
+        "pending_tasks": 1
+      },
+      "tasks": [
+        {
+          "action": "test_action",
+          "task_id": "task-1",
+          "agent": "agent_psim",
+          "parameters": {
+            "query": "test"
+          },
+          "status": "pending"
+        }
+      ],
+      "timestamp": "2025-08-07T16:07:01.853625+00:00"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/python-test-1754582824",
+    "timestamp": 1754582824.3970826,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 215.81,
+    "response_size": 53,
+    "response_data": {
+      "error": "Mission python-test-1754582824 not found"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582824.6309083,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 199.67,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director",
+    "timestamp": 1754582824.8472128,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 3252.68,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "f3ee3156-8982-44fd-a9db-dea643e93202",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582828.1166584,
+    "headers": {},
+    "payload": {
+      "test": "data"
+    },
+    "status_code": 400,
+    "response_time_ms": 206.84,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754582828.3397243,
+    "headers": {},
+    "payload": {
+      "test": "data"
+    },
+    "status_code": 0,
+    "response_time_ms": 6840.98,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/psim/search",
+    "timestamp": 1754582835.3248317,
+    "headers": {},
+    "payload": {
+      "test": "data"
+    },
+    "status_code": 400,
+    "response_time_ms": 326.45,
+    "response_size": 43,
+    "response_data": {
+      "error": "Missing required field: action"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/test-123",
+    "timestamp": 1754582835.6713068,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 203.58,
+    "response_size": 39,
+    "response_data": {
+      "error": "Mission test-123 not found"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/invalid-endpoint",
+    "timestamp": 1754582835.891567,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 166.04,
+    "response_size": 23,
+    "response_data": {
+      "message": "Not Found"
+    },
+    "success": false
+  },
+  {
+    "method": "DELETE",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582836.065768,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 174.76,
+    "response_size": 23,
+    "response_data": {
+      "message": "Not Found"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582843.0494926,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 188.4,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director",
+    "timestamp": 1754582843.2399228,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 15669.36,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "cb905427-0769-49b0-8967-9fb27e4b8e06",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582858.9264674,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 237.43,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582858.925188,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 1713.34,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582858.9296703,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 1787.76,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582858.9280827,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 1796.69,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582858.9325478,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 1807.62,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582860.7478547,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 179.07,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582861.429448,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 182.53,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582862.1149065,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 184.97,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582862.802298,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 176.89,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582863.4818547,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 173.49,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582864.1584592,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 178.16,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582864.8451178,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 175.38,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582865.5245848,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 176.05,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582866.2032888,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 190.57,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582866.8955276,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 333.85,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582867.73246,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 176.79,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582868.4112458,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 183.11,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582869.0962367,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 184.7,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582869.7834623,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 209.02,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582870.4947379,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 192.6,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582871.1899989,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 184.58,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582871.8799546,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 1718.37,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582874.1004934,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 201.94,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582874.8047225,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 189.56,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582875.4965005,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 176.57,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582875.8413534,
+    "headers": {},
+    "payload": {
+      "user_id": "stress-test-user",
+      "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "status_code": 202,
+    "response_time_ms": 979.62,
+    "response_size": 135,
+    "response_data": {
+      "message": "Request received. The Director is analyzing the intention.",
+      "session_id": "session-c9f69e7a-32e1-4275-861f-cad4a95d0ec0"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582876.8391683,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 172.6,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582877.0134072,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 175.33,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582877.190183,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 220.04,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582877.411661,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 186.43,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582877.599507,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 185.31,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582877.7862418,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 186.49,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582877.97412,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 182.81,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582878.1583006,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 184.28,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582878.344186,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 182.78,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754582878.5283864,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 178.05,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582878.7115433,
+    "headers": {},
+    "payload": {
+      "user_id": "test-user",
+      "message": "Hello! 🚀 Testing with émojis and açcents"
+    },
+    "status_code": 202,
+    "response_time_ms": 632.29,
+    "response_size": 135,
+    "response_data": {
+      "message": "Request received. The Director is analyzing the intention.",
+      "session_id": "session-7602c0e0-82a2-4e61-8e97-8f69db8329af"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582879.3454576,
+    "headers": {},
+    "payload": {
+      "user_id": "test-中文-user",
+      "message": "Testing with 中文 characters"
+    },
+    "status_code": 202,
+    "response_time_ms": 217.17,
+    "response_size": 135,
+    "response_data": {
+      "message": "Request received. The Director is analyzing the intention.",
+      "session_id": "session-e9d69b0a-5acd-4a4f-851d-f0f623ad3022"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582879.5640438,
+    "headers": {},
+    "payload": {
+      "user_id": "test'quote",
+      "message": "Testing with 'quotes' and \"double quotes\""
+    },
+    "status_code": 202,
+    "response_time_ms": 242.75,
+    "response_size": 135,
+    "response_data": {
+      "message": "Request received. The Director is analyzing the intention.",
+      "session_id": "session-f5371294-9a7f-4898-a355-706173442e71"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582879.8106925,
+    "headers": {},
+    "payload": {},
+    "status_code": 400,
+    "response_time_ms": 179.85,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754582879.9921792,
+    "headers": {},
+    "payload": {},
+    "status_code": 0,
+    "response_time_ms": 6748.16,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754582886.8523269,
+    "headers": {},
+    "payload": {
+      "user_id": null,
+      "message": null
+    },
+    "status_code": 400,
+    "response_time_ms": 181.15,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "timestamp": 1754582887.038448,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 188.92,
+    "response_size": 1031,
+    "response_data": {
+      "error": "Mission xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx not found"
+    },
+    "success": false
+  }
+]

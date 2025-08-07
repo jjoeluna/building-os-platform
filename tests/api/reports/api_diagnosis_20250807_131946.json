@@ -1,0 +1,205 @@
+{
+  "timestamp": "2025-08-07T13:19:46.614797",
+  "endpoint_results": {
+    "/health": {
+      "endpoint": "/health",
+      "status_code": 200,
+      "response_time_ms": 1259.93,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:18:53 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "60",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W9HgzEIAMEYtA="
+      },
+      "has_cors": false,
+      "content_length": 60,
+      "success": true,
+      "error": null
+    },
+    "/director": {
+      "endpoint": "/director",
+      "status_code": 200,
+      "response_time_ms": 5203.37,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:18:58 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "128",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W9OiDZIAMEYgA="
+      },
+      "has_cors": false,
+      "content_length": 128,
+      "success": true,
+      "error": null
+    },
+    "/persona": {
+      "endpoint": "/persona",
+      "status_code": 202,
+      "response_time_ms": 631.95,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:18:59 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "135",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W-Hj75oAMEMmw="
+      },
+      "has_cors": false,
+      "content_length": 135,
+      "success": true,
+      "error": null
+    },
+    "/persona/conversations": {
+      "endpoint": "/persona/conversations",
+      "status_code": 400,
+      "response_time_ms": 174.75,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:19:00 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "32",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W-Sin1IAMEMhg="
+      },
+      "has_cors": false,
+      "content_length": 32,
+      "success": false,
+      "error": "HTTP 400"
+    },
+    "/elevator/call": {
+      "endpoint": "/elevator/call",
+      "status_code": 500,
+      "response_time_ms": 197.67,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:19:01 GMT",
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Length": "25",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W-Zjk4IAMEYrw="
+      },
+      "has_cors": false,
+      "content_length": 25,
+      "success": false,
+      "error": "HTTP 500"
+    },
+    "/psim/search": {
+      "endpoint": "/psim/search",
+      "status_code": 200,
+      "response_time_ms": 458.43,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:19:02 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "223",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W-gjjuIAMEMkg="
+      },
+      "has_cors": false,
+      "content_length": 223,
+      "success": true,
+      "error": null
+    },
+    "/coordinator/missions/diag-test": {
+      "endpoint": "/coordinator/missions/diag-test",
+      "status_code": 404,
+      "response_time_ms": 199.37,
+      "headers": {
+        "Date": "Thu, 07 Aug 2025 16:19:03 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "40",
+        "Connection": "keep-alive",
+        "Apigw-Requestid": "O8W-sit0IAMEYbQ="
+      },
+      "has_cors": false,
+      "content_length": 40,
+      "success": false,
+      "error": "HTTP 404"
+    }
+  },
+  "log_analysis": {
+    "bos-agent-elevator-dev": {
+      "function_name": "bos-agent-elevator-dev",
+      "accessible": false,
+      "error": "\n'charmap' codec can't encode character '\\u2705' in position 69: character maps to <undefined>\n"
+    },
+    "bos-agent-persona-dev": {
+      "function_name": "bos-agent-persona-dev",
+      "accessible": false,
+      "error": "\n'charmap' codec can't encode characters in position 85-86: character maps to <undefined>\n"
+    },
+    "bos-agent-director-dev": {
+      "function_name": "bos-agent-director-dev",
+      "accessible": false,
+      "error": "\n'charmap' codec can't encode character '\\u2705' in position 21: character maps to <undefined>\n"
+    },
+    "bos-agent-coordinator-dev": {
+      "function_name": "bos-agent-coordinator-dev",
+      "total_events": 920,
+      "error_events": 3,
+      "recent_errors": [
+        {
+          "logStreamName": "2025/08/07/[$LATEST]6ff11f8e5a5145e9996c3322a320132b",
+          "timestamp": 1754581135528,
+          "message": "Error in coordinator agent: Expecting value: line 1 column 1 (char 0)\n",
+          "ingestionTime": 1754581144548,
+          "eventId": "39128466833558454550878333676847548671763785483056185346"
+        },
+        {
+          "logStreamName": "2025/08/07/[$LATEST]6ff11f8e5a5145e9996c3322a320132b",
+          "timestamp": 1754581286536,
+          "message": "Error in coordinator agent: Expecting value: line 1 column 1 (char 0)\n",
+          "ingestionTime": 1754581288297,
+          "eventId": "39128470201149385490590673207655638907864680077033668626"
+        },
+        {
+          "logStreamName": "2025/08/07/[$LATEST]a324d981dbb0440282cf796b381024f8",
+          "timestamp": 1754582894584,
+          "message": "Error in coordinator agent: Expecting value: line 1 column 1 (char 0)\n",
+          "ingestionTime": 1754582901244,
+          "eventId": "39128506061818100497362156657817425788589364437997977614"
+        }
+      ],
+      "avg_duration": 322.75,
+      "accessible": true
+    },
+    "bos-agent-psim-dev": {
+      "function_name": "bos-agent-psim-dev",
+      "total_events": 122,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 141.21499999999997,
+      "accessible": true
+    },
+    "bos-health-check-dev": {
+      "function_name": "bos-health-check-dev",
+      "total_events": 221,
+      "error_events": 0,
+      "recent_errors": [],
+      "avg_duration": 5.409000000000001,
+      "accessible": true
+    }
+  },
+  "summary": {
+    "total_endpoints": 7,
+    "working_endpoints": 4,
+    "success_rate": 57.1,
+    "critical_issues": [
+      "/elevator/call: HTTP 500",
+      "bos-agent-coordinator-dev: 3 errors in logs"
+    ],
+    "warnings": [
+      "/health: Missing CORS headers",
+      "/director: Missing CORS headers",
+      "/persona: Missing CORS headers",
+      "/persona/conversations: HTTP 400",
+      "/persona/conversations: Missing CORS headers",
+      "/elevator/call: Missing CORS headers",
+      "/psim/search: Missing CORS headers",
+      "/coordinator/missions/diag-test: HTTP 404",
+      "/coordinator/missions/diag-test: Missing CORS headers"
+    ],
+    "priority_actions": [
+      "\ud83d\udea8 URGENT: Fix Elevator API 500 errors",
+      "\u26a0\ufe0f  Add CORS headers to all endpoints",
+      "\u26a0\ufe0f  Optimize Director performance"
+    ]
+  }
+}

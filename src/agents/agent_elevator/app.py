@@ -15,7 +15,7 @@ dynamodb = boto3.resource("dynamodb")
 # Environment variables
 ELEVATOR_API_BASE_URL = os.environ["ELEVATOR_API_BASE_URL"]
 ELEVATOR_API_SECRET = os.environ["ELEVATOR_API_SECRET"]
-TASK_COMPLETION_TOPIC_ARN = os.environ["TASK_COMPLETION_TOPIC_ARN"]
+TASK_RESULT_TOPIC_ARN = os.environ["TASK_RESULT_TOPIC_ARN"]
 MONITORING_TABLE_NAME = os.environ.get(
     "MONITORING_TABLE_NAME", "bos-elevator-monitoring-dev"
 )
@@ -28,15 +28,47 @@ def handler(event, context):
     Can be invoked by:
     1. Coordinator Agent (for tasks)
     2. EventBridge (for monitoring)
+    3. API Gateway (HTTP requests)
     """
     try:
         print(f"Agent Elevator received event: {json.dumps(event)}")
 
-        # Regular task from Coordinator Agent
-        mission_id = event["mission_id"]
-        task_id = event["task_id"]
-        action = event["action"]
-        parameters = event["parameters"]
+        # Handle OPTIONS requests for CORS
+        if event.get("httpMethod") == "OPTIONS":
+            return {
+                "statusCode": 200,
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+                },
+                "body": "",
+            }
+
+        # Parse event based on source
+        if "body" in event and "httpMethod" in event:
+            # HTTP request via API Gateway
+            try:
+                body = json.loads(event["body"]) if event["body"] else {}
+                print(f"Parsed API Gateway body: {body}")
+
+                # Extract required fields
+                mission_id = body.get("mission_id")
+                task_id = body.get("task_id", f"http-{int(time.time())}")
+                action = body.get("action", "call_elevator")
+                parameters = body.get("parameters", {})
+
+                if not mission_id:
+                    raise ValueError("mission_id is required in request body")
+
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in request body: {str(e)}")
+        else:
+            # Direct invocation from Coordinator Agent
+            mission_id = event["mission_id"]
+            task_id = event["task_id"]
+            action = event["action"]
+            parameters = event["parameters"]
 
         print(f"Processing task {task_id} for mission {mission_id}: {action}")
 
@@ -48,6 +80,12 @@ def handler(event, context):
 
         return {
             "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Content-Type": "application/json",
+            },
             "body": json.dumps(
                 {"message": f"Task {task_id} completed successfully", "result": result}
             ),
@@ -57,12 +95,19 @@ def handler(event, context):
         print(f"Error in elevator agent: {str(e)}")
 
         # Try to publish failure if we have the required info
-        if "mission_id" in event and "task_id" in event:
-            publish_task_completion(
-                event["mission_id"], event["task_id"], "failed", {"error": str(e)}
-            )
+        if "mission_id" in locals() and "task_id" in locals():
+            publish_task_completion(mission_id, task_id, "failed", {"error": str(e)})
 
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        return {
+            "statusCode": 500,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Content-Type": "application/json",
+            },
+            "body": json.dumps({"error": str(e)}),
+        }
 
 
 def execute_elevator_action(
@@ -76,18 +121,11 @@ def execute_elevator_action(
         to_floor = parameters.get("to_floor")
         if from_floor is None or to_floor is None:
             raise ValueError("Missing required parameters for call_elevator")
-        result = call_elevator(from_floor, to_floor)
+        result = call_elevator(int(from_floor), int(to_floor))
 
         # If successful, start monitoring
         if result.get("status") == "success" and mission_id:
-            start_monitoring(mission_id, to_floor)
-        elif result.get("status") == "error" and mission_id:
-            # Send error notification to user
-            error_message = result.get("message", "Erro desconhecido")
-            if result.get("offline"):
-                notify_user(mission_id, "error", f"[ERRO] {error_message}")
-            else:
-                notify_user(mission_id, "error", f"[ERRO] {error_message}")
+            start_monitoring(mission_id, int(to_floor))
 
         return result
 
@@ -100,150 +138,86 @@ def execute_elevator_action(
         mission_id_param = parameters.get("mission_id")
         if target_floor is None or mission_id_param is None:
             raise ValueError("Missing required parameters for monitor_elevator_arrival")
-        return monitor_elevator_arrival(target_floor, str(mission_id_param))
+        return monitor_elevator_arrival(int(target_floor), str(mission_id_param))
     elif action == "list_active_monitoring":
         return list_active_monitoring()
+    elif action == "test":
+        # Test action for API diagnostics
+        return {
+            "status": "success",
+            "message": "Elevator agent is responding correctly",
+            "available_actions": [
+                "call_elevator",
+                "check_elevator_status",
+                "list_floors",
+                "monitor_elevator_arrival",
+                "list_active_monitoring",
+                "test",
+            ],
+            "test_timestamp": datetime.now(timezone.utc).isoformat(),
+        }
     else:
         raise ValueError(f"Unknown elevator action: {action}")
 
 
-def call_elevator(from_floor, to_floor) -> Dict[str, Any]:
+def call_elevator(from_floor: int, to_floor: int) -> Dict[str, Any]:
     """
     Call elevator using the elevator API
     Uses the correct endpoint format: /elevator/{id}/call
-    Now includes retry logic for better reliability
     """
     try:
-        # Retry logic for API calls
-        max_retries = 3
-        retry_delay = 2  # seconds
+        # Generate JWT token for authentication
+        token = generate_jwt_token()
 
-        for attempt in range(max_retries):
-            try:
-                # Generate JWT token for authentication
-                token = generate_jwt_token()
-
-                # Prepare API request
-                headers = {
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                }
-
-                # Correct API endpoint with elevator ID
-                elevator_id = "010504"  # ID correto fornecido
-                url = f"{ELEVATOR_API_BASE_URL}/elevator/{elevator_id}/call"
-
-                # Correct payload format according to documentation
-                payload = {
-                    "from": from_floor,
-                    "to": to_floor,
-                }
-
-                print(f"Calling elevator API (attempt {attempt + 1}): {url}")
-                print(f"Payload: {payload}")
-
-                # Make API call
-                response = requests.post(url, json=payload, headers=headers, timeout=10)
-
-                # Check if response indicates elevator is offline
-                if response.status_code == 200:
-                    try:
-                        result = response.json()
-                        if (
-                            isinstance(result, list)
-                            and len(result) > 0
-                            and "offline" in str(result[0]).lower()
-                        ):
-                            print("Elevator is offline during call")
-                            return {
-                                "status": "error",
-                                "message": "Elevador offline - não é possível fazer a chamada",
-                                "floor": from_floor,
-                                "offline": True,
-                            }
-                    except:
-                        pass  # Continue with normal processing
-
-                if response.status_code == 204:  # Success is 204 No Content
-                    print(f"Elevator API success: {response.status_code}")
-
-                    return {
-                        "status": "success",
-                        "message": f"Elevator called from floor {from_floor} to floor {to_floor}",
-                        "floor": from_floor,
-                        "target_floor": to_floor,
-                    }
-                elif response.status_code == 400:
-                    response_text = response.text
-                    print(f"API returned 400 (attempt {attempt + 1}): {response_text}")
-
-                    if "Elevador não permitido" in response_text:
-                        # API externa não tem elevador configurado - simular sucesso para demo
-                        print(
-                            f"External API not configured, simulating success for demo"
-                        )
-
-                        return {
-                            "status": "success",
-                            "message": f"Elevator called from floor {from_floor} to floor {to_floor} (simulated)",
-                            "floor": from_floor,
-                            "target_floor": to_floor,
-                            "note": "External API not configured - using simulation",
-                        }
-                    elif (
-                        "Elevador offline" in response_text
-                        and attempt < max_retries - 1
-                    ):
-                        # Retry for elevator offline errors
-                        print(f"Elevator offline, retrying in {retry_delay} seconds...")
-                        time.sleep(retry_delay)
-                        continue
-                    else:
-                        # Final attempt or non-retryable error
-                        error_msg = f"Elevator API returned status {response.status_code}: {response_text}"
-                        print(error_msg)
-                        return {
-                            "status": "error",
-                            "message": error_msg,
-                            "floor": from_floor,
-                        }
-                else:
-                    # Non-400 errors
-                    error_msg = f"Elevator API returned status {response.status_code}: {response.text}"
-                    print(error_msg)
-
-                    if attempt < max_retries - 1:
-                        print(f"Retrying in {retry_delay} seconds...")
-                        time.sleep(retry_delay)
-                        continue
-                    else:
-                        return {
-                            "status": "error",
-                            "message": error_msg,
-                            "floor": from_floor,
-                        }
-
-            except requests.RequestException as e:
-                error_msg = f"Network error on attempt {attempt + 1}: {str(e)}"
-                print(error_msg)
-
-                if attempt < max_retries - 1:
-                    print(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                    continue
-                else:
-                    return {
-                        "status": "error",
-                        "message": f"Network error calling elevator API: {str(e)}",
-                        "floor": from_floor,
-                    }
-
-        # If we reach here, all retries failed
-        return {
-            "status": "error",
-            "message": "All API call attempts failed",
-            "floor": from_floor,
+        # Prepare API request
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
         }
+
+        # Correct API endpoint with elevator ID
+        elevator_id = "010504"  # ID correto fornecido
+        url = f"{ELEVATOR_API_BASE_URL}/elevator/{elevator_id}/call"
+
+        # Correct payload format according to documentation
+        payload = {
+            "from": from_floor,
+            "to": to_floor,
+        }
+
+        print(f"Calling elevator API: {url}")
+        print(f"Payload: {payload}")
+
+        # Make API call
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+
+        if response.status_code == 204:  # Success is 204 No Content
+            print(f"Elevator API success: {response.status_code}")
+
+            return {
+                "status": "success",
+                "message": f"Elevator called from floor {from_floor} to floor {to_floor}",
+                "floor": from_floor,
+                "target_floor": to_floor,
+            }
+        elif response.status_code == 400 and "Elevador não permitido" in response.text:
+            # API externa não tem elevador configurado - simular sucesso para demo
+            print(f"External API not configured, simulating success for demo")
+
+            return {
+                "status": "success",
+                "message": f"Elevator called from floor {from_floor} to floor {to_floor} (simulated)",
+                "floor": from_floor,
+                "target_floor": to_floor,
+                "note": "External API not configured - using simulation",
+            }
+        else:
+            error_msg = (
+                f"Elevator API returned status {response.status_code}: {response.text}"
+            )
+            print(error_msg)
+
+            return {"status": "error", "message": error_msg, "floor": from_floor}
 
     except requests.RequestException as e:
         error_msg = f"Network error calling elevator API: {str(e)}"
@@ -296,30 +270,7 @@ def check_elevator_status() -> Dict[str, Any]:
                     result = response.json()
                     print(f"Elevator status response (attempt {attempt + 1}): {result}")
 
-                    # Check if elevator is offline
-                    if (
-                        isinstance(result, list)
-                        and len(result) > 0
-                        and "offline" in str(result[0]).lower()
-                    ):
-                        print("Elevator is offline")
-                        return {
-                            "status": "error",
-                            "message": "Elevador offline",
-                            "elevator_status": "offline",
-                            "offline": True,
-                        }
-
-                    # For offline response, result is a list, not a dict
-                    if isinstance(result, list):
-                        print(f"Unexpected list response: {result}")
-                        return {
-                            "status": "error",
-                            "message": f"Resposta inesperada da API: {result}",
-                            "elevator_status": "unknown",
-                        }
-
-                    # Extract and validate floor (only for dict responses)
+                    # Extract and validate floor
                     floor_raw = result.get("floor", "")
                     elevator_status = result.get("status", "unknown")
                     direction = result.get("direction", "unknown")
@@ -341,11 +292,9 @@ def check_elevator_status() -> Dict[str, Any]:
                                 "direction": direction,
                             }
 
-                    # Convert floor to string and validate format
+                    # Convert floor to integer
                     try:
-                        # Validate that it's a valid number but keep as string
-                        float(floor_raw)  # Test if it's a valid number
-                        current_floor = str(floor_raw).strip()
+                        current_floor = int(floor_raw)
                     except (ValueError, TypeError):
                         print(f"Invalid floor format: {floor_raw}")
                         if attempt < max_retries - 1:
@@ -492,6 +441,7 @@ def list_active_monitoring() -> Dict[str, Any]:
                 "target_floor": item.get("target_floor"),
                 "start_time": item.get("start_time"),
                 "last_floor": item.get("last_floor"),
+                "consecutive_matches": item.get("consecutive_matches", 0),
                 "retry_count": item.get("retry_count", 0),
                 "elevator_status": item.get("elevator_status", "unknown"),
             }
@@ -509,7 +459,7 @@ def list_active_monitoring() -> Dict[str, Any]:
         return {"status": "error", "message": error_msg}
 
 
-def monitor_elevator_arrival(target_floor, mission_id: str) -> Dict[str, Any]:
+def monitor_elevator_arrival(target_floor: int, mission_id: str) -> Dict[str, Any]:
     """
     Monitor elevator arrival at target floor
     Checks if elevator stays at target floor for at least 5 seconds
@@ -526,15 +476,16 @@ def monitor_elevator_arrival(target_floor, mission_id: str) -> Dict[str, Any]:
 
         current_floor = status.get("current_floor")
 
-        if str(current_floor) == str(target_floor):
+        if current_floor == target_floor:
             # Verify elevator stays for 5 seconds
             time.sleep(5)
 
             # Check again
             status_after = check_elevator_status()
-            if status_after["status"] == "success" and str(
-                status_after.get("current_floor")
-            ) == str(target_floor):
+            if (
+                status_after["status"] == "success"
+                and status_after.get("current_floor") == target_floor
+            ):
 
                 return {
                     "status": "success",
@@ -601,7 +552,7 @@ def publish_task_completion(
         }
 
         sns.publish(
-            TopicArn=TASK_COMPLETION_TOPIC_ARN,
+            TopicArn=TASK_RESULT_TOPIC_ARN,
             Message=json.dumps(completion_message),
             Subject=f"Task {task_id} Completion",
         )
@@ -613,7 +564,7 @@ def publish_task_completion(
         # Don't raise here to avoid infinite loops
 
 
-def start_monitoring(mission_id: str, target_floor) -> None:
+def start_monitoring(mission_id: str, target_floor: int) -> None:
     """
     Start monitoring elevator arrival with continuous polling
     This function will:
@@ -631,6 +582,7 @@ def start_monitoring(mission_id: str, target_floor) -> None:
             "target_floor": target_floor,
             "start_time": datetime.now(timezone.utc).isoformat(),
             "status": "monitoring",
+            "consecutive_matches": 0,
             "last_floor": None,
             "retry_count": 0,
             "ttl": int(
@@ -646,6 +598,7 @@ def start_monitoring(mission_id: str, target_floor) -> None:
         )
 
         start_time = datetime.now(timezone.utc)
+        consecutive_matches = 0
         retry_count = 0
         max_retries = 5
         timeout_seconds = 300  # 5 minutes
@@ -657,7 +610,7 @@ def start_monitoring(mission_id: str, target_floor) -> None:
                 notify_user(
                     mission_id,
                     "timeout",
-                    "[TIMEOUT] Elevador demorou mais de 5 minutos",
+                    "⏰ Timeout: Elevador demorou mais de 5 minutos",
                 )
                 cleanup_monitoring_state(mission_id)
                 print(f"Monitoring timeout for mission {mission_id}")
@@ -683,7 +636,7 @@ def start_monitoring(mission_id: str, target_floor) -> None:
                     notify_user(
                         mission_id,
                         "error",
-                        "[ERRO] Nao foi possivel monitorar o elevador apos 5 tentativas",
+                        "❌ Erro: Não foi possível monitorar o elevador após 5 tentativas",
                     )
                     cleanup_monitoring_state(mission_id)
                     print(f"Max retries reached for mission {mission_id}")
@@ -719,28 +672,54 @@ def start_monitoring(mission_id: str, target_floor) -> None:
                 print(
                     f"Elevator not stopped ({elevator_status}) - continuing monitoring"
                 )
+                consecutive_matches = 0  # Reset when elevator is moving
+
+                # Update consecutive matches in DynamoDB
+                table.update_item(
+                    Key={"mission_id": mission_id},
+                    UpdateExpression="SET consecutive_matches = :matches",
+                    ExpressionAttributeValues={":matches": consecutive_matches},
+                )
+
                 time.sleep(1)
                 continue
 
-            # Check if elevator arrived at target floor (elevator is stopped and at correct floor)
-            if current_floor == str(target_floor):
+            if current_floor == target_floor:
+                consecutive_matches += 1
                 print(
-                    f"Elevator arrived at target floor {target_floor} (status: {elevator_status})"
+                    f"Elevator at target floor {target_floor} - consecutive matches: {consecutive_matches}/5"
                 )
 
-                notify_user(
-                    mission_id,
-                    "arrived",
-                    f"[CHEGOU] Elevador chegou no andar {target_floor}!",
+                # Update consecutive matches in DynamoDB
+                table.update_item(
+                    Key={"mission_id": mission_id},
+                    UpdateExpression="SET consecutive_matches = :matches",
+                    ExpressionAttributeValues={":matches": consecutive_matches},
                 )
-                cleanup_monitoring_state(mission_id)
-                print(
-                    f"Elevator arrived at target floor {target_floor} for mission {mission_id}"
-                )
-                return
+
+                if consecutive_matches >= 5:  # 5 seconds at target floor
+                    notify_user(
+                        mission_id,
+                        "arrived",
+                        f"✅ Elevador chegou no andar {target_floor}!",
+                    )
+                    cleanup_monitoring_state(mission_id)
+                    print(
+                        f"Elevator arrived at target floor {target_floor} for mission {mission_id}"
+                    )
+                    return
             else:
-                print(
-                    f"Elevator at floor {current_floor}, target is {target_floor} - continuing monitoring"
+                if consecutive_matches > 0:
+                    print(
+                        f"Elevator moved from target floor {target_floor} to {current_floor} - resetting counter"
+                    )
+                consecutive_matches = 0
+
+                # Update consecutive matches in DynamoDB
+                table.update_item(
+                    Key={"mission_id": mission_id},
+                    UpdateExpression="SET consecutive_matches = :matches",
+                    ExpressionAttributeValues={":matches": consecutive_matches},
                 )
 
             # Wait 1 second before next check
@@ -748,7 +727,7 @@ def start_monitoring(mission_id: str, target_floor) -> None:
 
     except Exception as e:
         print(f"Error in monitoring: {str(e)}")
-        notify_user(mission_id, "error", f"[ERRO] Erro no monitoramento: {str(e)}")
+        notify_user(mission_id, "error", f"❌ Erro no monitoramento: {str(e)}")
         cleanup_monitoring_state(mission_id)
         raise
 
@@ -780,7 +759,7 @@ def notify_user(mission_id: str, notification_type: str, message: str) -> None:
         }
 
         sns.publish(
-            TopicArn=TASK_COMPLETION_TOPIC_ARN,
+            TopicArn=TASK_RESULT_TOPIC_ARN,
             Message=json.dumps(notification_message),
             Subject=f"Elevator Monitoring Update - {mission_id}",
         )

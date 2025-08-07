@@ -2,6 +2,7 @@ import json
 import os
 import boto3
 import uuid
+import time
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 from decimal import Decimal
@@ -21,7 +22,7 @@ sns = boto3.client("sns")
 
 # Environment variables
 MISSION_STATE_TABLE_NAME = os.environ["MISSION_STATE_TABLE_NAME"]
-TASK_COMPLETION_TOPIC_ARN = os.environ["TASK_COMPLETION_TOPIC_ARN"]
+TASK_RESULT_TOPIC_ARN = os.environ["TASK_RESULT_TOPIC_ARN"]
 MISSION_RESULT_TOPIC_ARN = os.environ["MISSION_RESULT_TOPIC_ARN"]
 
 # DynamoDB table
@@ -32,9 +33,9 @@ def handler(event, context):
     """
     Coordinator Agent - Manages mission state and orchestrates task execution
 
-    Handles two types of events:
-    1. Mission from Director Agent (SNS from mission_topic)
-    2. Task completion from Agent Tools (SNS from task_completion_topic)
+    Supports two types of events:
+    1. SNS events (missions from Director Agent, task completions from Agent Tools)
+    2. API Gateway GET requests (mission status queries for debugging)
     """
     try:
         print(f"Received event: {json.dumps(event)}")
@@ -59,6 +60,10 @@ def handler(event, context):
                         # This is a monitoring notification from an agent
                         return handle_monitoring_notification(message_body)
 
+        # Handle API Gateway requests (mission status queries)
+        if event.get("httpMethod") == "GET":
+            return handle_api_request(event, context)
+
         return {
             "statusCode": 400,
             "body": json.dumps({"error": "Invalid event format"}),
@@ -67,6 +72,117 @@ def handler(event, context):
     except Exception as e:
         print(f"Error in coordinator agent: {str(e)}")
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+
+def handle_api_request(event, context):
+    """
+    Handle API Gateway GET request for mission status
+    """
+    try:
+        # Add CORS headers
+        headers = {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        }
+
+        # Handle OPTIONS requests for CORS
+        if event.get("httpMethod") == "OPTIONS":
+            return {
+                "statusCode": 200,
+                "headers": headers,
+                "body": json.dumps({"message": "CORS preflight response"}),
+            }
+
+        # Extract mission_id from path parameters
+        path_parameters = event.get("pathParameters", {})
+        mission_id = path_parameters.get("mission_id") if path_parameters else None
+
+        # Check if this is a general status request (no mission_id)
+        path = event.get("path", "")
+        if path.endswith("/coordinator/status") or not mission_id:
+            # Return general coordinator status
+            return {
+                "statusCode": 200,
+                "headers": headers,
+                "body": json.dumps(
+                    {
+                        "status": "healthy",
+                        "service": "coordinator",
+                        "timestamp": int(time.time()),
+                        "message": "Coordinator agent is running",
+                    }
+                ),
+            }
+
+        print(f"Getting mission status for: {mission_id}")
+
+        # Get mission from DynamoDB
+        mission = get_mission(mission_id)
+
+        if not mission:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"error": f"Mission {mission_id} not found"}),
+            }
+
+        # Calculate mission statistics
+        total_tasks = len(mission.get("tasks", []))
+        completed_tasks = len(
+            [
+                task
+                for task in mission.get("tasks", [])
+                if task.get("status") == "completed"
+            ]
+        )
+        failed_tasks = len(
+            [
+                task
+                for task in mission.get("tasks", [])
+                if task.get("status") == "failed"
+            ]
+        )
+        in_progress_tasks = len(
+            [
+                task
+                for task in mission.get("tasks", [])
+                if task.get("status") == "in_progress"
+            ]
+        )
+        pending_tasks = total_tasks - completed_tasks - failed_tasks - in_progress_tasks
+
+        mission_status = {
+            "mission_id": mission_id,
+            "user_id": mission.get("user_id"),
+            "status": mission.get("status", "pending"),
+            "created_at": mission.get("created_at"),
+            "updated_at": mission.get("updated_at"),
+            "statistics": {
+                "total_tasks": total_tasks,
+                "completed_tasks": completed_tasks,
+                "failed_tasks": failed_tasks,
+                "in_progress_tasks": in_progress_tasks,
+                "pending_tasks": pending_tasks,
+            },
+            "tasks": mission.get("tasks", []),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+        return {
+            "statusCode": 200,
+            "headers": headers,
+            "body": json.dumps(mission_status, default=decimal_default),
+        }
+
+    except Exception as e:
+        print(f"Error in API request: {str(e)}")
+        return {
+            "statusCode": 500,
+            "headers": headers,
+            "body": json.dumps({"error": str(e)}),
+        }
 
 
 def handle_new_mission(mission_data: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,0 +1,398 @@
+[
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754581114.9613109,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 1727.7,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754581116.695593,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 180.54,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director",
+    "timestamp": 1754581116.8811457,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 9302.35,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "7360a5fe-3915-4df3-bf72-71e620d4ed62",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director?user_request=Test mission from Python API tests",
+    "timestamp": 1754581126.273817,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 6689.86,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "85938c91-a275-468b-a643-f914c4268bdf",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director?user_id=api-test-user",
+    "timestamp": 1754581132.9956696,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 4937.46,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "7246cc62-078d-4fb7-b677-086b0d7b322d",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754581137.93807,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user",
+      "message": "Test message from Python API tests"
+    },
+    "status_code": 202,
+    "response_time_ms": 432.14,
+    "response_size": 135,
+    "response_data": {
+      "message": "Request received. The Director is analyzing the intention.",
+      "session_id": "session-1ab6e999-b4d9-4347-baee-011c30c4f4df"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754581138.6026628,
+    "headers": {},
+    "payload": {
+      "message": "Test message"
+    },
+    "status_code": 400,
+    "response_time_ms": 185.91,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754581138.7936027,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user"
+    },
+    "status_code": 400,
+    "response_time_ms": 183.94,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona/conversations?user_id=api-test-user",
+    "timestamp": 1754581138.982282,
+    "headers": {},
+    "payload": null,
+    "status_code": 0,
+    "response_time_ms": 6813.54,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /persona/conversations?user_id=api-test-user (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754581145.909328,
+    "headers": {},
+    "payload": {
+      "mission_id": "test-mission-123",
+      "action": "call_elevator",
+      "parameters": {
+        "floor": 3,
+        "direction": "up"
+      }
+    },
+    "status_code": 0,
+    "response_time_ms": 6743.14,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754581152.766436,
+    "headers": {},
+    "payload": {
+      "action": "call_elevator",
+      "parameters": {
+        "floor": 3
+      }
+    },
+    "status_code": 0,
+    "response_time_ms": 6745.16,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/psim/search",
+    "timestamp": 1754581159.6439755,
+    "headers": {},
+    "payload": {
+      "action": "search_person",
+      "query": "test-user",
+      "parameters": {
+        "department": "IT",
+        "active_only": true
+      }
+    },
+    "status_code": 200,
+    "response_time_ms": 371.78,
+    "response_size": 223,
+    "response_data": {
+      "message": "PSIM action 'search_person' completed successfully",
+      "action": "search_person",
+      "result": {
+        "status": "error",
+        "message": "Failed to authenticate with PSIM API"
+      },
+      "timestamp": "2025-08-07T15:39:17.545401+00:00"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/psim/search",
+    "timestamp": 1754581160.0211062,
+    "headers": {},
+    "payload": {
+      "action": "search_person",
+      "query": "python-test-user",
+      "parameters": {
+        "department": "IT",
+        "active_only": true
+      }
+    },
+    "status_code": 200,
+    "response_time_ms": 306.4,
+    "response_size": 223,
+    "response_data": {
+      "message": "PSIM action 'search_person' completed successfully",
+      "action": "search_person",
+      "result": {
+        "status": "error",
+        "message": "Failed to authenticate with PSIM API"
+      },
+      "timestamp": "2025-08-07T15:39:17.862311+00:00"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/test-mission-123",
+    "timestamp": 1754581160.3331037,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 195.89,
+    "response_size": 463,
+    "response_data": {
+      "mission_id": "test-mission-123",
+      "user_id": "test-user",
+      "status": "in_progress",
+      "created_at": "2025-08-07T14:30:00Z",
+      "updated_at": "2025-08-07T14:30:00Z",
+      "statistics": {
+        "total_tasks": 1,
+        "completed_tasks": 0,
+        "failed_tasks": 0,
+        "in_progress_tasks": 0,
+        "pending_tasks": 1
+      },
+      "tasks": [
+        {
+          "action": "test_action",
+          "task_id": "task-1",
+          "agent": "agent_psim",
+          "parameters": {
+            "query": "test"
+          },
+          "status": "pending"
+        }
+      ],
+      "timestamp": "2025-08-07T15:39:18.060214+00:00"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/python-test-1754581160",
+    "timestamp": 1754581160.5345538,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 305.11,
+    "response_size": 53,
+    "response_data": {
+      "error": "Mission python-test-1754581160 not found"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754581160.8698735,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 186.38,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/director",
+    "timestamp": 1754581161.1321561,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 3679.59,
+    "response_size": 128,
+    "response_data": {
+      "status": "SUCCESS",
+      "mission_id": "1621b1f9-1ee1-4432-995e-03e4f1352f77",
+      "message": "Mission created and processing started"
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/persona",
+    "timestamp": 1754581164.828118,
+    "headers": {},
+    "payload": {
+      "test": "data"
+    },
+    "status_code": 400,
+    "response_time_ms": 178.25,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/elevator/call",
+    "timestamp": 1754581165.0216763,
+    "headers": {},
+    "payload": {
+      "test": "data"
+    },
+    "status_code": 0,
+    "response_time_ms": 6746.88,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/psim/search",
+    "timestamp": 1754581171.8809974,
+    "headers": {},
+    "payload": {
+      "test": "data"
+    },
+    "status_code": 400,
+    "response_time_ms": 184.62,
+    "response_size": 43,
+    "response_data": {
+      "error": "Missing required field: action"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/coordinator/missions/test-123",
+    "timestamp": 1754581172.081347,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 205.96,
+    "response_size": 39,
+    "response_data": {
+      "error": "Mission test-123 not found"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/invalid-endpoint",
+    "timestamp": 1754581172.3024445,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 155.29,
+    "response_size": 23,
+    "response_data": {
+      "message": "Not Found"
+    },
+    "success": false
+  },
+  {
+    "method": "DELETE",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health",
+    "timestamp": 1754581172.4628437,
+    "headers": {},
+    "payload": null,
+    "status_code": 404,
+    "response_time_ms": 183.07,
+    "response_size": 23,
+    "response_data": {
+      "message": "Not Found"
+    },
+    "success": false
+  }
+]
