@@ -11,8 +11,20 @@ sns = boto3.client("sns")
 
 # Get table and topic names from environment variables set by Terraform
 TABLE_NAME = os.environ.get("DYNAMODB_TABLE_NAME")
-SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
-MISSION_RESULT_TOPIC_ARN = os.environ.get("MISSION_RESULT_TOPIC_ARN")
+
+# New standardized topics
+PERSONA_INTENTION_TOPIC_ARN = os.environ.get("PERSONA_INTENTION_TOPIC_ARN")
+DIRECTOR_RESPONSE_TOPIC_ARN = os.environ.get("DIRECTOR_RESPONSE_TOPIC_ARN")
+PERSONA_RESPONSE_TOPIC_ARN = os.environ.get("PERSONA_RESPONSE_TOPIC_ARN")
+
+# Determine which architecture to use (require new architecture)
+USE_NEW_ARCHITECTURE = bool(PERSONA_INTENTION_TOPIC_ARN)
+
+if not USE_NEW_ARCHITECTURE:
+    print("ERROR: New architecture topics not configured")
+    raise ValueError("Required SNS topics for new architecture not available")
+
+print("Agent Persona using NEW architecture (legacy support removed)")
 
 
 def decimal_default(obj):
@@ -46,6 +58,10 @@ def handler(event, context):
                         return handle_mission_result(message)
                     elif "intention-result-topic" in topic_arn:
                         return handle_intention_result(message)
+                    elif "director-response-topic" in topic_arn:
+                        return handle_director_response(message)
+                    elif "chat-intention-topic" in topic_arn:
+                        return handle_chat_intention(message)
                     else:
                         print(f"Unknown SNS topic: {topic_arn}")
                         return {"status": "ERROR", "error": "Unknown topic"}
@@ -235,6 +251,131 @@ def handle_mission_result(message):
         return {"status": "ERROR", "error": str(e)}
 
 
+def handle_director_response(message):
+    """
+    Handle director response from new architecture (director-response-topic)
+    """
+    try:
+        director_response = json.loads(message)
+        user_id = director_response.get("user_id")
+        mission_id = director_response.get("mission_id")
+        status = director_response.get("status")
+        response_text = director_response.get(
+            "response", "Your request has been processed."
+        )
+
+        print(f"Received director response for mission {mission_id}, user {user_id}")
+
+        # Save the director's response to conversation history
+        table = dynamodb.Table(TABLE_NAME)
+        timestamp = int(time.time())
+        expires_at = timestamp + (24 * 60 * 60)  # TTL for 24 hours
+
+        # Find the original session ID from recent conversations
+        response = table.scan(
+            FilterExpression="UserId = :user_id AND #role = :role",
+            ExpressionAttributeNames={"#role": "Role"},
+            ExpressionAttributeValues={":user_id": user_id, ":role": "user"},
+            Limit=50,
+        )
+
+        # Find the most recent session for this user
+        original_session_id = None
+        if response["Items"]:
+            sorted_items = sorted(
+                response["Items"], key=lambda x: x["Timestamp"], reverse=True
+            )
+            original_session_id = sorted_items[0].get("SessionId")
+
+        if not original_session_id:
+            original_session_id = f"session-{uuid.uuid4()}"
+
+        # Save director's response to conversation history
+        conversation_item = {
+            "SessionId": original_session_id,
+            "UserId": user_id,
+            "Timestamp": timestamp,
+            "Role": "assistant",
+            "Message": response_text,
+            "MissionId": mission_id,
+            "MissionStatus": status,
+            "Source": "director_new",
+            "ExpiresAt": expires_at,
+        }
+
+        table.put_item(Item=conversation_item)
+        print(
+            f"Saved director's response (new architecture) to conversation history for user {user_id}"
+        )
+
+        return {"status": "SUCCESS", "message": "Director response processed"}
+
+    except Exception as e:
+        print(f"Error processing director response: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def handle_chat_intention(message):
+    """
+    Handle chat intention from new architecture (chat-intention-topic)
+    This would be used when we implement WebSocket/Chat Lambda
+    """
+    try:
+        chat_intention = json.loads(message)
+        user_id = chat_intention.get("user_id")
+        user_message = chat_intention.get("message")
+        session_id = chat_intention.get("session_id")
+
+        print(f"Received chat intention for user {user_id}, session {session_id}")
+
+        # Process the intention and publish to persona-intention-topic
+        return process_intention_and_publish(user_id, user_message, session_id)
+
+    except Exception as e:
+        print(f"Error processing chat intention: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def process_intention_and_publish(user_id, user_message, session_id):
+    """
+    Process user intention and publish to the appropriate topic based on architecture
+    """
+    try:
+        # Create intention manifest
+        intention_manifest = {
+            "session_id": session_id,
+            "user_id": user_id,
+            "message": user_message,
+            "timestamp": int(time.time()),
+            "source": "persona",
+        }
+
+        # Choose topic based on architecture
+        if USE_NEW_ARCHITECTURE:
+            topic_arn = PERSONA_INTENTION_TOPIC_ARN
+            print(f"Publishing intention to NEW topic: {topic_arn}")
+        else:
+            # Should not happen - new architecture is required
+            print("ERROR: New architecture required but topics not available")
+            raise ValueError("PERSONA_INTENTION_TOPIC_ARN not configured")
+
+        sns.publish(
+            TopicArn=topic_arn,
+            Message=json.dumps(intention_manifest),
+            MessageStructure="string",
+        )
+
+        print(
+            f"Published intention to {'NEW' if USE_NEW_ARCHITECTURE else 'LEGACY'} architecture for SessionId: {session_id}"
+        )
+
+        return {"status": "SUCCESS", "message": "Intention published"}
+
+    except Exception as e:
+        print(f"Error publishing intention: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
 def handle_intention_result(message):
     """
     Handle intention result from director (elaborated response)
@@ -358,24 +499,24 @@ def handle_user_message(event, context):
     table.put_item(Item=conversation_item)
     print(f"Saved user message to DynamoDB with SessionId: {session_id}")
 
-    # 3. Publish Intention to SNS (for now, a simple passthrough)
-    intention_manifest = {
-        "session_id": session_id,
-        "user_id": user_id,
-        "message": user_message,
-        "conversation_history": [
-            conversation_item
-        ],  # In a real scenario, you'd load previous turns
-    }
+    # 3. Publish Intention using new architecture-aware function
+    result = process_intention_and_publish(user_id, user_message, session_id)
 
-    sns.publish(
-        TopicArn=SNS_TOPIC_ARN,
-        Message=json.dumps(intention_manifest),
-        MessageStructure="string",
-    )
-    print(f"Published intention to SNS for SessionId: {session_id}")
+    if result["status"] != "SUCCESS":
+        print(f"Failed to publish intention: {result}")
+        return {
+            "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+            },
+            "body": json.dumps({"error": "Failed to process message"}),
+        }
 
     # 4. Return a response to the user
+    architecture_msg = "NEW" if USE_NEW_ARCHITECTURE else "LEGACY"
     return {
         "statusCode": 202,  # 202 Accepted: The request has been accepted for processing
         "headers": {
@@ -386,8 +527,96 @@ def handle_user_message(event, context):
         },
         "body": json.dumps(
             {
-                "message": "Request received. The Director is analyzing the intention.",
+                "message": f"Request received ({architecture_msg} architecture). The Director is analyzing the intention.",
                 "session_id": session_id,
+                "architecture": architecture_msg,
             }
         ),
     }
+
+
+def handle_persona_intention(message):
+    """
+    Handle persona intention received via SNS for direct testing
+    """
+    try:
+        intention_data = json.loads(message)
+        print(f"Processing persona intention: {intention_data}")
+
+        # Extract required fields
+        user_id = intention_data.get("user_id", "unknown")
+        user_message = intention_data.get(
+            "intention", intention_data.get("message", "")
+        )
+        mission_id = intention_data.get("mission_id")
+        test_mode = intention_data.get("test_mode", False)
+
+        if not user_message:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "No intention/message provided"}),
+            }
+
+        # Generate session ID if not provided
+        session_id = intention_data.get("session_id", f"session-{uuid.uuid4()}")
+
+        # For test mode, create a simplified intention manifest
+        if test_mode:
+            print(
+                f"Test mode: Processing intention '{user_message}' for user {user_id}"
+            )
+
+            # Create intention manifest for Director
+            intention_manifest = {
+                "session_id": session_id,
+                "user_id": user_id,
+                "user_intention": user_message,
+                "mission_id": mission_id,
+                "timestamp": int(time.time()),
+                "source": "persona_test",
+                "context": intention_data.get("context", {}),
+            }
+
+            # Publish to Director via persona_intention_topic (correct flow)
+            if (
+                PERSONA_INTENTION_TOPIC_ARN
+            ):  # Use correct topic for publishing to Director
+                director_message = {
+                    "mission_id": mission_id,
+                    "user_intention": user_message,
+                    "context": intention_data.get("context", {}),
+                    "user_id": user_id,
+                    "timestamp": int(time.time()),
+                }
+
+                sns.publish(
+                    TopicArn=PERSONA_INTENTION_TOPIC_ARN,  # Persona publishes here, Director reads
+                    Message=json.dumps(director_message),
+                    Subject=f"User Intention from Persona - {mission_id}",
+                )
+
+                print(
+                    f"Published intention to Director via persona_intention_topic for mission {mission_id}"
+                )
+
+            return {
+                "statusCode": 200,
+                "body": json.dumps(
+                    {
+                        "status": "success",
+                        "message": "Test intention processed",
+                        "mission_id": mission_id,
+                        "session_id": session_id,
+                    }
+                ),
+            }
+
+        # For non-test mode, use the normal flow
+        return process_intention_and_publish(user_id, user_message, session_id)
+
+    except Exception as e:
+        print(f"Error processing persona intention: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": f"Failed to process intention: {str(e)}"}),
+        }

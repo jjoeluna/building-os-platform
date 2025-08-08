@@ -22,8 +22,26 @@ sns = boto3.client("sns")
 
 # Environment variables
 MISSION_STATE_TABLE_NAME = os.environ["MISSION_STATE_TABLE_NAME"]
-TASK_RESULT_TOPIC_ARN = os.environ["TASK_RESULT_TOPIC_ARN"]
-MISSION_RESULT_TOPIC_ARN = os.environ["MISSION_RESULT_TOPIC_ARN"]
+
+# New standardized topics
+COORDINATOR_TASK_TOPIC_ARN = os.environ.get("COORDINATOR_TASK_TOPIC_ARN")
+AGENT_TASK_RESULT_TOPIC_ARN = os.environ.get("AGENT_TASK_RESULT_TOPIC_ARN")
+COORDINATOR_MISSION_RESULT_TOPIC_ARN = os.environ.get(
+    "COORDINATOR_MISSION_RESULT_TOPIC_ARN"
+)
+
+# Determine which architecture to use (require new architecture)
+USE_NEW_ARCHITECTURE = bool(
+    COORDINATOR_TASK_TOPIC_ARN
+    and AGENT_TASK_RESULT_TOPIC_ARN
+    and COORDINATOR_MISSION_RESULT_TOPIC_ARN
+)
+
+if not USE_NEW_ARCHITECTURE:
+    print("ERROR: New architecture topics not configured")
+    raise ValueError("Required SNS topics for new architecture not available")
+
+print("Agent Coordinator using NEW architecture (legacy support removed)")
 
 # DynamoDB table
 mission_table = dynamodb.Table(MISSION_STATE_TABLE_NAME)
@@ -44,14 +62,21 @@ def handler(event, context):
         if "Records" in event:
             for record in event["Records"]:
                 if record.get("EventSource") == "aws:sns":
+                    topic_arn = record["Sns"]["TopicArn"]
                     message_body = json.loads(record["Sns"]["Message"])
 
-                    # Determine event type based on message structure
-                    if "mission_id" in message_body and "tasks" in message_body:
+                    # Determine event type based on topic and message structure
+                    if (
+                        "mission-topic" in topic_arn
+                        or "director-mission-topic" in topic_arn
+                    ):
                         # This is a new mission from Director
                         return handle_new_mission(message_body)
-                    elif "task_id" in message_body and "result" in message_body:
-                        # This is a task completion
+                    elif (
+                        "task-result-topic" in topic_arn
+                        or "agent-task-result-topic" in topic_arn
+                    ):
+                        # This is a task completion from agents
                         return handle_task_completion(message_body)
                     elif (
                         "notification_type" in message_body
@@ -59,6 +84,11 @@ def handler(event, context):
                     ):
                         # This is a monitoring notification from an agent
                         return handle_monitoring_notification(message_body)
+                    else:
+                        print(
+                            f"Unknown SNS event from topic {topic_arn}: {message_body}"
+                        )
+                        return {"status": "ERROR", "error": "Unknown event type"}
 
         # Handle API Gateway requests (mission status queries)
         if event.get("httpMethod") == "GET":
@@ -229,8 +259,14 @@ def handle_task_completion(completion_data: Dict[str, Any]) -> Dict[str, Any]:
         # Check if mission is complete
         mission = get_mission(mission_id)
         if is_mission_complete(mission):
+            # Determine overall mission status
+            failed_tasks = [
+                task for task in mission["tasks"] if task.get("status") == "failed"
+            ]
+            overall_status = "failed" if failed_tasks else "completed"
+
             # Publish final result
-            publish_mission_result(mission)
+            publish_mission_result(mission, overall_status)
 
         return {
             "statusCode": 200,
@@ -244,23 +280,59 @@ def handle_task_completion(completion_data: Dict[str, Any]) -> Dict[str, Any]:
 
 def dispatch_task_to_agent(mission_id: str, task: Dict[str, Any]) -> None:
     """
-    Dispatch a task to the appropriate agent based on task type
+    Dispatch a task to the appropriate agent using either new SNS architecture or legacy Lambda invocation
     """
     agent_name = task["agent"]
     task_message = {
         "mission_id": mission_id,
         "task_id": task["task_id"],
+        "agent": agent_name,
         "action": task["action"],
         "parameters": task["parameters"],
+        "status": "pending",
     }
 
-    # Map agent names to their specific topics/triggers
-    # For now, we'll publish to a general task completion topic
-    # In a more advanced setup, each agent would have its own topic
+    if USE_NEW_ARCHITECTURE:
+        # Use new SNS-based architecture
+        dispatch_task_via_sns(agent_name, task_message, mission_id, task["task_id"])
+    else:
+        # Use legacy Lambda invocation
+        dispatch_task_via_lambda(agent_name, task_message, mission_id, task["task_id"])
 
-    # Since we're using individual Lambda agents, we can invoke them directly
-    # or use separate topics. For simplicity, let's use direct Lambda invocation
 
+def dispatch_task_via_sns(
+    agent_name: str, task_message: Dict[str, Any], mission_id: str, task_id: str
+) -> None:
+    """
+    Dispatch task via new SNS architecture using coordinator-task-topic
+    """
+    try:
+        sns.publish(
+            TopicArn=COORDINATOR_TASK_TOPIC_ARN,
+            Message=json.dumps(task_message),
+            Subject=f"Task {task_id} for {agent_name}",
+            MessageAttributes={
+                "agent_name": {"DataType": "String", "StringValue": agent_name},
+                "task_id": {"DataType": "String", "StringValue": task_id},
+            },
+        )
+        print(f"Dispatched task {task_id} to {agent_name} via NEW SNS architecture")
+
+        # Update task status to 'in_progress'
+        update_task_status(mission_id, task_id, "in_progress")
+
+    except Exception as e:
+        print(f"Error dispatching task via SNS to {agent_name}: {str(e)}")
+        # Update task status to 'failed'
+        update_task_status(mission_id, task_id, "failed")
+
+
+def dispatch_task_via_lambda(
+    agent_name: str, task_message: Dict[str, Any], mission_id: str, task_id: str
+) -> None:
+    """
+    Legacy task dispatch using direct Lambda invocation
+    """
     lambda_client = boto3.client("lambda")
 
     # Map agent names to Lambda function names using environment variable
@@ -279,18 +351,20 @@ def dispatch_task_to_agent(mission_id: str, task: Dict[str, Any]) -> None:
                 InvocationType="Event",  # Async invocation
                 Payload=json.dumps(task_message),
             )
-            print(f"Dispatched task {task['task_id']} to {agent_name}")
+            print(
+                f"Dispatched task {task_id} to {agent_name} via LEGACY Lambda invocation"
+            )
 
             # Update task status to 'in_progress'
-            update_task_status(mission_id, task["task_id"], "in_progress")
+            update_task_status(mission_id, task_id, "in_progress")
 
         except Exception as e:
             print(f"Error dispatching task to {agent_name}: {str(e)}")
             # Update task status to 'failed'
-            update_task_status(mission_id, task["task_id"], "failed")
+            update_task_status(mission_id, task_id, "failed")
     else:
         print(f"Unknown agent: {agent_name}")
-        update_task_status(mission_id, task["task_id"], "failed")
+        update_task_status(mission_id, task_id, "failed")
 
 
 def update_task_completion(
@@ -419,58 +493,102 @@ def is_mission_complete(mission: Dict[str, Any]) -> bool:
     return True
 
 
-def publish_mission_result(mission: Dict[str, Any]) -> None:
+def publish_mission_result(mission: Dict[str, Any], overall_status: str) -> None:
     """
-    Publish final mission result to mission_result_topic
+    Publish mission completion result using appropriate architecture
     """
-    try:
-        # Update mission status
-        mission_id = mission["mission_id"]
+    mission_id = mission["mission_id"]
 
-        # Determine overall mission status
-        failed_tasks = [
-            task for task in mission["tasks"] if task.get("status") == "failed"
-        ]
-        overall_status = "failed" if failed_tasks else "completed"
+    # Update mission in DynamoDB
+    mission_table.update_item(
+        Key={"mission_id": mission_id},
+        UpdateExpression="SET #status = :status, updated_at = :updated_at",
+        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeValues={
+            ":status": overall_status,
+            ":updated_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
 
-        # Update mission in DynamoDB
-        mission_table.update_item(
-            Key={"mission_id": mission_id},
-            UpdateExpression="SET #status = :status, updated_at = :updated_at",
-            ExpressionAttributeNames={"#status": "status"},
-            ExpressionAttributeValues={
-                ":status": overall_status,
-                ":updated_at": datetime.now(timezone.utc).isoformat(),
-            },
+    # Prepare result message
+    result_message = {
+        "mission_id": mission_id,
+        "user_id": mission["user_id"],
+        "status": overall_status,
+        "tasks": mission["tasks"],
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if USE_NEW_ARCHITECTURE:
+        # Use new coordinator-mission-result-topic
+        topic_arn = COORDINATOR_MISSION_RESULT_TOPIC_ARN
+        print(
+            f"Publishing mission result via NEW architecture to coordinator-mission-result-topic"
         )
+    else:
+        # Should not happen - new architecture is required
+        print("ERROR: New architecture required but topics not available")
+        raise ValueError("COORDINATOR_MISSION_RESULT_TOPIC_ARN not configured")
 
-        # Prepare result message
-        result_message = {
-            "mission_id": mission_id,
-            "user_id": mission["user_id"],
-            "status": overall_status,
-            "tasks": mission["tasks"],
-            "completed_at": datetime.now(timezone.utc).isoformat(),
-        }
-
-        # Publish to mission result topic
+    try:
         sns.publish(
-            TopicArn=MISSION_RESULT_TOPIC_ARN,
+            TopicArn=topic_arn,
             Message=json.dumps(result_message, default=decimal_default),
             Subject=f"Mission {mission_id} Complete",
         )
-
         print(f"Published mission result for {mission_id}")
-
     except Exception as e:
         print(f"Error publishing mission result: {str(e)}")
+        raise
+
+
+def publish_monitoring_notification(notification_data: Dict[str, Any]) -> None:
+    """
+    Publish monitoring notification using appropriate architecture
+    """
+    mission_id = notification_data["mission_id"]
+    notification_type = notification_data["notification_type"]
+    message = notification_data["message"]
+
+    user_notification = {
+        "mission_id": mission_id,
+        "user_id": notification_data.get("user_id", "unknown"),
+        "notification_type": notification_type,
+        "message": message,
+        "timestamp": notification_data.get(
+            "timestamp", datetime.now(timezone.utc).isoformat()
+        ),
+        "agent": notification_data.get("agent", "unknown"),
+        "status": "notification",  # Distinguish from mission completion
+    }
+
+    if USE_NEW_ARCHITECTURE:
+        # Use new coordinator-mission-result-topic for notifications too
+        topic_arn = COORDINATOR_MISSION_RESULT_TOPIC_ARN
+        print(
+            f"Publishing notification via NEW architecture to coordinator-mission-result-topic"
+        )
+    else:
+        # Should not happen - new architecture is required
+        print("ERROR: New architecture required but topics not available")
+        raise ValueError("COORDINATOR_MISSION_RESULT_TOPIC_ARN not configured")
+
+    try:
+        sns.publish(
+            TopicArn=topic_arn,
+            Message=json.dumps(user_notification, default=decimal_default),
+            Subject=f"Notification for Mission {mission_id}",
+        )
+        print(f"Forwarded monitoring notification for mission {mission_id} to user")
+    except Exception as e:
+        print(f"Error publishing monitoring notification: {str(e)}")
         raise
 
 
 def handle_monitoring_notification(notification_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle monitoring notifications from agents (e.g., elevator arrival notifications)
-    Forwards these notifications to the Mission Result Topic for the user
+    Forwards these notifications to users using appropriate architecture
     """
     try:
         mission_id = notification_data["mission_id"]
@@ -478,42 +596,11 @@ def handle_monitoring_notification(notification_data: Dict[str, Any]) -> Dict[st
         message = notification_data["message"]
 
         print(
-            f"Received monitoring notification for mission {mission_id}: {notification_type}"
+            f"Handling monitoring notification for mission {mission_id}: {notification_type}"
         )
 
-        # Get mission data from DynamoDB to get user_id
-        response = mission_table.get_item(Key={"mission_id": mission_id})
-
-        if "Item" not in response:
-            print(f"Mission {mission_id} not found in DynamoDB")
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": f"Mission {mission_id} not found"}),
-            }
-
-        mission = response["Item"]
-
-        # Prepare notification message for user
-        user_notification = {
-            "mission_id": mission_id,
-            "user_id": mission["user_id"],
-            "notification_type": notification_type,
-            "message": message,
-            "timestamp": notification_data.get(
-                "timestamp", datetime.now(timezone.utc).isoformat()
-            ),
-            "agent": notification_data.get("agent", "unknown"),
-            "status": "notification",  # Distinguish from mission completion
-        }
-
-        # Publish to mission result topic so the user gets the notification
-        sns.publish(
-            TopicArn=MISSION_RESULT_TOPIC_ARN,
-            Message=json.dumps(user_notification, default=decimal_default),
-            Subject=f"Notification for Mission {mission_id}",
-        )
-
-        print(f"Forwarded monitoring notification for mission {mission_id} to user")
+        # Forward the notification to users
+        publish_monitoring_notification(notification_data)
 
         return {
             "statusCode": 200,

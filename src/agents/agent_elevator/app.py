@@ -15,7 +15,17 @@ dynamodb = boto3.resource("dynamodb")
 # Environment variables
 ELEVATOR_API_BASE_URL = os.environ["ELEVATOR_API_BASE_URL"]
 ELEVATOR_API_SECRET = os.environ["ELEVATOR_API_SECRET"]
-TASK_RESULT_TOPIC_ARN = os.environ["TASK_RESULT_TOPIC_ARN"]
+
+# New standardized topics
+COORDINATOR_TASK_TOPIC_ARN = os.environ.get("COORDINATOR_TASK_TOPIC_ARN")
+AGENT_TASK_RESULT_TOPIC_ARN = os.environ.get("AGENT_TASK_RESULT_TOPIC_ARN")
+
+# Determine which architecture to use (prefer new if available)
+USE_NEW_ARCHITECTURE = bool(COORDINATOR_TASK_TOPIC_ARN and AGENT_TASK_RESULT_TOPIC_ARN)
+print(
+    f"Agent Elevator using {'NEW' if USE_NEW_ARCHITECTURE else 'LEGACY'} architecture"
+)
+
 MONITORING_TABLE_NAME = os.environ.get(
     "MONITORING_TABLE_NAME", "bos-elevator-monitoring-dev"
 )
@@ -26,9 +36,10 @@ def handler(event, context):
     Elevator Agent - Handles elevator-related tasks and monitoring
 
     Can be invoked by:
-    1. Coordinator Agent (for tasks)
-    2. EventBridge (for monitoring)
-    3. API Gateway (HTTP requests)
+    1. SNS Events (from coordinator-task-topic or task_result_topic)
+    2. Coordinator Agent (direct Lambda invocation - legacy)
+    3. EventBridge (for monitoring)
+    4. API Gateway (HTTP requests)
     """
     try:
         print(f"Agent Elevator received event: {json.dumps(event)}")
@@ -44,6 +55,27 @@ def handler(event, context):
                 },
                 "body": "",
             }
+
+        # Check if this is an SNS event
+        if "Records" in event:
+            for record in event["Records"]:
+                if record.get("EventSource") == "aws:sns":
+                    topic_arn = record["Sns"]["TopicArn"]
+                    message_body = json.loads(record["Sns"]["Message"])
+
+                    print(f"Processing SNS event from topic: {topic_arn}")
+
+                    # Check if this task is for us
+                    if message_body.get("agent") == "agent_elevator":
+                        return handle_task_from_sns(message_body)
+                    else:
+                        print(
+                            f"Task not for agent_elevator, ignoring: {message_body.get('agent')}"
+                        )
+                        return {
+                            "status": "IGNORED",
+                            "reason": "Task not for this agent",
+                        }
 
         # Parse event based on source
         if "body" in event and "httpMethod" in event:
@@ -106,6 +138,51 @@ def handler(event, context):
                 "Access-Control-Allow-Headers": "Content-Type, Authorization",
                 "Content-Type": "application/json",
             },
+            "body": json.dumps({"error": str(e)}),
+        }
+
+
+def handle_task_from_sns(message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handle task received from SNS (new architecture)
+    """
+    try:
+        mission_id = message_body["mission_id"]
+        task_id = message_body["task_id"]
+        action = message_body["action"]
+        parameters = message_body["parameters"]
+
+        print(f"Processing SNS task {task_id} for mission {mission_id}: {action}")
+
+        # Execute the elevator action
+        result = execute_elevator_action(action, parameters, mission_id)
+
+        # Publish task completion using new architecture
+        publish_task_completion(mission_id, task_id, "completed", result)
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {"message": f"Task {task_id} completed successfully", "result": result}
+            ),
+        }
+
+    except Exception as e:
+        print(f"Error processing SNS task: {str(e)}")
+
+        # Try to publish failure
+        try:
+            mission_id = message_body.get("mission_id")
+            task_id = message_body.get("task_id")
+            if mission_id and task_id:
+                publish_task_completion(
+                    mission_id, task_id, "failed", {"error": str(e)}
+                )
+        except Exception as pub_error:
+            print(f"Error publishing failure: {str(pub_error)}")
+
+        return {
+            "statusCode": 500,
             "body": json.dumps({"error": str(e)}),
         }
 
@@ -539,7 +616,7 @@ def publish_task_completion(
     mission_id: str, task_id: str, status: str, result: Dict[str, Any]
 ) -> None:
     """
-    Publish task completion to the task completion topic
+    Publish task completion using appropriate architecture
     """
     try:
         completion_message = {
@@ -551,8 +628,19 @@ def publish_task_completion(
             "completed_at": datetime.now(timezone.utc).isoformat(),
         }
 
+        if USE_NEW_ARCHITECTURE:
+            # Use new agent-task-result-topic
+            topic_arn = AGENT_TASK_RESULT_TOPIC_ARN
+            print(
+                f"Publishing task completion via NEW architecture to agent-task-result-topic"
+            )
+        else:
+            # New architecture should always be available now
+            print("ERROR: New architecture topics not available")
+            raise ValueError("AGENT_TASK_RESULT_TOPIC_ARN not configured")
+
         sns.publish(
-            TopicArn=TASK_RESULT_TOPIC_ARN,
+            TopicArn=topic_arn,
             Message=json.dumps(completion_message),
             Subject=f"Task {task_id} Completion",
         )
@@ -758,8 +846,14 @@ def notify_user(mission_id: str, notification_type: str, message: str) -> None:
             "agent": "agent_elevator",
         }
 
+        # Use the appropriate topic based on architecture
+        topic_arn = AGENT_TASK_RESULT_TOPIC_ARN if USE_NEW_ARCHITECTURE else None
+        if not topic_arn:
+            print("ERROR: No topic ARN available for notifications")
+            return
+
         sns.publish(
-            TopicArn=TASK_RESULT_TOPIC_ARN,
+            TopicArn=topic_arn,
             Message=json.dumps(notification_message),
             Subject=f"Elevator Monitoring Update - {mission_id}",
         )

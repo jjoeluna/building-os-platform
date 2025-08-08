@@ -94,11 +94,15 @@ resource "aws_iam_policy" "sns_publish_policy" {
         Action = "sns:Publish",
         Effect = "Allow",
         Resource = [
-          module.intention_topic.topic_arn,
-          module.mission_topic.topic_arn,
-          module.mission_result_topic.topic_arn,
-          module.task_result_topic.topic_arn,
-          module.intention_result_topic.topic_arn
+          # New topics (standardized naming)
+          module.chat_intention_topic.topic_arn,
+          module.persona_intention_topic.topic_arn,
+          module.director_mission_topic.topic_arn,
+          module.coordinator_task_topic.topic_arn,
+          module.agent_task_result_topic.topic_arn,
+          module.coordinator_mission_result_topic.topic_arn,
+          module.director_response_topic.topic_arn,
+          module.persona_response_topic.topic_arn
         ]
       }
     ]
@@ -249,9 +253,11 @@ resource "aws_lambda_function" "agent_persona" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE_NAME      = module.short_term_memory_db.table_name
-      SNS_TOPIC_ARN            = module.intention_topic.topic_arn
-      MISSION_RESULT_TOPIC_ARN = module.mission_result_topic.topic_arn
+      DYNAMODB_TABLE_NAME = module.short_term_memory_db.table_name
+      # New standardized topics only
+      PERSONA_INTENTION_TOPIC_ARN = module.persona_intention_topic.topic_arn
+      DIRECTOR_RESPONSE_TOPIC_ARN = module.director_response_topic.topic_arn
+      PERSONA_RESPONSE_TOPIC_ARN  = module.persona_response_topic.topic_arn
     }
   }
 }
@@ -269,9 +275,11 @@ resource "aws_lambda_function" "agent_director" {
 
   environment {
     variables = {
-      MISSION_TOPIC_ARN          = module.mission_topic.topic_arn
-      INTENTION_RESULT_TOPIC_ARN = module.intention_result_topic.topic_arn
-      MISSION_STATE_TABLE_NAME   = module.mission_state_db.table_name
+      MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
+      # New standardized topics only
+      DIRECTOR_MISSION_TOPIC_ARN           = module.director_mission_topic.topic_arn
+      DIRECTOR_RESPONSE_TOPIC_ARN          = module.director_response_topic.topic_arn
+      COORDINATOR_MISSION_RESULT_TOPIC_ARN = module.coordinator_mission_result_topic.topic_arn
     }
   }
 }
@@ -290,9 +298,11 @@ resource "aws_lambda_function" "agent_coordinator" {
   environment {
     variables = {
       MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
-      TASK_RESULT_TOPIC_ARN    = module.task_result_topic.topic_arn
-      MISSION_RESULT_TOPIC_ARN = module.mission_result_topic.topic_arn
       ENVIRONMENT              = var.environment
+      # New standardized topics only
+      COORDINATOR_TASK_TOPIC_ARN           = module.coordinator_task_topic.topic_arn
+      AGENT_TASK_RESULT_TOPIC_ARN          = module.agent_task_result_topic.topic_arn
+      COORDINATOR_MISSION_RESULT_TOPIC_ARN = module.coordinator_mission_result_topic.topic_arn
     }
   }
 }
@@ -312,11 +322,13 @@ resource "aws_lambda_function" "agent_elevator" {
     variables = {
       ELEVATOR_API_BASE_URL = "https://anna-minimal-api.neomot.com"
       ELEVATOR_API_SECRET   = "t3hILevRdzfFyd05U2g+XT4lPZCmT6CB+ytaQljWWOk="
-      TASK_RESULT_TOPIC_ARN = module.task_result_topic.topic_arn
-      MONITORING_TABLE_NAME = module.elevator_monitoring_db.table_name
-      LAMBDA_FUNCTION_NAME  = "bos-agent-elevator-${var.environment}"
-      ACCOUNT_ID            = data.aws_caller_identity.current.account_id
-      REGION_NAME           = data.aws_region.current.id
+      # New standardized topics only
+      COORDINATOR_TASK_TOPIC_ARN  = module.coordinator_task_topic.topic_arn
+      AGENT_TASK_RESULT_TOPIC_ARN = module.agent_task_result_topic.topic_arn
+      MONITORING_TABLE_NAME       = module.elevator_monitoring_db.table_name
+      LAMBDA_FUNCTION_NAME        = "bos-agent-elevator-${var.environment}"
+      ACCOUNT_ID                  = data.aws_caller_identity.current.account_id
+      REGION_NAME                 = data.aws_region.current.id
     }
   }
 }
@@ -341,10 +353,12 @@ resource "aws_lambda_function" "agent_psim" {
 
   environment {
     variables = {
-      PSIM_API_BASE_URL     = "http://psim.clevertown.io:9091"
-      PSIM_API_USERNAME     = "integration_blubrain"
-      PSIM_API_PASSWORD     = "Blubrain@4565"
-      TASK_RESULT_TOPIC_ARN = module.task_result_topic.topic_arn
+      PSIM_API_BASE_URL = "http://psim.clevertown.io:9091"
+      PSIM_API_USERNAME = "integration_blubrain"
+      PSIM_API_PASSWORD = "Blubrain@4565"
+      # New standardized topics only
+      COORDINATOR_TASK_TOPIC_ARN  = module.coordinator_task_topic.topic_arn
+      AGENT_TASK_RESULT_TOPIC_ARN = module.agent_task_result_topic.topic_arn
     }
   }
 }
@@ -512,166 +526,272 @@ resource "aws_lambda_permission" "api_gateway_permission_coordinator" {
 }
 
 # --- SNS Subscription for Director Agent ---
-# This subscribes the Director Agent Lambda to the intention topic.
-resource "aws_sns_topic_subscription" "agent_director_subscription" {
-  topic_arn = module.intention_topic.topic_arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.agent_director.arn
-}
+# ==================== NEW STANDARDIZED SNS SUBSCRIPTIONS ====================
 
-# --- SNS Subscription for Mission Result Topic ---
-resource "aws_sns_topic_subscription" "agent_director_result_subscription" {
-  topic_arn = module.mission_result_topic.topic_arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.agent_director.arn
-}
-
-# --- SNS Subscription for Persona Agent Mission Results ---
-resource "aws_sns_topic_subscription" "agent_persona_result_subscription" {
-  topic_arn = module.mission_result_topic.topic_arn
+# Chat Intention Topic → Persona Agent
+resource "aws_sns_topic_subscription" "chat_intention_subscription" {
+  topic_arn = module.chat_intention_topic.topic_arn
   protocol  = "lambda"
   endpoint  = aws_lambda_function.agent_persona.arn
 }
 
-resource "aws_sns_topic_subscription" "agent_persona_intention_result_subscription" {
-  topic_arn = module.intention_result_topic.topic_arn
+# Persona Intention Topic → Director Agent
+resource "aws_sns_topic_subscription" "persona_intention_subscription" {
+  topic_arn = module.persona_intention_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_director.arn
+}
+
+# Director Mission Topic → Coordinator Agent
+resource "aws_sns_topic_subscription" "director_mission_subscription" {
+  topic_arn = module.director_mission_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_coordinator.arn
+}
+
+# Coordinator Task Topic → Integration Agents (Elevator, PSIM, etc.)
+resource "aws_sns_topic_subscription" "coordinator_task_elevator_subscription" {
+  topic_arn = module.coordinator_task_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_elevator.arn
+}
+
+resource "aws_sns_topic_subscription" "coordinator_task_psim_subscription" {
+  topic_arn = module.coordinator_task_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_psim.arn
+}
+
+# Agent Task Result Topic → Coordinator Agent
+resource "aws_sns_topic_subscription" "agent_task_result_subscription" {
+  topic_arn = module.agent_task_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_coordinator.arn
+}
+
+# Coordinator Mission Result Topic → Director Agent
+resource "aws_sns_topic_subscription" "coordinator_mission_result_subscription" {
+  topic_arn = module.coordinator_mission_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.agent_director.arn
+}
+
+# Director Response Topic → Persona Agent
+resource "aws_sns_topic_subscription" "director_response_subscription" {
+  topic_arn = module.director_response_topic.topic_arn
   protocol  = "lambda"
   endpoint  = aws_lambda_function.agent_persona.arn
 }
 
-# --- SNS Subscription for Coordinator Agent ---
-resource "aws_sns_topic_subscription" "agent_coordinator_subscription" {
-  topic_arn = module.mission_topic.topic_arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.agent_coordinator.arn
-}
+# Persona Response Topic → Chat Lambda (will be added when WebSocket is implemented)
+# resource "aws_sns_topic_subscription" "persona_response_subscription" {
+#   topic_arn = module.persona_response_topic.topic_arn
+#   protocol  = "lambda"
+#   endpoint  = aws_lambda_function.chat_lambda.arn  # To be created
+# }
 
-# --- SNS Subscription for Task Completion ---
-resource "aws_sns_topic_subscription" "coordinator_task_result_subscription" {
-  topic_arn = module.task_result_topic.topic_arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.agent_coordinator.arn
-}
+# ==================== NEW STANDARDIZED SNS PERMISSIONS ====================
 
-# --- Lambda Permission for SNS ---
-# This allows the SNS topic to invoke our Director Agent Lambda function.
-resource "aws_lambda_permission" "sns_permission_director" {
-  statement_id  = "AllowSNSInvokeDirector"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.agent_director.function_name
-  principal     = "sns.amazonaws.com"
-  source_arn    = module.intention_topic.topic_arn
-}
-
-resource "aws_lambda_permission" "sns_permission_director_result" {
-  statement_id  = "AllowSNSInvokeDirectorResult"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.agent_director.function_name
-  principal     = "sns.amazonaws.com"
-  source_arn    = module.mission_result_topic.topic_arn
-}
-
-resource "aws_lambda_permission" "sns_permission_persona_result" {
-  statement_id  = "AllowSNSInvokePersonaResult"
+# Chat Intention Topic → Persona Agent
+resource "aws_lambda_permission" "sns_permission_chat_intention" {
+  statement_id  = "AllowSNSInvokeChatIntention"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.agent_persona.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = module.mission_result_topic.topic_arn
+  source_arn    = module.chat_intention_topic.topic_arn
 }
 
-resource "aws_lambda_permission" "sns_permission_persona_intention_result" {
-  statement_id  = "AllowSNSInvokePersonaIntentionResult"
+# Persona Intention Topic → Director Agent
+resource "aws_lambda_permission" "sns_permission_persona_intention" {
+  statement_id  = "AllowSNSInvokePersonaIntention"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_director.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.persona_intention_topic.topic_arn
+}
+
+# Director Mission Topic → Coordinator Agent
+resource "aws_lambda_permission" "sns_permission_director_mission" {
+  statement_id  = "AllowSNSInvokeDirectorMission"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_coordinator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.director_mission_topic.topic_arn
+}
+
+# Coordinator Task Topic → Integration Agents
+resource "aws_lambda_permission" "sns_permission_coordinator_task_elevator" {
+  statement_id  = "AllowSNSInvokeCoordinatorTaskElevator"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_elevator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.coordinator_task_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "sns_permission_coordinator_task_psim" {
+  statement_id  = "AllowSNSInvokeCoordinatorTaskPSIM"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_psim.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.coordinator_task_topic.topic_arn
+}
+
+# Agent Task Result Topic → Coordinator Agent
+resource "aws_lambda_permission" "sns_permission_agent_task_result" {
+  statement_id  = "AllowSNSInvokeAgentTaskResult"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_coordinator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.agent_task_result_topic.topic_arn
+}
+
+# Coordinator Mission Result Topic → Director Agent
+resource "aws_lambda_permission" "sns_permission_coordinator_mission_result" {
+  statement_id  = "AllowSNSInvokeCoordinatorMissionResult"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent_director.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.coordinator_mission_result_topic.topic_arn
+}
+
+# Director Response Topic → Persona Agent
+resource "aws_lambda_permission" "sns_permission_director_response" {
+  statement_id  = "AllowSNSInvokeDirectorResponse"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.agent_persona.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = module.intention_result_topic.topic_arn
-}
-
-resource "aws_lambda_permission" "sns_permission_coordinator" {
-  statement_id  = "AllowSNSInvokeCoordinator"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.agent_coordinator.function_name
-  principal     = "sns.amazonaws.com"
-  source_arn    = module.mission_topic.topic_arn
-}
-
-resource "aws_lambda_permission" "sns_permission_coordinator_task_result" {
-  statement_id  = "AllowSNSInvokeCoordinatorTaskResult"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.agent_coordinator.function_name
-  principal     = "sns.amazonaws.com"
-  source_arn    = module.task_result_topic.topic_arn
+  source_arn    = module.director_response_topic.topic_arn
 }
 
 
 
-# --- SNS Topic for Intentions ---
-module "intention_topic" {
+# --- SNS Topics (Nomenclatura Padronizada) ---
+
+# Tópico para intenções do Chat (Chat → Persona)
+module "chat_intention_topic" {
   source = "../../modules/sns_topic"
 
-  name = "bos-intention-topic-${var.environment}"
+  name = "bos-chat-intention-topic-${var.environment}"
 
   tags = {
     Project     = "BuildingOS"
     Environment = title(var.environment)
     ManagedBy   = "Terraform"
     Purpose     = "EventBus"
+    Publisher   = "ChatLambda"
+    Subscriber  = "AgentPersona"
   }
 }
 
-# --- SNS Topic for Missions ---
-module "mission_topic" {
+# Tópico para intenções processadas pelo Persona (Persona → Director)
+module "persona_intention_topic" {
   source = "../../modules/sns_topic"
 
-  name = "bos-mission-topic-${var.environment}"
+  name = "bos-persona-intention-topic-${var.environment}"
 
   tags = {
     Project     = "BuildingOS"
     Environment = title(var.environment)
     ManagedBy   = "Terraform"
     Purpose     = "EventBus"
+    Publisher   = "AgentPersona"
+    Subscriber  = "AgentDirector"
   }
 }
 
-# --- SNS Topic for Mission Results ---
-module "mission_result_topic" {
+# Tópico para missões do Director (Director → Coordinator)
+module "director_mission_topic" {
   source = "../../modules/sns_topic"
 
-  name = "bos-mission-result-topic-${var.environment}"
+  name = "bos-director-mission-topic-${var.environment}"
 
   tags = {
     Project     = "BuildingOS"
     Environment = title(var.environment)
     ManagedBy   = "Terraform"
     Purpose     = "EventBus"
+    Publisher   = "AgentDirector"
+    Subscriber  = "AgentCoordinator"
   }
 }
 
-# --- SNS Topic for Task Results ---
-module "task_result_topic" {
+# Tópico para tarefas do Coordinator (Coordinator → Agents)
+module "coordinator_task_topic" {
   source = "../../modules/sns_topic"
 
-  name = "bos-task-result-topic-${var.environment}"
+  name = "bos-coordinator-task-topic-${var.environment}"
 
   tags = {
     Project     = "BuildingOS"
     Environment = title(var.environment)
     ManagedBy   = "Terraform"
     Purpose     = "EventBus"
+    Publisher   = "AgentCoordinator"
+    Subscriber  = "Agents"
   }
 }
 
-# --- SNS Topic for Intention Results ---
-module "intention_result_topic" {
+# Tópico para resultados de tarefas dos Agents (Agents → Coordinator)
+module "agent_task_result_topic" {
   source = "../../modules/sns_topic"
 
-  name = "bos-intention-result-topic-${var.environment}"
+  name = "bos-agent-task-result-topic-${var.environment}"
 
   tags = {
     Project     = "BuildingOS"
     Environment = title(var.environment)
     ManagedBy   = "Terraform"
     Purpose     = "EventBus"
+    Publisher   = "Agents"
+    Subscriber  = "AgentCoordinator"
+  }
+}
+
+# Tópico para resultados de missões do Coordinator (Coordinator → Director)
+module "coordinator_mission_result_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-coordinator-mission-result-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+    Publisher   = "AgentCoordinator"
+    Subscriber  = "AgentDirector"
+  }
+}
+
+# Tópico para respostas do Director (Director → Persona)
+module "director_response_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-director-response-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+    Publisher   = "AgentDirector"
+    Subscriber  = "AgentPersona"
+  }
+}
+
+# Tópico para respostas do Persona (Persona → Chat)
+module "persona_response_topic" {
+  source = "../../modules/sns_topic"
+
+  name = "bos-persona-response-topic-${var.environment}"
+
+  tags = {
+    Project     = "BuildingOS"
+    Environment = title(var.environment)
+    ManagedBy   = "Terraform"
+    Purpose     = "EventBus"
+    Publisher   = "AgentPersona"
+    Subscriber  = "ChatLambda"
   }
 }
 
@@ -682,103 +802,14 @@ resource "aws_apigatewayv2_stage" "default" {
   auto_deploy = true
 }
 
-# --- S3 Bucket for Static Website Hosting ---
-resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "bos-frontend-${var.environment}-${random_string.bucket_suffix.result}"
+# --- Frontend Website ---
+module "frontend_website" {
+  source = "../../modules/s3_website"
 
-  tags = {
-    Project     = "BuildingOS"
-    Environment = title(var.environment)
-    ManagedBy   = "Terraform"
-    Purpose     = "StaticWebsiteHosting"
-  }
-}
-
-resource "random_string" "bucket_suffix" {
-  length  = 8
-  special = false
-  upper   = false
-}
-
-resource "aws_s3_bucket_website_configuration" "frontend_bucket_website" {
-  bucket = aws_s3_bucket.frontend_bucket.id
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "error.html"
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "frontend_bucket_pab" {
-  bucket = aws_s3_bucket.frontend_bucket.id
-
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
-
-resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
-  bucket = aws_s3_bucket.frontend_bucket.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.frontend_bucket.arn}/*"
-      }
-    ]
-  })
-
-  depends_on = [aws_s3_bucket_public_access_block.frontend_bucket_pab]
-}
-
-# Upload chat files to S3
-resource "aws_s3_object" "chat_with_notifications" {
-  bucket       = aws_s3_bucket.frontend_bucket.id
-  key          = "chat-with-notifications.html"
-  source       = "../../../frontend/chat-with-notifications.html"
-  etag         = filemd5("../../../frontend/chat-with-notifications.html")
-  content_type = "text/html"
-}
-
-resource "aws_s3_object" "error" {
-  bucket       = aws_s3_bucket.frontend_bucket.id
-  key          = "error.html"
-  source       = "../../../frontend/error.html"
-  etag         = filemd5("../../../frontend/error.html")
-  content_type = "text/html"
-}
-
-resource "aws_s3_object" "index" {
-  bucket       = aws_s3_bucket.frontend_bucket.id
-  key          = "index.html"
-  source       = "../../../frontend/index.html"
-  etag         = filemd5("../../../frontend/index.html")
-  content_type = "text/html"
-}
-
-# --- Outputs ---
-# This will print the public URL of our API after it's deployed.
-output "api_endpoint" {
-  description = "The public invoke URL for the API Gateway."
-  value       = aws_apigatewayv2_api.http_api.api_endpoint
-}
-
-output "website_url" {
-  description = "The public URL for the static website."
-  value       = "http://${aws_s3_bucket.frontend_bucket.bucket}.s3-website-${data.aws_region.current.id}.amazonaws.com"
-}
-
-output "bucket_name" {
-  description = "The name of the S3 bucket hosting the website."
-  value       = aws_s3_bucket.frontend_bucket.bucket
+  bucket_name       = "buildingos-frontend"
+  environment       = var.environment
+  frontend_path     = "../../../frontend"
+  enable_cloudfront = true
 }
 
 # Data source to get current AWS region

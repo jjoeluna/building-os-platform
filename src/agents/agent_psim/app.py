@@ -12,7 +12,14 @@ sns = boto3.client("sns")
 PSIM_API_BASE_URL = os.environ["PSIM_API_BASE_URL"]
 PSIM_API_USERNAME = os.environ["PSIM_API_USERNAME"]
 PSIM_API_PASSWORD = os.environ["PSIM_API_PASSWORD"]
-TASK_RESULT_TOPIC_ARN = os.environ["TASK_RESULT_TOPIC_ARN"]
+
+# New standardized topics
+COORDINATOR_TASK_TOPIC_ARN = os.environ.get("COORDINATOR_TASK_TOPIC_ARN")
+AGENT_TASK_RESULT_TOPIC_ARN = os.environ.get("AGENT_TASK_RESULT_TOPIC_ARN")
+
+# Determine which architecture to use (prefer new if available)
+USE_NEW_ARCHITECTURE = bool(COORDINATOR_TASK_TOPIC_ARN and AGENT_TASK_RESULT_TOPIC_ARN)
+print(f"Agent PSIM using {'NEW' if USE_NEW_ARCHITECTURE else 'LEGACY'} architecture")
 
 # Session for maintaining authentication
 session = requests.Session()
@@ -22,19 +29,38 @@ def handler(event, context):
     """
     PSIM Agent - Handles PSIM-related tasks
 
-    Supports two types of events:
-    1. SNS events (tasks from Coordinator Agent)
-    2. API Gateway POST requests (direct API calls for debugging)
+    Supports multiple types of events:
+    1. SNS events (from coordinator-task-topic or task_result_topic)
+    2. Direct Lambda invocation (legacy from Coordinator Agent)
+    3. API Gateway POST requests (direct API calls for debugging)
     """
     try:
         print(f"Agent PSIM received event: {json.dumps(event)}")
 
-        # Check if this is an SNS event (task from Coordinator)
+        # Check if this is an SNS event
         if "Records" in event:
             for record in event["Records"]:
                 if record.get("EventSource") == "aws:sns":
+                    topic_arn = record["Sns"]["TopicArn"]
                     message_body = json.loads(record["Sns"]["Message"])
-                    return handle_sns_task(message_body)
+
+                    print(f"Processing SNS event from topic: {topic_arn}")
+
+                    # Check if this task is for us
+                    if message_body.get("agent") == "agent_psim":
+                        return handle_task_from_sns(message_body)
+                    else:
+                        print(
+                            f"Task not for agent_psim, ignoring: {message_body.get('agent')}"
+                        )
+                        return {
+                            "status": "IGNORED",
+                            "reason": "Task not for this agent",
+                        }
+
+        # Check if this is a direct Lambda invocation from Coordinator (legacy)
+        if "mission_id" in event and "task_id" in event and "action" in event:
+            return handle_legacy_task(event)
 
         # Otherwise, handle as API Gateway request (direct API call)
         return handle_api_request(event, context)
@@ -44,9 +70,9 @@ def handler(event, context):
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
 
 
-def handle_sns_task(task_data):
+def handle_task_from_sns(task_data):
     """
-    Handle task from Coordinator Agent via SNS
+    Handle task from Coordinator Agent via NEW SNS architecture
     """
     try:
         # Extract task information
@@ -55,12 +81,12 @@ def handle_sns_task(task_data):
         action = task_data["action"]
         parameters = task_data["parameters"]
 
-        print(f"Processing task {task_id} for mission {mission_id}: {action}")
+        print(f"Processing SNS task {task_id} for mission {mission_id}: {action}")
 
         # Execute the PSIM action
         result = execute_psim_action(action, parameters)
 
-        # Publish task completion
+        # Publish task completion using new architecture
         publish_task_completion(mission_id, task_id, "completed", result)
 
         return {
@@ -74,15 +100,66 @@ def handle_sns_task(task_data):
         print(f"Error processing SNS task: {str(e)}")
 
         # Try to publish failure if we have the required info
-        if "mission_id" in task_data and "task_id" in task_data:
-            publish_task_completion(
-                task_data["mission_id"],
-                task_data["task_id"],
-                "failed",
-                {"error": str(e)},
-            )
+        try:
+            mission_id = task_data.get("mission_id")
+            task_id = task_data.get("task_id")
+            if mission_id and task_id:
+                publish_task_completion(
+                    mission_id, task_id, "failed", {"error": str(e)}
+                )
+        except Exception as pub_error:
+            print(f"Error publishing failure: {str(pub_error)}")
 
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)}),
+        }
+
+
+def handle_legacy_task(event):
+    """
+    Handle task from direct Lambda invocation (LEGACY architecture)
+    """
+    try:
+        # Extract task information from direct event
+        mission_id = event["mission_id"]
+        task_id = event["task_id"]
+        action = event["action"]
+        parameters = event["parameters"]
+
+        print(f"Processing LEGACY task {task_id} for mission {mission_id}: {action}")
+
+        # Execute the PSIM action
+        result = execute_psim_action(action, parameters)
+
+        # Publish task completion using legacy architecture
+        publish_task_completion(mission_id, task_id, "completed", result)
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {"message": f"Task {task_id} completed successfully", "result": result}
+            ),
+        }
+
+    except Exception as e:
+        print(f"Error processing legacy task: {str(e)}")
+
+        # Try to publish failure if we have the required info
+        try:
+            mission_id = event.get("mission_id")
+            task_id = event.get("task_id")
+            if mission_id and task_id:
+                publish_task_completion(
+                    mission_id, task_id, "failed", {"error": str(e)}
+                )
+        except Exception as pub_error:
+            print(f"Error publishing failure: {str(pub_error)}")
+
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)}),
+        }
 
 
 def handle_api_request(event, context):
@@ -322,7 +399,7 @@ def publish_task_completion(
     mission_id: str, task_id: str, status: str, result: Dict[str, Any]
 ) -> None:
     """
-    Publish task completion to the task completion topic
+    Publish task completion using appropriate architecture
     """
     try:
         completion_message = {
@@ -334,8 +411,19 @@ def publish_task_completion(
             "completed_at": datetime.now(timezone.utc).isoformat(),
         }
 
+        if USE_NEW_ARCHITECTURE:
+            # Use new agent-task-result-topic
+            topic_arn = AGENT_TASK_RESULT_TOPIC_ARN
+            print(
+                f"Publishing task completion via NEW architecture to agent-task-result-topic"
+            )
+        else:
+            # New architecture should always be available now
+            print("ERROR: New architecture topics not available")
+            raise ValueError("AGENT_TASK_RESULT_TOPIC_ARN not configured")
+
         sns.publish(
-            TopicArn=TASK_RESULT_TOPIC_ARN,
+            TopicArn=topic_arn,
             Message=json.dumps(completion_message),
             Subject=f"Task {task_id} Completion",
         )

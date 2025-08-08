@@ -10,10 +10,29 @@ bedrock = boto3.client("bedrock-runtime")
 dynamodb = boto3.resource("dynamodb")
 
 # Get environment variables set by Terraform
-MISSION_TOPIC_ARN = os.environ.get("MISSION_TOPIC_ARN")
-INTENTION_RESULT_TOPIC_ARN = os.environ.get("INTENTION_RESULT_TOPIC_ARN")
+
 MISSION_STATE_TABLE_NAME = os.environ.get("MISSION_STATE_TABLE_NAME")
+
+# New standardized topics
+DIRECTOR_MISSION_TOPIC_ARN = os.environ.get("DIRECTOR_MISSION_TOPIC_ARN")
+DIRECTOR_RESPONSE_TOPIC_ARN = os.environ.get("DIRECTOR_RESPONSE_TOPIC_ARN")
+COORDINATOR_MISSION_RESULT_TOPIC_ARN = os.environ.get(
+    "COORDINATOR_MISSION_RESULT_TOPIC_ARN"
+)
+
+# Bedrock configuration
 BEDROCK_MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
+
+# Validate required environment variables for new architecture
+if not DIRECTOR_MISSION_TOPIC_ARN:
+    print("ERROR: DIRECTOR_MISSION_TOPIC_ARN not configured")
+    raise ValueError("DIRECTOR_MISSION_TOPIC_ARN environment variable is required")
+
+if not DIRECTOR_RESPONSE_TOPIC_ARN:
+    print("ERROR: DIRECTOR_RESPONSE_TOPIC_ARN not configured")
+    raise ValueError("DIRECTOR_RESPONSE_TOPIC_ARN environment variable is required")
+
+print("Agent Director initialized with new architecture")
 
 # DynamoDB table
 mission_table = dynamodb.Table(MISSION_STATE_TABLE_NAME)
@@ -106,49 +125,6 @@ def get_available_agents():
             ],
         },
     ]
-
-
-def handler(event, context):
-    """
-    Director Agent - Handles two types of events:
-    1. New user requests (API Gateway or SNS from intention_topic)
-    2. Mission results (SNS from mission_result_topic)
-    """
-    print(f"Director Agent invoked with event: {event}")
-
-    try:
-        # Determine event type
-        if "Records" in event:
-            # SNS event
-            for record in event["Records"]:
-                if record.get("EventSource") == "aws:sns":
-                    message_body = json.loads(record["Sns"]["Message"])
-
-                    # Check if this is a mission result (contains mission_id and completed_at)
-                    if "mission_id" in message_body and "completed_at" in message_body:
-                        return handle_mission_result(message_body)
-                    else:
-                        # This is a new intention
-                        return handle_new_intention(message_body)
-        else:
-            # API Gateway event
-            return handle_api_gateway_request(event, context)
-
-    except Exception as e:
-        print(f"Error in Director Agent: {e}")
-
-        # Return error response based on event type
-        if "Records" in event:
-            raise e
-        else:
-            return {
-                "statusCode": 500,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps({"status": "ERROR", "error": str(e)}),
-            }
 
 
 def handle_api_gateway_request(event, context):
@@ -271,16 +247,25 @@ def handle_mission_result(result_data):
         "agent": "agent_director",
     }
 
-    # Publish to intention_result_topic for persona
+    # Publish director response using new architecture only
+    if not DIRECTOR_RESPONSE_TOPIC_ARN:
+        raise ValueError("DIRECTOR_RESPONSE_TOPIC_ARN environment variable is required")
+
     try:
+        topic_arn = DIRECTOR_RESPONSE_TOPIC_ARN
+        subject = f"Director Response for Mission {mission_id}"
+        print(f"Publishing director response to topic: {topic_arn}")
+
         sns.publish(
-            TopicArn=INTENTION_RESULT_TOPIC_ARN,
+            TopicArn=topic_arn,
             Message=json.dumps(intention_result),
-            Subject=f"Intention Result for Mission {mission_id}",
+            Subject=subject,
         )
-        print(f"Published intention result for mission {mission_id} to persona")
+
+        print(f"Published director response for mission {mission_id}")
+
     except Exception as e:
-        print(f"Error publishing intention result: {str(e)}")
+        print(f"Error publishing response: {str(e)}")
 
     return {
         "status": "SUCCESS",
@@ -422,13 +407,293 @@ def create_and_publish_mission(user_message: str, user_id: str) -> str:
 
     print(f"Generated mission plan: {mission_plan_text}")
 
-    # Publish to mission topic
-    sns.publish(
-        TopicArn=MISSION_TOPIC_ARN,
-        Message=mission_plan_text,
-        Subject=f"New Mission: {mission_id}",
-    )
+    # Publish mission to coordinator using new architecture only
+    if not DIRECTOR_MISSION_TOPIC_ARN:
+        raise ValueError("DIRECTOR_MISSION_TOPIC_ARN environment variable is required")
 
-    print(f"Published mission {mission_id} to mission topic")
+    try:
+        topic_arn = DIRECTOR_MISSION_TOPIC_ARN
+        print(f"Publishing mission to topic: {topic_arn}")
+
+        sns.publish(
+            TopicArn=topic_arn,
+            Message=mission_plan_text,
+            Subject=f"New Mission: {mission_id}",
+        )
+
+        print(f"Published mission {mission_id}")
+
+    except Exception as e:
+        print(f"Error publishing mission: {str(e)}")
+        raise e
 
     return mission_id
+
+
+def handler(event, context):
+    """
+    Main Lambda handler for Director Agent.
+    Processes user intentions from persona_intention_topic and creates mission plans.
+    """
+    print(f"Director Agent invoked with event: {event}")
+
+    try:
+        # Check if this is an SNS event
+        if "Records" in event:
+            for record in event["Records"]:
+                if record.get("EventSource") == "aws:sns":
+                    topic_arn = record["Sns"]["TopicArn"]
+                    message = record["Sns"]["Message"]
+
+                    # Process persona intentions
+                    if "persona-intention" in topic_arn:
+                        return handle_persona_intention(message)
+                    elif "coordinator-mission-result" in topic_arn:
+                        return handle_coordinator_mission_result(message)
+                    else:
+                        print(f"Unknown SNS topic: {topic_arn}")
+                        return {"statusCode": 400, "body": "Unknown topic"}
+
+        # Direct invocation for testing
+        if event.get("test_mode"):
+            return handle_direct_invocation(event)
+
+        return {"statusCode": 400, "body": "Invalid event format"}
+
+    except Exception as e:
+        print(f"Error in Director handler: {str(e)}")
+        return {"statusCode": 500, "body": f"Error: {str(e)}"}
+
+
+def handle_persona_intention(message):
+    """
+    Handle user intention received from Persona Agent via persona_intention_topic
+    """
+    try:
+        intention_data = json.loads(message)
+        print(f"Processing persona intention: {intention_data}")
+
+        # Extract required fields
+        user_id = intention_data.get("user_id", "unknown")
+        user_intention = intention_data.get("user_intention", "")
+        mission_id = intention_data.get("mission_id")
+        context = intention_data.get("context", {})
+
+        if not user_intention:
+            return {"statusCode": 400, "body": "No user intention provided"}
+
+        if not mission_id:
+            mission_id = str(uuid.uuid4())
+
+        print(f"Creating mission plan for user {user_id}, mission {mission_id}")
+
+        # Create mission plan using the existing function
+        try:
+            created_mission_id = create_and_publish_mission(user_intention, user_id)
+
+            # Send response back to Persona
+            response_data = {
+                "mission_id": created_mission_id,
+                "user_id": user_id,
+                "status": "mission_created",
+                "response": f"Mission plan created successfully for: {user_intention}",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "agent": "agent_director",
+            }
+
+            # Publish response to director_response_topic
+            sns.publish(
+                TopicArn=DIRECTOR_RESPONSE_TOPIC_ARN,
+                Message=json.dumps(response_data),
+                Subject=f"Director Response for Mission {created_mission_id}",
+            )
+
+            print(f"Sent response to Persona for mission {created_mission_id}")
+
+            return {
+                "statusCode": 200,
+                "body": json.dumps(
+                    {
+                        "status": "success",
+                        "mission_id": created_mission_id,
+                        "message": "Mission plan created and sent to coordinator",
+                    }
+                ),
+            }
+
+        except Exception as e:
+            print(f"Error creating mission plan: {str(e)}")
+
+            # Send error response back to Persona
+            error_response = {
+                "mission_id": mission_id,
+                "user_id": user_id,
+                "status": "error",
+                "response": f"Failed to create mission plan: {str(e)}",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "agent": "agent_director",
+            }
+
+            sns.publish(
+                TopicArn=DIRECTOR_RESPONSE_TOPIC_ARN,
+                Message=json.dumps(error_response),
+                Subject=f"Director Error Response for Mission {mission_id}",
+            )
+
+            return {"statusCode": 500, "body": f"Error: {str(e)}"}
+
+    except Exception as e:
+        print(f"Error processing persona intention: {str(e)}")
+        return {"statusCode": 500, "body": f"Error: {str(e)}"}
+
+
+def handle_coordinator_mission_result(message):
+    """
+    Handle mission results received from Coordinator via coordinator-mission-result-topic.
+    Process the results and send response back to Persona.
+    """
+    try:
+        result_data = json.loads(message)
+        print(f"Processing coordinator mission result: {result_data}")
+
+        # Extract mission information
+        mission_id = result_data.get("mission_id", "unknown")
+        user_id = result_data.get("user_id", "unknown")
+        status = result_data.get("status", "unknown")
+        tasks = result_data.get("tasks", [])
+
+        print(f"Mission {mission_id} completed with status: {status}")
+
+        # Generate user-friendly response based on the mission results
+        response_text = synthesize_mission_response(result_data)
+
+        # Send response back to Persona
+        response_data = {
+            "mission_id": mission_id,
+            "user_id": user_id,
+            "status": "completed",
+            "response": response_text,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "agent": "agent_director",
+            "original_result": result_data,
+        }
+
+        # Publish response to director_response_topic for Persona
+        sns.publish(
+            TopicArn=DIRECTOR_RESPONSE_TOPIC_ARN,
+            Message=json.dumps(response_data),
+            Subject=f"Director Response for Mission {mission_id}",
+        )
+
+        print(f"Sent final response to Persona for mission {mission_id}")
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {
+                    "status": "success",
+                    "mission_id": mission_id,
+                    "message": "Mission result processed and response sent to Persona",
+                }
+            ),
+        }
+
+    except Exception as e:
+        print(f"Error processing coordinator mission result: {str(e)}")
+        return {"statusCode": 500, "body": f"Error: {str(e)}"}
+
+
+def synthesize_mission_response(result_data):
+    """
+    Generate a user-friendly response from mission results
+    """
+    try:
+        status = result_data.get("status", "unknown")
+        tasks = result_data.get("tasks", [])
+        user_request = result_data.get("user_request", "your request")
+
+        if status == "completed":
+            # Analyze successful tasks
+            successful_tasks = [
+                task for task in tasks if task.get("status") == "completed"
+            ]
+            failed_tasks = [task for task in tasks if task.get("status") == "failed"]
+
+            if len(successful_tasks) == len(tasks):
+                # All tasks successful
+                response = f"✅ Great! I've successfully completed {user_request}. "
+
+                # Add specific results if available
+                results = []
+                for task in successful_tasks:
+                    task_result = task.get("result", {})
+                    if isinstance(task_result, dict) and task_result.get("message"):
+                        results.append(task_result["message"])
+
+                if results:
+                    response += "Results: " + "; ".join(results)
+                else:
+                    response += "All operations completed successfully."
+
+            elif successful_tasks:
+                # Partial success
+                response = f"⚠️ I've partially completed {user_request}. "
+                response += f"{len(successful_tasks)} out of {len(tasks)} operations succeeded. "
+
+                if failed_tasks:
+                    failed_actions = [
+                        task.get("action", "unknown") for task in failed_tasks
+                    ]
+                    response += f"Failed operations: {', '.join(failed_actions)}."
+            else:
+                # All failed
+                response = (
+                    f"❌ I encountered issues while trying to complete {user_request}. "
+                )
+                response += (
+                    "Please try again or contact support if the problem persists."
+                )
+
+        elif status == "failed":
+            response = f"❌ I was unable to complete {user_request}. "
+            error_msg = result_data.get("error", "Unknown error occurred")
+            response += f"Error: {error_msg}"
+
+        else:
+            response = f"⏳ Your request '{user_request}' is being processed. Current status: {status}"
+
+        return response
+
+    except Exception as e:
+        print(f"Error synthesizing response: {str(e)}")
+        return f"Your request has been processed. Status: {result_data.get('status', 'unknown')}"
+
+
+def handle_direct_invocation(event):
+    """
+    Handle direct Lambda invocation for testing
+    """
+    try:
+        user_intention = event.get("user_intention", "")
+        user_id = event.get("user_id", "test-user")
+        mission_id = event.get("mission_id", str(uuid.uuid4()))
+
+        if not user_intention:
+            return {"statusCode": 400, "body": "No user intention provided"}
+
+        created_mission_id = create_and_publish_mission(user_intention, user_id)
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {
+                    "status": "success",
+                    "mission_id": created_mission_id,
+                    "message": "Mission plan created",
+                }
+            ),
+        }
+
+    except Exception as e:
+        print(f"Error in direct invocation: {str(e)}")
+        return {"statusCode": 500, "body": f"Error: {str(e)}"}
