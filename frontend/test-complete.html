@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildingOS - Testes do Sistema</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .test-section {
+            margin-bottom: 2rem;
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .test-item.success {
+            border-left-color: #28a745;
+        }
+
+        .test-item.error {
+            border-left-color: #dc3545;
+        }
+
+        .test-item.loading {
+            border-left-color: #ffc107;
+        }
+
+        .test-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .test-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .log-area {
+            background: #1a1a1a;
+            color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+
+        .log-timestamp {
+            color: #6c757d;
+            margin-right: 0.5rem;
+        }
+
+        .log-level {
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        .log-level.info {
+            background: #0dcaf0;
+            color: #000;
+        }
+
+        .log-level.success {
+            background: #198754;
+            color: #fff;
+        }
+
+        .log-level.error {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .header {
+                padding: 1.5rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 1.5rem 1rem;
+            }
+
+            .test-controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .test-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Voltar ao início
+            </a>
+            <h1>🧪 Testes do Sistema</h1>
+            <p>Verificação completa da API BuildingOS</p>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h2>Testes de Conectividade</h2>
+                <div class="test-controls">
+                    <button class="btn btn-primary" onclick="runAllTests()" id="runAllBtn">
+                        <i class="fas fa-play"></i>
+                        Executar Todos os Testes
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearResults()">
+                        <i class="fas fa-trash"></i>
+                        Limpar Resultados
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportResults()">
+                        <i class="fas fa-download"></i>
+                        Exportar Log
+                    </button>
+                </div>
+
+                <div class="test-results">
+                    <div id="testItems">
+                        <!-- Test items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Log de Execução</h2>
+                <div class="log-area" id="logArea">
+                    <div class="log-entry">
+                        <span class="log-timestamp">[Aguardando]</span>
+                        <span class="log-level info">INFO</span>
+                        Sistema pronto para testes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com';
+        
+        const tests = [
+            { name: 'Health Check', endpoint: '/health', method: 'GET' },
+            { name: 'Director Agent', endpoint: '/director', method: 'GET' },
+            { name: 'Persona Agent', endpoint: '/persona', method: 'POST', body: { user_id: 'test-user', message: 'Hello' } },
+            { name: 'Conversations', endpoint: '/persona/conversations?user_id=test-user', method: 'GET' },
+            { name: 'Elevator Call', endpoint: '/elevator/call', method: 'POST', body: { elevator_id: 'E1', to_floor: 5 } },
+            { name: 'PSIM Search', endpoint: '/psim/search', method: 'POST', body: { query: 'test' } },
+            { name: 'Coordinator Status', endpoint: '/coordinator/status', method: 'GET' }
+        ];
+
+        let testResults = [];
+
+        function initializeTests() {
+            const testItems = document.getElementById('testItems');
+            testItems.innerHTML = '';
+
+            tests.forEach((test, index) => {
+                const testItem = document.createElement('div');
+                testItem.className = 'test-item';
+                testItem.id = `test-${index}`;
+                testItem.innerHTML = `
+                    <div class="test-name">${test.name}</div>
+                    <div class="test-status">
+                        <span class="status-icon">⏸️</span>
+                        <span>Aguardando</span>
+                    </div>
+                `;
+                testItems.appendChild(testItem);
+            });
+        }
+
+        function logMessage(level, message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-level ${level}">${level.toUpperCase()}</span>
+                ${message}
+            `;
+            
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function updateTestStatus(index, status, message, details = null) {
+            const testItem = document.getElementById(`test-${index}`);
+            const statusSpan = testItem.querySelector('.test-status span:last-child');
+            const iconSpan = testItem.querySelector('.status-icon');
+            
+            testItem.className = `test-item ${status}`;
+            
+            switch (status) {
+                case 'loading':
+                    iconSpan.innerHTML = '<div class="spinner"></div>';
+                    statusSpan.textContent = 'Testando...';
+                    break;
+                case 'success':
+                    iconSpan.textContent = '✅';
+                    statusSpan.textContent = message || 'Sucesso';
+                    break;
+                case 'error':
+                    iconSpan.textContent = '❌';
+                    statusSpan.textContent = message || 'Erro';
+                    break;
+            }
+
+            testResults[index] = { status, message, details, timestamp: new Date() };
+        }
+
+        async function runTest(test, index) {
+            updateTestStatus(index, 'loading');
+            logMessage('info', `Iniciando teste: ${test.name}`);
+
+            try {
+                const requestOptions = {
+                    method: test.method,
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (test.body) {
+                    requestOptions.body = JSON.stringify(test.body);
+                }
+
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}${test.endpoint}`, requestOptions);
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+
+                let responseData;
+                try {
+                    responseData = await response.json();
+                } catch (e) {
+                    responseData = await response.text();
+                }
+
+                if (response.ok) {
+                    updateTestStatus(index, 'success', `${response.status} - ${duration}ms`);
+                    logMessage('success', `${test.name}: Sucesso (${response.status}) em ${duration}ms`);
+                } else {
+                    updateTestStatus(index, 'error', `${response.status} - ${response.statusText}`);
+                    logMessage('error', `${test.name}: Erro ${response.status} - ${response.statusText}`);
+                }
+
+            } catch (error) {
+                updateTestStatus(index, 'error', error.message);
+                logMessage('error', `${test.name}: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            const runAllBtn = document.getElementById('runAllBtn');
+            runAllBtn.disabled = true;
+            runAllBtn.innerHTML = '<div class="spinner"></div> Executando...';
+
+            testResults = [];
+            logMessage('info', 'Iniciando bateria de testes...');
+
+            for (let i = 0; i < tests.length; i++) {
+                await runTest(tests[i], i);
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            const successCount = testResults.filter(r => r.status === 'success').length;
+            const totalCount = testResults.length;
+            
+            logMessage('info', `Testes concluídos: ${successCount}/${totalCount} sucessos`);
+
+            runAllBtn.disabled = false;
+            runAllBtn.innerHTML = '<i class="fas fa-play"></i> Executar Todos os Testes';
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('logArea').innerHTML = `
+                <div class="log-entry">
+                    <span class="log-timestamp">[Limpo]</span>
+                    <span class="log-level info">INFO</span>
+                    Resultados limpos, sistema pronto para novos testes
+                </div>
+            `;
+            initializeTests();
+        }
+
+        function exportResults() {
+            if (testResults.length === 0) {
+                alert('Nenhum resultado para exportar. Execute os testes primeiro.');
+                return;
+            }
+
+            const report = {
+                timestamp: new Date().toISOString(),
+                api_base: API_BASE,
+                total_tests: testResults.length,
+                successful_tests: testResults.filter(r => r.status === 'success').length,
+                failed_tests: testResults.filter(r => r.status === 'error').length,
+                tests: tests.map((test, index) => ({
+                    name: test.name,
+                    endpoint: test.endpoint,
+                    method: test.method,
+                    result: testResults[index] || { status: 'not_run' }
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `buildingos_test_report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            logMessage('info', 'Relatório exportado com sucesso');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeTests);
+    </script>
+</body>
+</html>

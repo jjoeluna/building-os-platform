@@ -139,30 +139,6 @@
             font-weight: 600;
         }
         
-        .notification-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            align-self: center;
-            font-size: 16px;
-            text-align: center;
-            border-radius: 15px;
-            max-width: 95%;
-            border: 2px solid #f5c6cb;
-            font-weight: 600;
-        }
-        
-        .notification-timeout {
-            background-color: #fff3cd;
-            color: #856404;
-            align-self: center;
-            font-size: 16px;
-            text-align: center;
-            border-radius: 15px;
-            max-width: 95%;
-            border: 2px solid #ffd43b;
-            font-weight: 600;
-        }
-        
         .typing-indicator {
             display: flex;
             align-items: center;
@@ -359,15 +335,7 @@
     // CONFIGURATION
     // ==============================================
     const API_ENDPOINT = 'https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com';
-    // Get or create a fixed USER_ID (persisted in localStorage for multi-device support)
-        let USER_ID = localStorage.getItem('building_os_user_id');
-        if (!USER_ID) {
-            USER_ID = 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('building_os_user_id', USER_ID);
-        }
-        
-        // Generate session ID for this specific browser session
-        const SESSION_ID = 'session_' + Math.random().toString(36).substr(2, 9);
+    const USER_ID = `web-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     // ==============================================
     // DOM ELEMENTS
@@ -417,16 +385,6 @@
     function addMessage(text, sender, timestamp = null) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender);
-        
-        // Add specific notification classes
-        if (sender === 'notification') {
-            if (text.includes('[ERRO]')) {
-                messageElement.classList.add('notification-error');
-            } else if (text.includes('[TIMEOUT]')) {
-                messageElement.classList.add('notification-timeout');
-            }
-        }
-        
         messageElement.textContent = text;
         
         // Add timestamp data attribute for sorting
@@ -544,9 +502,7 @@
                         addMessage(message, 'user', timestamp);
                     } else if (role === 'assistant') {
                         // Check if it's a notification message
-                        if (message.includes('✅') || message.includes('[CHEGOU]') || 
-                            message.includes('[TIMEOUT]') || message.includes('[ERRO]') ||
-                            message.includes('🚀') || message.includes('⏰')) {
+                        if (message.includes('✅') || message.includes('🚀') || message.includes('⏰')) {
                             addMessage(message, 'notification', timestamp);
                         } else {
                             addMessage(message, 'assistant', timestamp);
@@ -561,12 +517,6 @@
                 
                 lastMessageCount = data.messages.length;
                 console.log(`Loaded ${data.messages.length} messages from history`);
-                
-                // Start polling if we have a session
-                if (currentSession && !pollingInterval) {
-                    console.log(`Starting polling for existing session: ${currentSession}`);
-                    startPolling();
-                }
             }
             
         } catch (error) {
@@ -576,9 +526,11 @@
     
     async function pollForNewMessages() {
         try {
-            // Poll using only user_id for multi-device support
-            // This allows notifications from any device/session to be received
-            const url = `${API_ENDPOINT}/persona?user_id=${encodeURIComponent(USER_ID)}`;
+            if (!currentSession) {
+                return; // No session to poll for yet
+            }
+            
+            const url = `${API_ENDPOINT}/persona?user_id=${encodeURIComponent(USER_ID)}&session=${encodeURIComponent(currentSession)}`;
             const response = await fetch(url, {
                 method: 'GET',
                 mode: 'cors',
@@ -612,10 +564,8 @@
                         hideTypingIndicator();
                         
                         // Check if it's a notification message
-                        if (message.includes('✅') || message.includes('[CHEGOU]') || 
-                            message.includes('[TIMEOUT]') || message.includes('[ERRO]') ||
-                            message.includes('Elevador chegou') || message.includes('🚀') || 
-                            message.includes('⏰')) {
+                        if (message.includes('✅') || message.includes('Elevador chegou') || 
+                            message.includes('🚀') || message.includes('⏰')) {
                             addMessage(message, 'notification', timestamp);
                             
                             // Play notification sound or show browser notification

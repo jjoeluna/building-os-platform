@@ -60,17 +60,22 @@ This directory contains all Architecture Decision Records (ADRs) for the Buildin
 
 ### Revolutionary Architecture Changes
 - **[013-transition-to-distributed-agent-architecture.md](013-transition-to-distributed-agent-architecture.md)**  
-  *Transition from Centralized Coordinator to Distributed Agent Architecture* 🚀 **LATEST**  
+  *Transition from Centralized Coordinator to Distributed Agent Architecture*  
   📅 2025-08-05 | 🏷️ Architecture, Event-Driven, Stateless, Scalability
+
+- **[014-implement-websocket-real-time-messaging.md](014-implement-websocket-real-time-messaging.md)** 🆕  
+  *Implement WebSocket Real-Time Messaging Architecture*  
+  📅 2025-08-07 | 🏷️ WebSocket, Real-time, SNS, Messaging
 
 ## 📊 ADRs by Category
 
-### 🏗️ **Core Architecture** (4 ADRs)
+### 🏗️ **Core Architecture** (5 ADRs)
 Fundamental architectural decisions that shape the entire platform:
 - **Serverless-First Principle** (ADR-002)
 - **Event-Driven Choreography** (ADR-003)  
 - **Intelligent Agent Model** (ADR-004)
-- **Distributed Agent Architecture** (ADR-013) 🆕
+- **Distributed Agent Architecture** (ADR-013)
+- **WebSocket Real-Time Messaging** (ADR-014) 🆕
 
 ### ☁️ **Infrastructure & Cloud** (4 ADRs)
 Infrastructure, deployment, and cloud service decisions:
@@ -132,9 +137,10 @@ Platform designed around intelligent agents:
 
 | Status | Count | ADRs |
 |--------|-------|------|
+| **Proposed** | 1 | ADR-014 |
 | **Accepted** | 12 | ADR-001 to ADR-004, ADR-006 to ADR-013 |
 | **Superseded** | 1 | ADR-005 (replaced by ADR-013) |
-| **Total** | 13 | All documented decisions |
+| **Total** | 14 | All documented decisions |
 
 ## 💡 How to Use These ADRs
 
@@ -183,7 +189,7 @@ tags:
 ```
 
 ### ADR Numbering
-- Use sequential numbering (next available: **ADR-014**)
+- Use sequential numbering (next available: **ADR-015**)
 - Update this index when adding new ADRs
 - Reference related/superseded ADRs appropriately
 
