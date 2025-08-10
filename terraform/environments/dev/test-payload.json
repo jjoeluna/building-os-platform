@@ -1,0 +1,10 @@
+{
+  "httpMethod": "GET",
+  "path": "/director",
+  "queryStringParameters": null,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": null,
+  "isBase64Encoded": false
+}

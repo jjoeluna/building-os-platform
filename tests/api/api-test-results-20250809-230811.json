@@ -1,0 +1,16 @@
+[
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/persona",
+    "timestamp": 1754791683.4203486,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user",
+      "message": "Test message from Python API tests"
+    },
+    "status_code": 0,
+    "response_time_ms": 7843.33,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  }
+]

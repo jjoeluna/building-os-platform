@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>api-test-report-20250809-200431.html</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (show details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (hide details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>api-test-report-20250809-200431.html</h1>
+    <p>Report generated on 09-Aug-2025 at 20:25:00 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Summary</h2>
+    <p>33 tests ran in 1227.11 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">15 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">18 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_basic_request</td>
+          <td class="col-duration">128.92</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/director (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_request</td>
+          <td class="col-duration">130.53</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director?user_request=Test%20mission%20from%20Python%20API%20tests (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director?user_request=Test%20mission%20from%20Python%20API%20tests (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_request=Test mission from Python API tests
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: 
+/dev/director?user_request=Test%20mission%20from%20Python%20API%20tests (Caused
+by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director?user_request=Test%20mission%20from%20Python%20API%20tests
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director?user_request=Test%20mission%20from%20Python%20API%20tests
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director?user_request=Test%20mission%20from%20Python%20API%20tests<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_id</td>
+          <td class="col-duration">131.53</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director?user_id=api-test-user (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director?user_id=api-test-user (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_id=api-test-user
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/director?user_id=api-test-user 
+(Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director?user_id=api-test-user
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director?user_id=api-test-user
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director?user_id=api-test-user<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_valid_message</td>
+          <td class="col-duration">8.60</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/persona (Caused by 
+ResponseError(&#x27;too many 500 error responses&#x27;))
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_call_basic</td>
+          <td class="col-duration">128.99</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/elevator/call (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_missing_mission_id</td>
+          <td class="col-duration">130.02</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/elevator/call (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_mission_status</td>
+          <td class="col-duration">1.05</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   assert 404 == 200</span><br/>     +  where 404 = &lt;Response [404]&gt;.status_code<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-mission-123
+📊 Status: 404 | ⏱️  Time: 1050.83ms | 📦 Size: 47 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_different_mission_id</td>
+          <td class="col-duration">0.22</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   assert 404 == 200</span><br/>     +  where 404 = &lt;Response [404]&gt;.status_code<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/python-test-1754781339
+📊 Status: 404 | ⏱️  Time: 220.91ms | 📦 Size: 53 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/health]</td>
+          <td class="col-duration">0.53</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /health</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 527.18ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/director]</td>
+          <td class="col-duration">128.90</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/director (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/persona]</td>
+          <td class="col-duration">1.80</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /persona</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 1798.17ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/elevator/call]</td>
+          <td class="col-duration">128.97</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/elevator/call (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/psim/search]</td>
+          <td class="col-duration">1.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /psim/search</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 400 | ⏱️  Time: 1211.75ms | 📦 Size: 43 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/coordinator/missions/test-123]</td>
+          <td class="col-duration">0.32</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /coordinator/missions/test-123</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-123
+📊 Status: 404 | ⏱️  Time: 317.32ms | 📦 Size: 39 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestPerformance::test_response_time_under_threshold</td>
+          <td class="col-duration">129.44</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 498.41ms | 📦 Size: 60 bytes
+
+🚀 GET /director
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/director (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/director<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_large_payload_persona</td>
+          <td class="col-duration">7.02</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/persona (Caused by 
+ResponseError(&#x27;too many 500 error responses&#x27;))
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_special_characters_in_requests</td>
+          <td class="col-duration">6.77</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">urllib3.exceptions.ResponseError: too many 500 error responses<br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.RetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError(&#x27;too many 500 error responses&#x27;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/persona (Caused by 
+ResponseError(&#x27;too many 500 error responses&#x27;))
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_empty_payloads</td>
+          <td class="col-duration">129.25</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   TimeoutError: The read operation timed out</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)</span><br/><br/>The above exception was the direct cause of the following exception:<br/><span class="error">E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/><br/>During handling of the above exception, another exception occurred:<br/><span class="error">E   requests.exceptions.ConnectionError: HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))</span><br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 219.89ms | 📦 Size: 45 bytes
+
+🚀 POST /elevator/call
+❌ Request failed: 
+HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, 
+port=443): Max retries exceeded with url: /dev/elevator/call (Caused by 
+ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.am
+azonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;))
+<br/> -------------------------------Captured log call-------------------------------- <br/>WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call
+WARNING  urllib3.connectionpool:connectionpool.py:868 Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by &#x27;ReadTimeoutError(&quot;HTTPSConnectionPool(host=&#x27;pj4vlvxrg7.execute-api.us-east-1.amazonaws.com&#x27;, port=443): Read timed out. (read timeout=30)&quot;)&#x27;: /dev/elevator/call<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_success</td>
+          <td class="col-duration">1.53</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>
+🧪 Starting BuildingOS API Test Suite
+🌐 Base URL: https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev
+🏷️  Environment: dev
+<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 1525.47ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_performance</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 195.53ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_user_id</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 191.29ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_message</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 187.37ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_conversations</td>
+          <td class="col-duration">0.22</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /persona/conversations?user_id=api-test-user
+📊 Status: 200 | ⏱️  Time: 221.44ms | 📦 Size: 64 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_basic</td>
+          <td class="col-duration">2.62</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 200 | ⏱️  Time: 2606.72ms | 📦 Size: 223 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_with_custom_query</td>
+          <td class="col-duration">0.31</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 200 | ⏱️  Time: 315.49ms | 📦 Size: 223 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_endpoint</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /invalid-endpoint
+📊 Status: 404 | ⏱️  Time: 158.46ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_method</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 DELETE /health
+📊 Status: 404 | ⏱️  Time: 160.02ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_malformed_json</td>
+          <td class="col-duration">6.88</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestPerformance::test_concurrent_health_checks</td>
+          <td class="col-duration">1.94</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 1829.64ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 1848.87ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 1902.60ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 1926.44ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 1934.48ms | 📦 Size: 60 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestLoadTesting::test_sustained_load_health_endpoint</td>
+          <td class="col-duration">13.36</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🔥 Running sustained load test...
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 192.35ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 185.34ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 183.71ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 177.13ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 191.54ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 290.65ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 174.65ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 178.43ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 189.74ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 178.18ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 191.81ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 192.34ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 196.10ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 172.18ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 186.50ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 172.50ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 185.55ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 199.22ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 198.62ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 174.97ms | 📦 Size: 60 bytes
+  Making 20 requests... 0:00:13
+✅ Success rate: 100.0% (20/20)
+⏱️  Avg response: 192.40ms
+🐌 Max response: 292.56ms
+⚡ Min response: 173.90ms
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_rapid_successive_requests</td>
+          <td class="col-duration">1.85</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 190.06ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 177.73ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 180.34ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 183.08ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 191.42ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 180.47ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 189.62ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 179.64ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 177.24ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 183.98ms | 📦 Size: 60 bytes
+🚀 Rapid requests: 10 in 1.85s
+✅ Success rate: 100.0%
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_null_values_in_payload</td>
+          <td class="col-duration">1.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 1204.86ms | 📦 Size: 45 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_extremely_long_mission_id</td>
+          <td class="col-duration">0.44</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET 
+/coordinator/missions/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+📊 Status: 404 | ⏱️  Time: 308.88ms | 📦 Size: 1031 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+📊 Test Session Complete
+                              🔍 Request Summary                               
+┌────────┬─────────────────────────────────────┬────────┬───────────┬─────────┐
+│ Method │ Endpoint                            │ Status │ Time (ms) │ Success │
+├────────┼─────────────────────────────────────┼────────┼───────────┼─────────┤
+│ GET    │ /health                             │ 200    │ 1525.47   │ ✅      │
+│ GET    │ /health                             │ 200    │ 195.53    │ ✅      │
+│ GET    │ /director                           │ 0      │ 128921.06 │ ❌      │
+│ GET    │ /director?user_request=Test mission │ 0      │ 130529.01 │ ❌      │
+│        │ from Python API tests               │        │           │         │
+│ GET    │ /director?user_id=api-test-user     │ 0      │ 131519.24 │ ❌      │
+│ POST   │ /persona                            │ 0      │ 8598.06   │ ❌      │
+│ POST   │ /persona                            │ 400    │ 191.29    │ ❌      │
+│ POST   │ /persona                            │ 400    │ 187.37    │ ❌      │
+│ GET    │ /persona/conversations?user_id=api… │ 200    │ 221.44    │ ✅      │
+│ POST   │ /elevator/call                      │ 0      │ 128987.67 │ ❌      │
+│ POST   │ /elevator/call                      │ 0      │ 130017.47 │ ❌      │
+│ POST   │ /psim/search                        │ 200    │ 2606.72   │ ✅      │
+│ POST   │ /psim/search                        │ 200    │ 315.49    │ ✅      │
+│ GET    │ /coordinator/missions/test-mission… │ 404    │ 1050.83   │ ❌      │
+│ GET    │ /coordinator/missions/python-test-… │ 404    │ 220.91    │ ❌      │
+│ GET    │ /health                             │ 200    │ 527.18    │ ✅      │
+│ GET    │ /director                           │ 0      │ 128898.71 │ ❌      │
+│ POST   │ /persona                            │ 400    │ 1798.17   │ ❌      │
+│ POST   │ /elevator/call                      │ 0      │ 128967.96 │ ❌      │
+│ POST   │ /psim/search                        │ 400    │ 1211.75   │ ❌      │
+│ GET    │ /coordinator/missions/test-123      │ 404    │ 317.32    │ ❌      │
+│ GET    │ /invalid-endpoint                   │ 404    │ 158.46    │ ❌      │
+│ DELETE │ /health                             │ 404    │ 160.02    │ ❌      │
+│ GET    │ /health                             │ 200    │ 498.41    │ ✅      │
+│ GET    │ /director                           │ 0      │ 128944.37 │ ❌      │
+│ GET    │ /health                             │ 200    │ 1829.64   │ ✅      │
+│ GET    │ /health                             │ 200    │ 1848.87   │ ✅      │
+│ GET    │ /health                             │ 200    │ 1902.6    │ ✅      │
+│ GET    │ /health                             │ 200    │ 1926.44   │ ✅      │
+│ GET    │ /health                             │ 200    │ 1934.48   │ ✅      │
+│ GET    │ /health                             │ 200    │ 192.35    │ ✅      │
+│ GET    │ /health                             │ 200    │ 185.34    │ ✅      │
+│ GET    │ /health                             │ 200    │ 183.71    │ ✅      │
+│ GET    │ /health                             │ 200    │ 177.13    │ ✅      │
+│ GET    │ /health                             │ 200    │ 191.54    │ ✅      │
+│ GET    │ /health                             │ 200    │ 290.65    │ ✅      │
+│ GET    │ /health                             │ 200    │ 174.65    │ ✅      │
+│ GET    │ /health                             │ 200    │ 178.43    │ ✅      │
+│ GET    │ /health                             │ 200    │ 189.74    │ ✅      │
+│ GET    │ /health                             │ 200    │ 178.18    │ ✅      │
+│ GET    │ /health                             │ 200    │ 191.81    │ ✅      │
+│ GET    │ /health                             │ 200    │ 192.34    │ ✅      │
+│ GET    │ /health                             │ 200    │ 196.1     │ ✅      │
+│ GET    │ /health                             │ 200    │ 172.18    │ ✅      │
+│ GET    │ /health                             │ 200    │ 186.5     │ ✅      │
+│ GET    │ /health                             │ 200    │ 172.5     │ ✅      │
+│ GET    │ /health                             │ 200    │ 185.55    │ ✅      │
+│ GET    │ /health                             │ 200    │ 199.22    │ ✅      │
+│ GET    │ /health                             │ 200    │ 198.62    │ ✅      │
+│ GET    │ /health                             │ 200    │ 174.97    │ ✅      │
+│ POST   │ /persona                            │ 0      │ 7017.78   │ ❌      │
+│ GET    │ /health                             │ 200    │ 190.06    │ ✅      │
+│ GET    │ /health                             │ 200    │ 177.73    │ ✅      │
+│ GET    │ /health                             │ 200    │ 180.34    │ ✅      │
+│ GET    │ /health                             │ 200    │ 183.08    │ ✅      │
+│ GET    │ /health                             │ 200    │ 191.42    │ ✅      │
+│ GET    │ /health                             │ 200    │ 180.47    │ ✅      │
+│ GET    │ /health                             │ 200    │ 189.62    │ ✅      │
+│ GET    │ /health                             │ 200    │ 179.64    │ ✅      │
+│ GET    │ /health                             │ 200    │ 177.24    │ ✅      │
+│ GET    │ /health                             │ 200    │ 183.98    │ ✅      │
+│ POST   │ /persona                            │ 0      │ 6769.1    │ ❌      │
+│ POST   │ /persona                            │ 400    │ 219.89    │ ❌      │
+│ POST   │ /elevator/call                      │ 0      │ 129025.57 │ ❌      │
+│ POST   │ /persona                            │ 400    │ 1204.86   │ ❌      │
+│ GET    │ /coordinator/missions/xxxxxxxxxxxx… │ 404    │ 308.88    │ ❌      │
+└────────┴─────────────────────────────────────┴────────┴───────────┴─────────┘
+┌──────────────────────────── Performance Metrics ────────────────────────────┐
+│ 📈 Avg: 499.46ms | ⚡ Min: 172.18ms | 🐌 Max: 2606.72ms                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+💾 Results exported to: api-test-results-20250809-202500.json
+<br/></div></td></tr></tbody></table></body></html>

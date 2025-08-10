@@ -1,0 +1,127 @@
+[
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/health",
+    "timestamp": 1754782625.4833338,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 2098.07,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/health",
+    "timestamp": 1754782627.589441,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 207.77,
+    "response_size": 60,
+    "response_data": {
+      "status": "OK",
+      "message": "BuildingOS is up and running!"
+    },
+    "success": true
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/director",
+    "timestamp": 1754782627.8024306,
+    "headers": {},
+    "payload": null,
+    "status_code": 0,
+    "response_time_ms": 128986.65,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /dev/director (Caused by ReadTimeoutError(\"HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Read timed out. (read timeout=30)\"))",
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/director?user_request=Test mission from Python API tests",
+    "timestamp": 1754782756.8341193,
+    "headers": {},
+    "payload": null,
+    "status_code": 0,
+    "response_time_ms": 130001.31,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /dev/director?user_request=Test%20mission%20from%20Python%20API%20tests (Caused by ReadTimeoutError(\"HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Read timed out. (read timeout=30)\"))",
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/director?user_id=api-test-user",
+    "timestamp": 1754782886.9310374,
+    "headers": {},
+    "payload": null,
+    "status_code": 0,
+    "response_time_ms": 132939.95,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /dev/director?user_id=api-test-user (Caused by ReadTimeoutError(\"HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Read timed out. (read timeout=30)\"))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/persona",
+    "timestamp": 1754783019.9122012,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user",
+      "message": "Test message from Python API tests"
+    },
+    "status_code": 0,
+    "response_time_ms": 8663.52,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /dev/persona (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/persona",
+    "timestamp": 1754783028.5916402,
+    "headers": {},
+    "payload": {
+      "message": "Test message"
+    },
+    "status_code": 400,
+    "response_time_ms": 195.39,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/persona",
+    "timestamp": 1754783028.7925525,
+    "headers": {},
+    "payload": {
+      "user_id": "api-test-user"
+    },
+    "status_code": 400,
+    "response_time_ms": 187.14,
+    "response_size": 45,
+    "response_data": {
+      "error": "user_id and message are required"
+    },
+    "success": false
+  },
+  {
+    "method": "GET",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/persona/conversations?user_id=api-test-user",
+    "timestamp": 1754783028.9850721,
+    "headers": {},
+    "payload": null,
+    "status_code": 200,
+    "response_time_ms": 224.26,
+    "response_size": 64,
+    "response_data": {
+      "messages": [],
+      "user_id": "api-test-user",
+      "session_id": null
+    },
+    "success": true
+  }
+]

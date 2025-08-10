@@ -54,3 +54,102 @@ Different buildings use elevators from various manufacturers (e.g., Otis, Schind
 *   **Adapter Pattern:** The agent will be built around a generic `IElevatorAdapter` interface defining common actions (`call_to_floor`, `query_status`). Each supported brand will have its own implementation (e.g., `NeomotAdapter`, `OtisApiAdapter`).
 *   **Dynamic Adapter Loading:** The specific adapter for a building will be loaded at runtime based on configuration data stored in DynamoDB, which is set up during the building's onboarding.
 *   **Partner Configuration:** The partner responsible for the building's implementation will configure the elevator integration, selecting the manufacturer and providing API credentials through the partner portal.
+
+## 8. Error Handling & Resilience
+
+### **API Failure Scenarios**
+*   **Network Timeout:** Retry with exponential backoff (3 attempts, 1s, 2s, 4s intervals)
+*   **Authentication Failure:** Refresh JWT token and retry once
+*   **Elevator Unavailable:** Return graceful error with fallback to manual mode
+*   **Invalid Floor Request:** Validate against building configuration before API call
+
+### **Circuit Breaker Pattern**
+*   **Failure Threshold:** 5 consecutive failures
+*   **Recovery Timeout:** 30 seconds
+*   **Half-Open State:** Allow 1 test request before full recovery
+*   **Fallback Action:** Notify user to use manual elevator controls
+
+### **Error Response Format**
+```json
+{
+  "error": {
+    "code": "ELEVATOR_API_TIMEOUT",
+    "message": "Elevator service temporarily unavailable",
+    "retry_after": 30,
+    "fallback_available": true
+  }
+}
+```
+
+## 9. Monitoring & Observability
+
+### **Key Metrics**
+*   **Response Time:** Target < 2 seconds for elevator calls
+*   **Success Rate:** Target > 99% for API calls
+*   **Circuit Breaker Status:** Track open/closed/half-open states
+*   **Error Distribution:** Categorize by error type (timeout, auth, validation)
+
+### **CloudWatch Alarms**
+*   **High Error Rate:** Alert if > 5% errors in 5 minutes
+*   **Slow Response:** Alert if p95 > 3 seconds
+*   **Circuit Breaker Open:** Alert when circuit breaker opens
+*   **API Unavailable:** Alert if Neomot API returns 503/504
+
+### **Logging Strategy**
+*   **Structured Logs:** JSON format with correlation IDs
+*   **Log Levels:** DEBUG for API calls, INFO for user actions, ERROR for failures
+*   **Sensitive Data:** Mask API credentials and user identifiers
+*   **Retention:** 30 days for operational logs, 7 years for audit logs
+
+## 10. Configuration Management
+
+### **Building-Specific Settings**
+```json
+{
+  "building_id": "lit760",
+  "elevator_config": {
+    "vendor": "neomot",
+    "api_endpoint": "https://api.neomot.com/v1",
+    "elevator_ids": ["elevator_1", "elevator_2"],
+    "floor_mapping": {
+      "ground": 0,
+      "lobby": 1,
+      "garage": -1
+    },
+    "timeout_seconds": 5,
+    "retry_attempts": 3
+  }
+}
+```
+
+### **Environment Variables**
+*   `ELEVATOR_API_TIMEOUT`: API timeout in seconds (default: 5)
+*   `ELEVATOR_RETRY_ATTEMPTS`: Number of retry attempts (default: 3)
+*   `ELEVATOR_CIRCUIT_BREAKER_THRESHOLD`: Failure threshold (default: 5)
+*   `ELEVATOR_LOG_LEVEL`: Logging level (default: INFO)
+
+### **Secrets Management**
+*   **API Credentials:** Stored in AWS Secrets Manager
+*   **JWT Secrets:** Rotated every 30 days
+*   **Access Pattern:** `buildingos/elevator/{building_id}/credentials`
+*   **Encryption:** AES-256 encryption at rest
+
+## 11. Testing Strategy
+
+### **Unit Tests**
+*   **Adapter Tests:** Test each elevator vendor adapter independently
+*   **Error Handling:** Test all error scenarios and fallback mechanisms
+*   **Configuration:** Test building-specific configuration loading
+*   **Mocking:** Use mock APIs for consistent test results
+
+### **Integration Tests**
+*   **API Integration:** Test with real Neomot API in staging environment
+*   **End-to-End:** Test complete user journey from chat to elevator arrival
+*   **Error Scenarios:** Test network failures and API outages
+*   **Performance:** Test response times under load
+
+### **Load Tests**
+*   **Concurrent Users:** Test with 100+ simultaneous elevator requests
+*   **API Limits:** Test rate limiting and throttling behavior
+*   **Circuit Breaker:** Test circuit breaker behavior under failure conditions
+*   **Memory Usage:** Monitor memory consumption during peak load

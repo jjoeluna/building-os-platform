@@ -28,3 +28,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "kms_key_arn" {
+  description = "The ARN of the KMS key to use for encryption"
+  type        = string
+  default     = null
+}
+
+variable "point_in_time_recovery" {
+  description = "Whether to enable point-in-time recovery"
+  type        = bool
+  default     = true
+}

@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/persona",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"user_id\": \"test-user\", \"message\": \"hello test\"}"
+}

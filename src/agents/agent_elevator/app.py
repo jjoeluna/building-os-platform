@@ -26,9 +26,7 @@ print(
     f"Agent Elevator using {'NEW' if USE_NEW_ARCHITECTURE else 'LEGACY'} architecture"
 )
 
-MONITORING_TABLE_NAME = os.environ.get(
-    "MONITORING_TABLE_NAME", "bos-elevator-monitoring-dev"
-)
+MONITORING_TABLE_NAME = os.environ.get("ELEVATOR_MONITORING_TABLE_NAME")
 
 
 def handler(event, context):
@@ -91,10 +89,32 @@ def handler(event, context):
                 parameters = body.get("parameters", {})
 
                 if not mission_id:
-                    raise ValueError("mission_id is required in request body")
+                    return {
+                        "statusCode": 400,
+                        "headers": {
+                            "Content-Type": "application/json",
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+                        },
+                        "body": json.dumps(
+                            {"error": "mission_id is required in request body"}
+                        ),
+                    }
 
             except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid JSON in request body: {str(e)}")
+                return {
+                    "statusCode": 400,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+                    },
+                    "body": json.dumps(
+                        {"error": f"Invalid JSON in request body: {str(e)}"}
+                    ),
+                }
         else:
             # Direct invocation from Coordinator Agent
             mission_id = event["mission_id"]
@@ -162,6 +182,12 @@ def handle_task_from_sns(message_body: Dict[str, Any]) -> Dict[str, Any]:
 
         return {
             "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+            },
             "body": json.dumps(
                 {"message": f"Task {task_id} completed successfully", "result": result}
             ),
@@ -183,6 +209,12 @@ def handle_task_from_sns(message_body: Dict[str, Any]) -> Dict[str, Any]:
 
         return {
             "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+            },
             "body": json.dumps({"error": str(e)}),
         }
 

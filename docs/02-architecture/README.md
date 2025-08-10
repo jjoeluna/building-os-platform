@@ -12,12 +12,13 @@
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| **[01 - Solution Architecture](./01-solution-architecture.md)** | Technical blueprint with C4 diagrams and patterns | ✅ Active |
-| **[02 - API Contract](./02-api-contract.md)** | OpenAPI specification - single source of truth | ✅ Active |
-| **[03 - Architecture Decision Records](./03-adr/README.md)** | Log of important architectural decisions | ✅ Active |
+| **[01 - Solution Architecture](./01-solution-architecture/solution-architecture.md)** | Technical blueprint with C4 diagrams and patterns | ✅ Active |
+| **[02 - Architecture Decision Records](./02-adr/README.md)** | Log of important architectural decisions | ✅ Active |
+| **[03 - Data Model](./03-data-model/README.md)** | Database schemas and data relationships | 📋 Planned |
 | **[04 - Component Registry](./04-components/README.md)** | Description of all major system components | ✅ Active |
-| **[05 - Data Model](./05-data-model/README.md)** | Database schemas and data relationships | 📋 Planned |
-| **[06 - Architecture Adequation Plan](./06-architecture-adequation-plan.md)** | Implementation roadmap and phase planning | ✅ Active |
+| **[05 - API Contract](./05-api-contract/api-contract.md)** | OpenAPI specification - single source of truth | ✅ Active |
+| **[06 - SNS Event System](./06-sns/README.md)** | Event-driven communication patterns | ✅ Active |
+| **[Terraform Best Practices Checklist](./01-solution-architecture/terraform-best-practices-checklist.md)** | Complete analysis of Terraform, Python code, and documentation | ✅ Active |
 
 ---
 

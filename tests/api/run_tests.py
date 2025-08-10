@@ -80,6 +80,9 @@ def run_tests(test_type="all", verbose=False, create_report=True):
     else:
         cmd.append("-v")
 
+    # Add traceback verbosity control
+    cmd.extend(["--tb", "line"])
+
     # Add reporting options
     if create_report:
         timestamp = subprocess.run(

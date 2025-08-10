@@ -1,0 +1,76 @@
+{
+  "alarms": [
+    {
+      "AlarmName": "BuildingOS-Lambda-Errors-Dev",
+      "AlarmDescription": "Lambda function errors in dev environment",
+      "MetricName": "Errors",
+      "Namespace": "AWS/Lambda",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["arn:aws:sns:us-east-1:481251881947:BuildingOS-Alerts-Dev"],
+      "Dimensions": [
+        {
+          "Name": "FunctionName",
+          "Value": "bos-dev-agent-persona"
+        }
+      ]
+    },
+    {
+      "AlarmName": "BuildingOS-API-Errors-Dev",
+      "AlarmDescription": "API Gateway errors in dev environment",
+      "MetricName": "5XXError",
+      "Namespace": "AWS/ApiGateway",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["arn:aws:sns:us-east-1:481251881947:BuildingOS-Alerts-Dev"],
+      "Dimensions": [
+        {
+          "Name": "ApiName",
+          "Value": "bos-dev-http-api"
+        }
+      ]
+    },
+    {
+      "AlarmName": "BuildingOS-DynamoDB-Throttling-Dev",
+      "AlarmDescription": "DynamoDB throttling in dev environment",
+      "MetricName": "ThrottledRequests",
+      "Namespace": "AWS/DynamoDB",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 10,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["arn:aws:sns:us-east-1:481251881947:BuildingOS-Alerts-Dev"],
+      "Dimensions": [
+        {
+          "Name": "TableName",
+          "Value": "bos-dev-short-term-memory"
+        }
+      ]
+    },
+    {
+      "AlarmName": "BuildingOS-Lambda-Duration-Dev",
+      "AlarmDescription": "Lambda function duration in dev environment",
+      "MetricName": "Duration",
+      "Namespace": "AWS/Lambda",
+      "Statistic": "Average",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 10000,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["arn:aws:sns:us-east-1:481251881947:BuildingOS-Alerts-Dev"],
+      "Dimensions": [
+        {
+          "Name": "FunctionName",
+          "Value": "bos-dev-agent-persona"
+        }
+      ]
+    }
+  ]
+}

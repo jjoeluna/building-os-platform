@@ -148,6 +148,8 @@ def handle_api_gateway_request(event, context):
         "headers": {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
         },
         "body": json.dumps(
             {
@@ -438,6 +440,10 @@ def handler(event, context):
     print(f"Director Agent invoked with event: {event}")
 
     try:
+        # Check if this is an API Gateway event
+        if "httpMethod" in event:
+            return handle_api_gateway_request(event, context)
+
         # Check if this is an SNS event
         if "Records" in event:
             for record in event["Records"]:

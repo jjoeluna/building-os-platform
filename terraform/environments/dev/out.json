@@ -1,0 +1,1 @@
+{"errorMessage": "'requestContext'", "errorType": "KeyError", "requestId": "22becd59-b533-4ef7-be11-538869580aa7", "stackTrace": ["  File \"/var/task/app.py\", line 10, in handler\n    connection_id = event[\"requestContext\"][\"connectionId\"]\n"]}

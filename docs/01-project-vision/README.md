@@ -36,5 +36,6 @@
 ---
 
 **Navigation:**
+⬅️ **Previous:** [Business Context](../00-business-context/README.md)  
 🏠 **Home:** [Documentation Index](../README.md)  
-➡️ **Next Section:** [Architecture](../02-architecture/README.md)
+➡️ **Next:** [Architecture](../02-architecture/README.md)

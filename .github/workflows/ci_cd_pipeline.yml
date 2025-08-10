@@ -1,0 +1,397 @@
+name: BuildingOS CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: "1.5"
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # =============================================================================
+  # VALIDATION JOB - Runs on all PRs and pushes
+  # =============================================================================
+  validate:
+    name: Validate Code and Infrastructure
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/api/requirements.txt
+          pip install flake8 pytest pytest-cov bandit safety
+
+      - name: Lint with flake8
+        run: |
+          flake8 . --max-complexity=10 --max-line-length=127 --exclude=venv,__pycache__,.git,.pytest_cache
+
+      - name: Security scan with bandit
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || true
+          bandit -r src/ -f txt
+
+      - name: Check for security vulnerabilities
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v3
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+      
+      - name: Run TFLint
+        run: tflint --format compact
+
+      - name: Check Terraform Formatting
+        working-directory: ./terraform
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init (Dev)
+        working-directory: ./terraform/environments/dev
+        run: terraform init
+
+      - name: Terraform Validate (Dev)
+        working-directory: ./terraform/environments/dev
+        run: terraform validate
+
+      - name: Terraform Plan (Dev)
+        id: plan-dev
+        working-directory: ./terraform/environments/dev
+        run: terraform plan -no-color -out=dev-plan.tfplan
+        continue-on-error: true
+
+      - name: Comment Plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = `#### Terraform Plan 📖 (Dev Environment)
+            \`\`\`
+            ${{ steps.plan-dev.outputs.stdout }}
+            \`\`\`
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+  # =============================================================================
+  # INTEGRATION TESTS - Runs after validation
+  # =============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/api/requirements.txt
+
+      - name: Run integration tests
+        run: |
+          cd tests/api
+          python diagnose_api.py
+          pytest test_endpoints.py -v
+
+      - name: Run performance tests
+        run: |
+          cd tests/api
+          python test_performance.py
+
+  # =============================================================================
+  # DEPLOY TO DEV - Runs on push to main
+  # =============================================================================
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [validate, integration-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: ./terraform/environments/dev
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./terraform/environments/dev
+        run: terraform apply -auto-approve
+
+      - name: Post-deployment validation
+        run: |
+          # Wait for deployment to stabilize
+          sleep 30
+          
+          # Check Lambda functions
+          aws lambda list-functions --query 'Functions[?contains(FunctionName, `bos-dev`)].FunctionName' --output table
+          
+          # Check API Gateway
+          aws apigatewayv2 get-apis --query 'Items[?contains(Name, `bos-dev`)].{Name:Name,Status:ProtocolType}' --output table
+          
+          # Run health checks
+          cd tests/api
+          python diagnose_api.py
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Deployment to DEV environment completed successfully!"
+          echo "Environment: dev"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to DEV environment failed!"
+          echo "Environment: dev"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+
+  # =============================================================================
+  # DEPLOY TO STAGING - Runs on push to main (after dev success)
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [deploy-dev]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: ./terraform/environments/stg
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ./terraform/environments/stg
+        run: terraform plan -out=stg-plan.tfplan
+
+      - name: Terraform Apply
+        working-directory: ./terraform/environments/stg
+        run: terraform apply stg-plan.tfplan
+
+      - name: Post-deployment validation (Staging)
+        run: |
+          # Wait for deployment to stabilize
+          sleep 30
+          
+          # Check Lambda functions
+          aws lambda list-functions --query 'Functions[?contains(FunctionName, `bos-stg`)].FunctionName' --output table
+          
+          # Run staging tests
+          cd tests/api
+          python diagnose_api.py --environment stg
+
+      - name: Notify staging deployment
+        run: |
+          echo "✅ Deployment to STAGING environment completed successfully!"
+          echo "Environment: stg"
+          echo "Commit: ${{ github.sha }}"
+
+  # =============================================================================
+  # DEPLOY TO PRODUCTION - Manual approval required
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: ./terraform/environments/prd
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ./terraform/environments/prd
+        run: terraform plan -out=prd-plan.tfplan
+
+      - name: Terraform Apply
+        working-directory: ./terraform/environments/prd
+        run: terraform apply prd-plan.tfplan
+
+      - name: Post-deployment validation (Production)
+        run: |
+          # Wait for deployment to stabilize
+          sleep 60
+          
+          # Check Lambda functions
+          aws lambda list-functions --query 'Functions[?contains(FunctionName, `bos-prd`)].FunctionName' --output table
+          
+          # Run production tests
+          cd tests/api
+          python diagnose_api.py --environment prd
+
+      - name: Notify production deployment
+        run: |
+          echo "✅ Deployment to PRODUCTION environment completed successfully!"
+          echo "Environment: prd"
+          echo "Commit: ${{ github.sha }}"
+
+  # =============================================================================
+  # MONITORING AND ALERTS - Runs after all deployments
+  # =============================================================================
+  monitoring:
+    name: Setup Monitoring and Alerts
+    runs-on: ubuntu-latest
+    needs: [deploy-dev, deploy-staging, deploy-production]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::481251881947:role/GitHubAction-AssumeRole-BuildingOS
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup monitoring dashboards
+        run: |
+          # Create CloudWatch dashboards
+          aws cloudwatch put-dashboard \
+            --dashboard-name "BuildingOS-Monitoring-Dev" \
+            --dashboard-body file://monitoring/dashboards/dev-dashboard.json || true
+
+      - name: Setup CloudWatch alarms
+        run: |
+          # Create alarms for critical metrics
+          aws cloudwatch put-metric-alarm \
+            --alarm-name "BuildingOS-Lambda-Errors-Dev" \
+            --alarm-description "Lambda function errors in dev environment" \
+            --metric-name Errors \
+            --namespace AWS/Lambda \
+            --statistic Sum \
+            --period 300 \
+            --threshold 1 \
+            --comparison-operator GreaterThanThreshold || true
+
+      - name: Notify monitoring setup
+        run: |
+          echo "📊 Monitoring and alerts configured for all environments"

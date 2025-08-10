@@ -1,0 +1,60 @@
+{
+  "mission_id": "e2e-test-20250807-233006-0f48eef4",
+  "start_time": "2025-08-07T23:30:06.746104",
+  "tests": {
+    "1_user_intention": true,
+    "2_persona_agent": true,
+    "3_director_mission": false,
+    "4_coordinator_tasks": false,
+    "5_elevator_execution": false,
+    "6_psim_execution": false,
+    "7_sns_connectivity": {
+      "agent_task_result": true,
+      "coordinator_mission_result": true,
+      "coordinator_task": true,
+      "director_mission": true,
+      "director_response": true,
+      "persona_intention": true
+    },
+    "8_architecture_validation": {
+      "topics_present": [
+        "persona_intention",
+        "director_mission",
+        "director_response",
+        "coordinator_task",
+        "agent_task_result",
+        "coordinator_mission_result"
+      ],
+      "topics_missing": [],
+      "lambda_functions": {
+        "bos-agent-persona-dev": {
+          "exists": true,
+          "runtime": "python3.11",
+          "last_modified": "2025-08-08T02:17:16.000+0000"
+        },
+        "bos-agent-director-dev": {
+          "exists": true,
+          "runtime": "python3.11",
+          "last_modified": "2025-08-08T02:27:51.000+0000"
+        },
+        "bos-agent-coordinator-dev": {
+          "exists": true,
+          "runtime": "python3.11",
+          "last_modified": "2025-08-08T02:03:08.000+0000"
+        },
+        "bos-agent-elevator-dev": {
+          "exists": true,
+          "runtime": "python3.11",
+          "last_modified": "2025-08-08T02:04:01.000+0000"
+        },
+        "bos-agent-psim-dev": {
+          "exists": true,
+          "runtime": "python3.11",
+          "last_modified": "2025-08-08T02:04:08.000+0000"
+        }
+      },
+      "architecture_score": 100.0
+    }
+  },
+  "end_time": "2025-08-07T23:30:14.244662"
+}

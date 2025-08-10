@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>api-test-report-20250810-190437.html</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (show details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (hide details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>api-test-report-20250810-190437.html</h1>
+    <p>Report generated on 10-Aug-2025 at 19:05:36 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Summary</h2>
+    <p>33 tests ran in 57.09 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">26 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">7 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/health]</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /health</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 189.18ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/director]</td>
+          <td class="col-duration">3.35</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /director</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+📊 Status: 200 | ⏱️  Time: 3348.69ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/persona]</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /persona</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 184.05ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/elevator/call]</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /elevator/call</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+📊 Status: 400 | ⏱️  Time: 175.38ms | 📦 Size: 51 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/psim/search]</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /psim/search</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 400 | ⏱️  Time: 171.44ms | 📦 Size: 43 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/coordinator/missions/test-123]</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: No CORS headers found in response for /coordinator/missions/test-123</span><br/>    assert False<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-123
+📊 Status: 404 | ⏱️  Time: 182.05ms | 📦 Size: 39 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestPerformance::test_response_time_under_threshold</td>
+          <td class="col-duration">8.67</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"><span class="error">E   AssertionError: /director took 8481.51ms (threshold: 3000ms)</span><br/>    assert 8481.508016586304 &lt; 3000<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 193.44ms | 📦 Size: 60 bytes
+
+🚀 GET /director
+📊 Status: 200 | ⏱️  Time: 8479.86ms | 📦 Size: 128 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_success</td>
+          <td class="col-duration">1.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>
+🧪 Starting BuildingOS API Test Suite
+🌐 Base URL: https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev
+🏷️  Environment: dev
+<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 1173.21ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_performance</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 192.49ms | 📦 Size: 60 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_basic_request</td>
+          <td class="col-duration">3.98</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+📊 Status: 200 | ⏱️  Time: 3982.89ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_request</td>
+          <td class="col-duration">5.11</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_request=Test mission from Python API tests
+📊 Status: 200 | ⏱️  Time: 5113.47ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_id</td>
+          <td class="col-duration">2.03</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_id=api-test-user
+📊 Status: 200 | ⏱️  Time: 2033.07ms | 📦 Size: 128 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_valid_message</td>
+          <td class="col-duration">0.31</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 200 | ⏱️  Time: 312.78ms | 📦 Size: 177 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_user_id</td>
+          <td class="col-duration">0.24</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 237.49ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_message</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 181.99ms | 📦 Size: 45 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_conversations</td>
+          <td class="col-duration">0.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /persona/conversations?user_id=api-test-user
+📊 Status: 200 | ⏱️  Time: 211.51ms | 📦 Size: 272 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_call_basic</td>
+          <td class="col-duration">0.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+📊 Status: 200 | ⏱️  Time: 215.04ms | 📦 Size: 447 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_missing_mission_id</td>
+          <td class="col-duration">0.32</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+📊 Status: 400 | ⏱️  Time: 322.94ms | 📦 Size: 51 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_basic</td>
+          <td class="col-duration">0.46</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 200 | ⏱️  Time: 464.71ms | 📦 Size: 223 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_with_custom_query</td>
+          <td class="col-duration">0.31</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 200 | ⏱️  Time: 306.67ms | 📦 Size: 223 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_mission_status</td>
+          <td class="col-duration">0.19</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-mission-123
+📊 Status: 404 | ⏱️  Time: 194.34ms | 📦 Size: 47 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_different_mission_id</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/python-test-1754863495
+📊 Status: 404 | ⏱️  Time: 180.34ms | 📦 Size: 53 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_endpoint</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /invalid-endpoint
+📊 Status: 404 | ⏱️  Time: 165.64ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_method</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 DELETE /health
+📊 Status: 404 | ⏱️  Time: 161.70ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_malformed_json</td>
+          <td class="col-duration">6.75</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestPerformance::test_concurrent_health_checks</td>
+          <td class="col-duration">2.63</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 208.11ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 2163.01ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 2547.01ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 2556.23ms | 📦 Size: 60 bytes
+📊 Status: 200 | ⏱️  Time: 2611.57ms | 📦 Size: 60 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestLoadTesting::test_sustained_load_health_endpoint</td>
+          <td class="col-duration">13.33</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🔥 Running sustained load test...
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 175.57ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 181.83ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 182.72ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 185.36ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 171.05ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 187.65ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 179.72ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 174.89ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 191.34ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 174.78ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 173.41ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 169.25ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 180.23ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 183.79ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 187.93ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 198.79ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 187.07ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 188.53ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 179.05ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 179.54ms | 📦 Size: 60 bytes
+  Making 20 requests... 0:00:13
+✅ Success rate: 100.0% (20/20)
+⏱️  Avg response: 183.43ms
+🐌 Max response: 200.46ms
+⚡ Min response: 170.92ms
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_large_payload_persona</td>
+          <td class="col-duration">0.27</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 200 | ⏱️  Time: 274.27ms | 📦 Size: 177 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_rapid_successive_requests</td>
+          <td class="col-duration">1.89</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 187.82ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 204.57ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 179.56ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 208.55ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 176.83ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 181.39ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 181.03ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 184.67ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 187.98ms | 📦 Size: 60 bytes
+
+🚀 GET /health
+📊 Status: 200 | ⏱️  Time: 180.30ms | 📦 Size: 60 bytes
+🚀 Rapid requests: 10 in 1.89s
+✅ Success rate: 100.0%
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_special_characters_in_requests</td>
+          <td class="col-duration">0.61</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 200 | ⏱️  Time: 206.36ms | 📦 Size: 177 bytes
+
+🚀 POST /persona
+📊 Status: 200 | ⏱️  Time: 206.62ms | 📦 Size: 177 bytes
+
+🚀 POST /persona
+📊 Status: 200 | ⏱️  Time: 195.58ms | 📦 Size: 177 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_empty_payloads</td>
+          <td class="col-duration">0.54</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 176.29ms | 📦 Size: 45 bytes
+
+🚀 POST /elevator/call
+📊 Status: 400 | ⏱️  Time: 183.44ms | 📦 Size: 51 bytes
+
+🚀 POST /psim/search
+📊 Status: 400 | ⏱️  Time: 178.48ms | 📦 Size: 43 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_null_values_in_payload</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 400 | ⏱️  Time: 185.83ms | 📦 Size: 45 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_extremely_long_mission_id</td>
+          <td class="col-duration">0.35</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET 
+/coordinator/missions/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+📊 Status: 404 | ⏱️  Time: 183.19ms | 📦 Size: 1031 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+📊 Test Session Complete
+                              🔍 Request Summary                               
+┌────────┬─────────────────────────────────────┬────────┬───────────┬─────────┐
+│ Method │ Endpoint                            │ Status │ Time (ms) │ Success │
+├────────┼─────────────────────────────────────┼────────┼───────────┼─────────┤
+│ GET    │ /health                             │ 200    │ 1173.21   │ ✅      │
+│ GET    │ /health                             │ 200    │ 192.49    │ ✅      │
+│ GET    │ /director                           │ 200    │ 3982.89   │ ✅      │
+│ GET    │ /director?user_request=Test mission │ 200    │ 5113.47   │ ✅      │
+│        │ from Python API tests               │        │           │         │
+│ GET    │ /director?user_id=api-test-user     │ 200    │ 2033.07   │ ✅      │
+│ POST   │ /persona                            │ 200    │ 312.78    │ ✅      │
+│ POST   │ /persona                            │ 400    │ 237.49    │ ❌      │
+│ POST   │ /persona                            │ 400    │ 181.99    │ ❌      │
+│ GET    │ /persona/conversations?user_id=api… │ 200    │ 211.51    │ ✅      │
+│ POST   │ /elevator/call                      │ 200    │ 215.04    │ ✅      │
+│ POST   │ /elevator/call                      │ 400    │ 322.94    │ ❌      │
+│ POST   │ /psim/search                        │ 200    │ 464.71    │ ✅      │
+│ POST   │ /psim/search                        │ 200    │ 306.67    │ ✅      │
+│ GET    │ /coordinator/missions/test-mission… │ 404    │ 194.34    │ ❌      │
+│ GET    │ /coordinator/missions/python-test-… │ 404    │ 180.34    │ ❌      │
+│ GET    │ /health                             │ 200    │ 189.18    │ ✅      │
+│ GET    │ /director                           │ 200    │ 3348.69   │ ✅      │
+│ POST   │ /persona                            │ 400    │ 184.05    │ ❌      │
+│ POST   │ /elevator/call                      │ 400    │ 175.38    │ ❌      │
+│ POST   │ /psim/search                        │ 400    │ 171.44    │ ❌      │
+│ GET    │ /coordinator/missions/test-123      │ 404    │ 182.05    │ ❌      │
+│ GET    │ /invalid-endpoint                   │ 404    │ 165.64    │ ❌      │
+│ DELETE │ /health                             │ 404    │ 161.7     │ ❌      │
+│ GET    │ /health                             │ 200    │ 193.44    │ ✅      │
+│ GET    │ /director                           │ 200    │ 8479.86   │ ✅      │
+│ GET    │ /health                             │ 200    │ 208.11    │ ✅      │
+│ GET    │ /health                             │ 200    │ 2163.01   │ ✅      │
+│ GET    │ /health                             │ 200    │ 2547.01   │ ✅      │
+│ GET    │ /health                             │ 200    │ 2556.23   │ ✅      │
+│ GET    │ /health                             │ 200    │ 2611.57   │ ✅      │
+│ GET    │ /health                             │ 200    │ 175.57    │ ✅      │
+│ GET    │ /health                             │ 200    │ 181.83    │ ✅      │
+│ GET    │ /health                             │ 200    │ 182.72    │ ✅      │
+│ GET    │ /health                             │ 200    │ 185.36    │ ✅      │
+│ GET    │ /health                             │ 200    │ 171.05    │ ✅      │
+│ GET    │ /health                             │ 200    │ 187.65    │ ✅      │
+│ GET    │ /health                             │ 200    │ 179.72    │ ✅      │
+│ GET    │ /health                             │ 200    │ 174.89    │ ✅      │
+│ GET    │ /health                             │ 200    │ 191.34    │ ✅      │
+│ GET    │ /health                             │ 200    │ 174.78    │ ✅      │
+│ GET    │ /health                             │ 200    │ 173.41    │ ✅      │
+│ GET    │ /health                             │ 200    │ 169.25    │ ✅      │
+│ GET    │ /health                             │ 200    │ 180.23    │ ✅      │
+│ GET    │ /health                             │ 200    │ 183.79    │ ✅      │
+│ GET    │ /health                             │ 200    │ 187.93    │ ✅      │
+│ GET    │ /health                             │ 200    │ 198.79    │ ✅      │
+│ GET    │ /health                             │ 200    │ 187.07    │ ✅      │
+│ GET    │ /health                             │ 200    │ 188.53    │ ✅      │
+│ GET    │ /health                             │ 200    │ 179.05    │ ✅      │
+│ GET    │ /health                             │ 200    │ 179.54    │ ✅      │
+│ POST   │ /persona                            │ 200    │ 274.27    │ ✅      │
+│ GET    │ /health                             │ 200    │ 187.82    │ ✅      │
+│ GET    │ /health                             │ 200    │ 204.57    │ ✅      │
+│ GET    │ /health                             │ 200    │ 179.56    │ ✅      │
+│ GET    │ /health                             │ 200    │ 208.55    │ ✅      │
+│ GET    │ /health                             │ 200    │ 176.83    │ ✅      │
+│ GET    │ /health                             │ 200    │ 181.39    │ ✅      │
+│ GET    │ /health                             │ 200    │ 181.03    │ ✅      │
+│ GET    │ /health                             │ 200    │ 184.67    │ ✅      │
+│ GET    │ /health                             │ 200    │ 187.98    │ ✅      │
+│ GET    │ /health                             │ 200    │ 180.3     │ ✅      │
+│ POST   │ /persona                            │ 200    │ 206.36    │ ✅      │
+│ POST   │ /persona                            │ 200    │ 206.62    │ ✅      │
+│ POST   │ /persona                            │ 200    │ 195.58    │ ✅      │
+│ POST   │ /persona                            │ 400    │ 176.29    │ ❌      │
+│ POST   │ /elevator/call                      │ 400    │ 183.44    │ ❌      │
+│ POST   │ /psim/search                        │ 400    │ 178.48    │ ❌      │
+│ POST   │ /persona                            │ 400    │ 185.83    │ ❌      │
+│ GET    │ /coordinator/missions/xxxxxxxxxxxx… │ 404    │ 183.19    │ ❌      │
+└────────┴─────────────────────────────────────┴────────┴───────────┴─────────┘
+┌──────────────────────────── Performance Metrics ────────────────────────────┐
+│ 📈 Avg: 805.49ms | ⚡ Min: 169.25ms | 🐌 Max: 8479.86ms                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+💾 Results exported to: api-test-results-20250810-190536.json
+<br/></div></td></tr></tbody></table></body></html>

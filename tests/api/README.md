@@ -1,192 +1,192 @@
 # BuildingOS API Testing Suite
 
-Suíte abrangente de testes para as APIs do BuildingOS com capacidades de diagnóstico rápido e validação completa.
+Comprehensive testing suite for BuildingOS APIs with rapid diagnostic capabilities and complete validation.
 
-## 🚀 Início Rápido
+## 🚀 Quick Start
 
 ```bash
-# Do diretório raiz do projeto
-.\tests\api\quick_setup.ps1  # Setup automático + diagnóstico rápido
+# From project root directory
+.\tests\api\quick_setup.ps1  # Automatic setup + rapid diagnosis
 ```
 
-## �️ Visão Geral das Ferramentas
+## 🛠️ Tools Overview
 
-### 🔍 `diagnose_api.py` - Diagnóstico Rápido
-**Propósito:** Troubleshooting rápido e análise de logs AWS  
-**Duração:** ~30 segundos  
-**Caso de Uso:** Loop de feedback durante desenvolvimento
+### 🔍 `diagnose_api.py` - Rapid Diagnosis
+**Purpose:** Quick troubleshooting and AWS logs analysis  
+**Duration:** ~30 seconds  
+**Use Case:** Feedback loop during development
 
 ```bash
 python diagnose_api.py
 ```
 
-**Recursos:**
-- ⚡ Teste rápido de endpoints
-- 📋 Integração com logs do CloudWatch  
-- 🎯 Priorização automática de problemas
-- 📊 Métricas de performance em tempo real
-- 🚨 Identificação de issues críticas
+**Features:**
+- ⚡ Quick endpoint testing
+- 📋 CloudWatch logs integration  
+- 🎯 Automatic problem prioritization
+- 📊 Real-time performance metrics
+- 🚨 Critical issue identification
 
-### 🧪 `run_tests.py` - Testes Abrangentes
-**Propósito:** Validação completa e relatórios detalhados  
-**Duração:** ~2-3 minutos  
-**Caso de Uso:** Validação completa e documentação
+### 🧪 `run_tests.py` - Comprehensive Testing
+**Purpose:** Complete validation and detailed reports  
+**Duration:** ~2-3 minutes  
+**Use Case:** Complete validation and documentation
 
 ```bash
 python run_tests.py
 ```
 
-**Recursos:**
-- 🔬 24 casos de teste estruturados com pytest
-- 📈 Relatórios detalhados em HTML e JSON
-- 🔄 Lógica de retry e handling de timeouts
-- 📊 Métricas de qualidade e análise de performance
-- 🎨 Output rico no console com tracking de progresso
+**Features:**
+- 🔬 24 structured test cases with pytest
+- 📈 Detailed reports in HTML and JSON
+- 🔄 Retry logic and timeout handling
+- 📊 Quality metrics and performance analysis
+- 🎨 Rich console output with progress tracking
 
-## ⚡ Fluxo de Desenvolvimento Otimizado
+## ⚡ Optimized Development Workflow
 
-### Estratégia por Fase de Desenvolvimento
+### Strategy by Development Phase
 
-| Fase | Ferramenta Principal | Ferramenta Secundária | Propósito |
-|------|---------------------|----------------------|-----------|
-| **Diagnóstico Inicial** | `diagnose_api.py` | - | Mapear issues atuais |
-| **Loop de Desenvolvimento** | `diagnose_api.py` | pytest específico | Feedback rápido |
-| **Pós-Implementação** | `run_tests.py` | `diagnose_api.py` | Validação completa |
-| **Pré-Deploy** | Ambas | - | Confiança total |
-| **Pós-Deploy** | `run_tests.py` | - | Confirmação final |
+| Phase | Primary Tool | Secondary Tool | Purpose |
+|-------|-------------|----------------|---------|
+| **Initial Diagnosis** | `diagnose_api.py` | - | Map current issues |
+| **Development Loop** | `diagnose_api.py` | specific pytest | Quick feedback |
+| **Post-Implementation** | `run_tests.py` | `diagnose_api.py` | Complete validation |
+| **Pre-Deploy** | Both | - | Total confidence |
+| **Post-Deploy** | `run_tests.py` | - | Final confirmation |
 
-### Comandos Rápidos
+### Quick Commands
 
 ```bash
 # Setup
 .\.venv\Scripts\Activate.ps1 && cd tests\api
 
-# Ciclo de Desenvolvimento Rápido
-python diagnose_api.py                                    # Verificação rápida
-python -m pytest test_endpoints.py::TestElevatorEndpoint # Validação específica
+# Rapid Development Cycle
+python diagnose_api.py                                    # Quick verification
+python -m pytest test_endpoints.py::TestElevatorEndpoint # Specific validation
 
-# Validação Completa
-python run_tests.py                                       # Suite completa
+# Complete Validation
+python run_tests.py                                       # Complete suite
 
-# Foco em Endpoint Específico
+# Focus on Specific Endpoint
 python -m pytest test_endpoints.py::TestPersonaEndpoint -v
 python -m pytest test_endpoints.py::TestCORSHeaders -v
 ```
 
-## 📁 Estrutura
+## 📁 Structure
 
 ```
 tests/api/
-├── __init__.py              # Inicialização do package
-├── requirements.txt         # Dependências Python
-├── pytest.ini             # Configuração do pytest
-├── run_tests.py           # Script principal de execução
-├── config.py              # Configurações e payloads de teste
-├── client.py              # Cliente HTTP avançado
-├── utils.py               # Utilitários e helpers
-├── test_endpoints.py      # Testes funcionais dos endpoints
-├── test_performance.py    # Testes de performance e carga
-└── reports/               # Relatórios gerados
+├── __init__.py              # Package initialization
+├── requirements.txt         # Python dependencies
+├── pytest.ini             # pytest configuration
+├── run_tests.py           # Main execution script
+├── config.py              # Test configurations and payloads
+├── client.py              # Advanced HTTP client
+├── utils.py               # Utilities and helpers
+├── test_endpoints.py      # Functional endpoint tests
+├── test_performance.py    # Performance and load tests
+└── reports/               # Generated reports
 ```
 
-## 🛠️ Instalação
+## 🛠️ Installation
 
 ```bash
-# Navegar para o diretório de testes
+# Navigate to test directory
 cd tests/api
 
-# Instalar dependências
+# Install dependencies
 python run_tests.py --install-deps
 ```
 
-## 🧪 Execução de Testes
+## 🧪 Execution of Tests
 
-### Comandos Básicos
+### Basic Commands
 
 ```bash
-# Executar todos os testes
+# Run all tests
 python run_tests.py all
 
-# Testes funcionais apenas
+# Only functional tests
 python run_tests.py endpoints
 
-# Testes de performance
+# Performance tests
 python run_tests.py performance
 
-# Testes rápidos (smoke tests)
+# Smoke tests
 python run_tests.py smoke
 
-# Testes rápidos (sem load/performance)
+# Quick tests (no load/performance)
 python run_tests.py quick
 ```
 
-### Opções Avançadas
+### Advanced Options
 
 ```bash
 # Verbose output
 python run_tests.py all -v
 
-# Sem gerar relatórios
+# Do not generate reports
 python run_tests.py endpoints --no-report
 
-# Mostrar informações sobre os testes
+# Show information about tests
 python run_tests.py --info
 ```
 
-### Pytest Direto
+### Direct Pytest
 
 ```bash
-# Usar pytest diretamente
+# Use direct pytest
 pytest test_endpoints.py -v
 
-# Executar testes específicos
+# Run specific tests
 pytest test_endpoints.py::TestHealthEndpoint::test_health_check_success -v
 
-# Executar apenas testes rápidos
+# Run only smoke tests
 pytest -m "not slow and not load" -v
 
-# Gerar relatório HTML
+# Generate HTML report
 pytest --html=reports/report.html --self-contained-html
 ```
 
-## 📊 Tipos de Teste
+## 📊 Types of Tests
 
-### 1. Testes Funcionais (`test_endpoints.py`)
+### 1. Functional Tests (`test_endpoints.py`)
 
-- **Health Check**: Verificação básica do sistema
-- **Director**: Criação de missões e orquestração
-- **Persona**: Mensagens de usuário e conversas
-- **Elevator**: Controle de elevadores
-- **PSIM**: Operações de busca e autenticação
-- **Coordinator**: Status de missões
-- **CORS**: Validação de headers CORS
-- **Error Handling**: Tratamento de erros
+- **Health Check**: Basic system verification
+- **Director**: Mission creation and orchestration
+- **Persona**: User messages and conversations
+- **Elevator**: Elevator control
+- **PSIM**: Search and authentication operations
+- **Coordinator**: Mission status
+- **CORS**: CORS header validation
+- **Error Handling**: Error handling
 
-### 2. Testes de Performance (`test_performance.py`)
+### 2. Performance Tests (`test_performance.py`)
 
-- **Response Time**: Tempo de resposta individual
-- **Concurrent Requests**: Requisições simultâneas
-- **Sustained Load**: Carga sustentada
-- **Stress Testing**: Cenários de stress
-- **Boundary Conditions**: Condições limite
+- **Response Time**: Individual response time
+- **Concurrent Requests**: Concurrent requests
+- **Sustained Load**: Sustained load
+- **Stress Testing**: Stress scenarios
+- **Boundary Conditions**: Boundary conditions
 
-## 🎯 Exemplos de Uso
+## 🎯 Examples of Usage
 
-### Teste Simples com Cliente
+### Simple Client Test
 
 ```python
 from tests.api import client, config
 
-# Fazer uma requisição
+# Make a request
 response, data = client.get("/health")
 print(f"Status: {response.status_code}")
 print(f"Data: {data}")
 
-# Mostrar resumo
+# Show summary
 client.print_summary()
 ```
 
-### Teste Personalizado
+### Custom Test
 
 ```python
 import pytest
@@ -203,7 +203,7 @@ def test_custom_persona():
     assert "session_id" in data
 ```
 
-### Monitoramento de Endpoints
+### Endpoint Monitoring
 
 ```python
 from tests.api import EndpointMonitor
@@ -219,53 +219,53 @@ results = monitor.monitor_all_endpoints(endpoints)
 monitor.print_health_report(results)
 ```
 
-## 📈 Relatórios
+## 📈 Reports
 
-### Relatório HTML
-- Interface visual com gráficos
-- Detalhes de cada teste
-- Métricas de performance
-- Screenshots de falhas
+### HTML Report
+- Visual interface with graphs
+- Detailed test results
+- Performance metrics
+- Screenshots of failures
 
-### Relatório JSON
-- Dados estruturados para análise programática
-- Métricas detalhadas
-- Histórico de requisições
-- Integração com ferramentas de CI/CD
+### JSON Report
+- Structured data for programmatic analysis
+- Detailed metrics
+- Historical requests
+- Integration with CI/CD tools
 
 ### Console Output
-- Feedback em tempo real
-- Cores e emojis para clareza
-- Barras de progresso
-- Resumos automáticos
+- Real-time feedback
+- Colors and emojis for clarity
+- Progress bars
+- Automatic summaries
 
-## 🔧 Configuração
+## 🔧 Configuration
 
-### Variáveis de Ambiente
+### Environment Variables
 
 ```bash
-# URL base da API
+# Base API URL
 export API_BASE_URL="https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com"
 
-# Timeout das requisições (segundos)
+# Request timeout (seconds)
 export API_TIMEOUT=30
 
-# Número de tentativas em caso de falha
+# Number of retries on failure
 export API_RETRY_COUNT=3
 
-# Ambiente de teste
+# Test environment
 export ENVIRONMENT=dev
 
-# ID de usuário para testes
+# User ID for tests
 export TEST_USER_ID=api-test-user
 ```
 
-### Configuração no Código
+### Code Configuration
 
 ```python
 from tests.api.config import APIConfig
 
-# Configuração customizada
+# Custom configuration
 config = APIConfig(
     base_url="https://custom-api.example.com",
     timeout=60,
@@ -273,47 +273,47 @@ config = APIConfig(
 )
 ```
 
-## 🚨 Resolução de Problemas
+## 🚨 Troubleshooting
 
-### Testes Falhando
+### Failing Tests
 
-1. **Verificar conectividade**:
+1. **Check connectivity**:
    ```bash
    curl -X GET "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/health"
    ```
 
-2. **Verificar logs**:
-   - Logs aparecem no console durante execução
-   - Verificar relatórios HTML/JSON para detalhes
+2. **Check logs**:
+   - Logs appear in console during execution
+   - Check HTML/JSON reports for details
 
-3. **Executar teste individual**:
+3. **Run individual test**:
    ```bash
    pytest test_endpoints.py::TestHealthEndpoint::test_health_check_success -v -s
    ```
 
 ### Performance Issues
 
-1. **Executar apenas testes de performance**:
+1. **Run only performance tests**:
    ```bash
    python run_tests.py performance
    ```
 
-2. **Verificar métricas no relatório**:
-   - Tempo médio de resposta
-   - Percentis de latência
-   - Taxa de sucesso
+2. **Check metrics in report**:
+   - Average response time
+   - Latency percentiles
+   - Success rate
 
-### Problemas de Dependências
+### Dependency Issues
 
 ```bash
-# Reinstalar dependências
+# Reinstall dependencies
 pip install -r requirements.txt --force-reinstall
 
-# Atualizar pip
+# Update pip
 python -m pip install --upgrade pip
 ```
 
-## 🔄 Integração CI/CD
+## 🔄 CI/CD Integration
 
 ### GitHub Actions
 
@@ -343,7 +343,7 @@ python -m pip install --upgrade pip
     testResultsFiles: 'tests/api/reports/*.xml'
 ```
 
-## 📚 Referências
+## 📚 References
 
 - [pytest Documentation](https://docs.pytest.org/)
 - [requests Documentation](https://docs.python-requests.org/)

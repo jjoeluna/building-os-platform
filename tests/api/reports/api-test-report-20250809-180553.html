@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>api-test-report-20250809-180553.html</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (show details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (hide details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>api-test-report-20250809-180553.html</h1>
+    <p>Report generated on 09-Aug-2025 at 18:06:21 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Summary</h2>
+    <p>33 tests ran in 26.88 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">12 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">21 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_success</td>
+          <td class="col-duration">1.27</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestHealthEndpoint object at 0x000001954A359F90&gt;<br/><br/>    def test_health_check_success(self):<br/>        &quot;&quot;&quot;Test that health endpoint returns success&quot;&quot;&quot;<br/>        response, data = client.get(&quot;/health&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:19: AssertionError<br/> -----------------------------Captured stdout setup------------------------------ <br/>
+🧪 Starting BuildingOS API Test Suite
+🌐 Base URL: https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com
+🏷️  Environment: dev
+<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 1259.91ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestHealthEndpoint::test_health_check_performance</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestHealthEndpoint object at 0x000001954A35A490&gt;<br/><br/>    def test_health_check_performance(self):<br/>        &quot;&quot;&quot;Test that health endpoint responds quickly&quot;&quot;&quot;<br/>        start_time = time.time()<br/>        response, data = client.get(&quot;/health&quot;)<br/>        end_time = time.time()<br/>    <br/>        response_time = (end_time - start_time) * 1000<br/>        assert response_time &lt; 2000  # Should respond within 2 seconds<br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:32: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 163.06ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_basic_request</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestDirectorEndpoint object at 0x000001954A35A5D0&gt;<br/><br/>    def test_director_basic_request(self):<br/>        &quot;&quot;&quot;Test director without parameters&quot;&quot;&quot;<br/>        response, data = client.get(&quot;/director&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:42: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+📊 Status: 404 | ⏱️  Time: 164.14ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_request</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestDirectorEndpoint object at 0x000001954A35A350&gt;<br/><br/>    def test_director_with_user_request(self):<br/>        &quot;&quot;&quot;Test director with user request parameter&quot;&quot;&quot;<br/>        user_request = &quot;Test mission from Python API tests&quot;<br/>        response, data = client.get(f&quot;/director?user_request={user_request}&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:52: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_request=Test mission from Python API tests
+📊 Status: 404 | ⏱️  Time: 162.65ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestDirectorEndpoint::test_director_with_user_id</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestDirectorEndpoint object at 0x000001954A32AFD0&gt;<br/><br/>    def test_director_with_user_id(self):<br/>        &quot;&quot;&quot;Test director with user_id parameter&quot;&quot;&quot;<br/>        user_id = config.test_user_id<br/>        response, data = client.get(f&quot;/director?user_id={user_id}&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:62: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director?user_id=api-test-user
+📊 Status: 404 | ⏱️  Time: 164.14ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_valid_message</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestPersonaEndpoint object at 0x000001954A35A710&gt;<br/><br/>    def test_persona_valid_message(self):<br/>        &quot;&quot;&quot;Test persona with valid message&quot;&quot;&quot;<br/>        payload = TestPayloads.persona_message()<br/>        response, data = client.post(&quot;/persona&quot;, json=payload)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:74: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 164.34ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_call_basic</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestElevatorEndpoint object at 0x000001954A35A990&gt;<br/><br/>    def test_elevator_call_basic(self):<br/>        &quot;&quot;&quot;Test basic elevator call&quot;&quot;&quot;<br/>        payload = TestPayloads.elevator_call()<br/>        response, data = client.post(&quot;/elevator/call&quot;, json=payload)<br/>    <br/>        # Elevator might return various responses depending on implementation<br/>&gt;       assert response.status_code in [200, 400]  # Allow 400 for missing parameters<br/><span class="error">E       assert 404 in [200, 400]</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:116: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+📊 Status: 404 | ⏱️  Time: 170.67ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_basic</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestPSIMEndpoint object at 0x000001954A35AC10&gt;<br/><br/>    def test_psim_search_basic(self):<br/>        &quot;&quot;&quot;Test basic PSIM search&quot;&quot;&quot;<br/>        payload = TestPayloads.psim_search()<br/>        response, data = client.post(&quot;/psim/search&quot;, json=payload)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:138: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 404 | ⏱️  Time: 169.51ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestPSIMEndpoint::test_psim_search_with_custom_query</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestPSIMEndpoint object at 0x000001954A35AD50&gt;<br/><br/>    def test_psim_search_with_custom_query(self):<br/>        &quot;&quot;&quot;Test PSIM search with custom query&quot;&quot;&quot;<br/>        custom_query = &quot;python-test-user&quot;<br/>        payload = TestPayloads.psim_search(query=custom_query)<br/>        response, data = client.post(&quot;/psim/search&quot;, json=payload)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:149: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 404 | ⏱️  Time: 166.91ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_mission_status</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCoordinatorEndpoint object at 0x000001954A35AE90&gt;<br/><br/>    def test_coordinator_mission_status(self):<br/>        &quot;&quot;&quot;Test coordinator mission status&quot;&quot;&quot;<br/>        mission_id = &quot;test-mission-123&quot;<br/>        response, data = client.get(f&quot;/coordinator/missions/{mission_id}&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:161: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-mission-123
+📊 Status: 404 | ⏱️  Time: 165.11ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCoordinatorEndpoint::test_coordinator_different_mission_id</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCoordinatorEndpoint object at 0x000001954A35AFD0&gt;<br/><br/>    def test_coordinator_different_mission_id(self):<br/>        &quot;&quot;&quot;Test coordinator with different mission ID&quot;&quot;&quot;<br/>        mission_id = f&quot;python-test-{int(time.time())}&quot;<br/>        response, data = client.get(f&quot;/coordinator/missions/{mission_id}&quot;)<br/>    <br/>&gt;       assert response.status_code == 200<br/><span class="error">E       assert 404 == 200</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_endpoints.py:172: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/python-test-1754773559
+📊 Status: 404 | ⏱️  Time: 162.39ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/health]</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000001954A35B390&gt;, endpoint = &#x27;/health&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /health</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 165.22ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/director]</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000001954A35B4D0&gt;, endpoint = &#x27;/director&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /director</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /director
+📊 Status: 404 | ⏱️  Time: 161.85ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/persona]</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000001954A32B5C0&gt;, endpoint = &#x27;/persona&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /persona</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 159.95ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/elevator/call]</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000001954A32B6F0&gt;, endpoint = &#x27;/elevator/call&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /elevator/call</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+📊 Status: 404 | ⏱️  Time: 163.58ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/psim/search]</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000001954A410290&gt;, endpoint = &#x27;/psim/search&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /psim/search</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /psim/search
+📊 Status: 404 | ⏱️  Time: 167.48ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_endpoints.py::TestCORSHeaders::test_cors_headers_present[/coordinator/missions/test-123]</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_endpoints.TestCORSHeaders object at 0x000001954A3C4AF0&gt;, endpoint = &#x27;/coordinator/missions/test-123&#x27;<br/><br/>    @pytest.mark.parametrize(<br/>        &quot;endpoint&quot;,<br/>        [<br/>            &quot;/health&quot;,<br/>            &quot;/director&quot;,<br/>            &quot;/persona&quot;,<br/>            &quot;/elevator/call&quot;,<br/>            &quot;/psim/search&quot;,<br/>            &quot;/coordinator/missions/test-123&quot;,<br/>        ],<br/>    )<br/>    def test_cors_headers_present(self, endpoint):<br/>        &quot;&quot;&quot;Test that CORS headers are present&quot;&quot;&quot;<br/>        method = (<br/>            &quot;POST&quot;<br/>            if endpoint in [&quot;/persona&quot;, &quot;/elevator/call&quot;, &quot;/psim/search&quot;]<br/>            else &quot;GET&quot;<br/>        )<br/>    <br/>        if method == &quot;POST&quot;:<br/>            payload = {&quot;test&quot;: &quot;data&quot;}<br/>            response, _ = client.post(endpoint, json=payload)<br/>        else:<br/>            response, _ = client.get(endpoint)<br/>    <br/>        # Check for CORS headers (they might be case-insensitive)<br/>        headers_lower = {k.lower(): v for k, v in response.headers.items()}<br/>    <br/>        # At least one CORS header should be present<br/>        cors_headers = [<br/>            &quot;access-control-allow-origin&quot;,<br/>            &quot;access-control-allow-methods&quot;,<br/>            &quot;access-control-allow-headers&quot;,<br/>        ]<br/>    <br/>        has_cors = any(header in headers_lower for header in cors_headers)<br/>&gt;       assert has_cors, f&quot;No CORS headers found in response for {endpoint}&quot;<br/><span class="error">E       AssertionError: No CORS headers found in response for /coordinator/missions/test-123</span><br/><span class="error">E       assert False</span><br/><br/>test_endpoints.py:215: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /coordinator/missions/test-123
+📊 Status: 404 | ⏱️  Time: 161.71ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestPerformance::test_concurrent_health_checks</td>
+          <td class="col-duration">1.59</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_performance.TestPerformance object at 0x000001954AB54050&gt;<br/><br/>    def test_concurrent_health_checks(self):<br/>        &quot;&quot;&quot;Test multiple concurrent health check requests&quot;&quot;&quot;<br/>    <br/>        def make_health_request():<br/>            response, data = client.get(&quot;/health&quot;)<br/>            return response.status_code == 200, response.elapsed.total_seconds() * 1000<br/>    <br/>        concurrent_requests = 5<br/>    <br/>        with ThreadPoolExecutor(max_workers=concurrent_requests) as executor:<br/>            futures = [<br/>                executor.submit(make_health_request) for _ in range(concurrent_requests)<br/>            ]<br/>            results = [future.result() for future in as_completed(futures)]<br/>    <br/>        # All requests should succeed<br/>        success_count = sum(1 for success, _ in results if success)<br/>&gt;       assert success_count == concurrent_requests<br/><span class="error">E       assert 0 == 5</span><br/><br/>test_performance.py:63: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 161.50ms | 📦 Size: 23 bytes
+📊 Status: 404 | ⏱️  Time: 1509.67ms | 📦 Size: 23 bytes
+📊 Status: 404 | ⏱️  Time: 1518.68ms | 📦 Size: 23 bytes
+📊 Status: 404 | ⏱️  Time: 1571.86ms | 📦 Size: 23 bytes
+📊 Status: 404 | ⏱️  Time: 1580.45ms | 📦 Size: 23 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestLoadTesting::test_sustained_load_health_endpoint</td>
+          <td class="col-duration">13.26</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_performance.TestLoadTesting object at 0x000001954AB54190&gt;<br/><br/>    @pytest.mark.slow<br/>    def test_sustained_load_health_endpoint(self):<br/>        &quot;&quot;&quot;Test sustained load on health endpoint&quot;&quot;&quot;<br/>        console.print(&quot;\n🔥 [bold yellow]Running sustained load test...[/bold yellow]&quot;)<br/>    <br/>        requests_per_second = 2<br/>        duration_seconds = 10<br/>        total_requests = requests_per_second * duration_seconds<br/>    <br/>        results = []<br/>    <br/>        with Progress(<br/>            SpinnerColumn(),<br/>            &quot;[progress.description]{task.description}&quot;,<br/>            TimeElapsedColumn(),<br/>            console=console,<br/>        ) as progress:<br/>            task = progress.add_task(<br/>                f&quot;Making {total_requests} requests...&quot;, total=total_requests<br/>            )<br/>    <br/>            for i in range(total_requests):<br/>                start_time = time.time()<br/>    <br/>                try:<br/>                    response, data = client.get(&quot;/health&quot;)<br/>                    end_time = time.time()<br/>    <br/>                    results.append(<br/>                        {<br/>                            &quot;success&quot;: response.status_code == 200,<br/>                            &quot;response_time&quot;: (end_time - start_time) * 1000,<br/>                            &quot;request_number&quot;: i + 1,<br/>                        }<br/>                    )<br/>    <br/>                except Exception as e:<br/>                    results.append(<br/>                        {&quot;success&quot;: False, &quot;error&quot;: str(e), &quot;request_number&quot;: i + 1}<br/>                    )<br/>    <br/>                progress.update(task, advance=1)<br/>    <br/>                # Rate limiting<br/>                if i &lt; total_requests - 1:<br/>                    time.sleep(1 / requests_per_second)<br/>    <br/>        # Analyze results<br/>        successful_requests = [r for r in results if r[&quot;success&quot;]]<br/>        success_rate = len(successful_requests) / len(results) * 100<br/>    <br/>        console.print(<br/>            f&quot;✅ Success rate: {success_rate:.1f}% ({len(successful_requests)}/{len(results)})&quot;<br/>        )<br/>    <br/>        if successful_requests:<br/>            times = [r[&quot;response_time&quot;] for r in successful_requests]<br/>            avg_time = sum(times) / len(times)<br/>            max_time = max(times)<br/>            min_time = min(times)<br/>    <br/>            console.print(f&quot;⏱️  Avg response: {avg_time:.2f}ms&quot;)<br/>            console.print(f&quot;🐌 Max response: {max_time:.2f}ms&quot;)<br/>            console.print(f&quot;⚡ Min response: {min_time:.2f}ms&quot;)<br/>    <br/>        # Assertions<br/>&gt;       assert success_rate &gt;= 95, f&quot;Success rate too low: {success_rate:.1f}%&quot;<br/><span class="error">E       AssertionError: Success rate too low: 0.0%</span><br/><span class="error">E       assert 0.0 &gt;= 95</span><br/><br/>test_performance.py:139: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🔥 Running sustained load test...
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 164.39ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 169.98ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 173.40ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 168.62ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 175.80ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 196.69ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 164.12ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 170.13ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 170.55ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 171.69ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 173.65ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 165.40ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 161.39ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 478.43ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 169.26ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 173.58ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 167.73ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 170.09ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 169.04ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 160.00ms | 📦 Size: 23 bytes
+  Making 20 requests... 0:00:13
+✅ Success rate: 0.0% (0/20)
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_large_payload_persona</td>
+          <td class="col-duration">0.96</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_performance.TestStressScenarios object at 0x000001954AB542D0&gt;<br/><br/>    def test_large_payload_persona(self):<br/>        &quot;&quot;&quot;Test persona endpoint with large message&quot;&quot;&quot;<br/>        large_message = &quot;x&quot; * 10000  # 10KB message<br/>        payload = {&quot;user_id&quot;: &quot;stress-test-user&quot;, &quot;message&quot;: large_message}<br/>    <br/>        response, data = client.post(&quot;/persona&quot;, json=payload)<br/>    <br/>        # Should handle large payloads gracefully<br/>&gt;       assert response.status_code in [<br/>            200,<br/>            413,<br/>            400,<br/>        ]  # Success, Payload Too Large, or Bad Request<br/><span class="error">E       assert 404 in [200, 413, 400]</span><br/><span class="error">E        +  where 404 = &lt;Response [404]&gt;.status_code</span><br/><br/>test_performance.py:158: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 958.81ms | 📦 Size: 23 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_rapid_successive_requests</td>
+          <td class="col-duration">1.73</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;api.test_performance.TestStressScenarios object at 0x000001954AB54410&gt;<br/><br/>    def test_rapid_successive_requests(self):<br/>        &quot;&quot;&quot;Test rapid successive requests to same endpoint&quot;&quot;&quot;<br/>        rapid_requests = 10<br/>        results = []<br/>    <br/>        start_time = time.time()<br/>    <br/>        for i in range(rapid_requests):<br/>            try:<br/>                response, data = client.get(&quot;/health&quot;)<br/>                results.append(response.status_code == 200)<br/>            except Exception:<br/>                results.append(False)<br/>    <br/>        end_time = time.time()<br/>        total_time = end_time - start_time<br/>    <br/>        success_count = sum(results)<br/>        success_rate = success_count / rapid_requests * 100<br/>    <br/>        console.print(f&quot;🚀 Rapid requests: {rapid_requests} in {total_time:.2f}s&quot;)<br/>        console.print(f&quot;✅ Success rate: {success_rate:.1f}%&quot;)<br/>    <br/>        # At least 80% should succeed<br/>&gt;       assert success_rate &gt;= 80<br/><span class="error">E       assert 0.0 &gt;= 80</span><br/><br/>test_performance.py:188: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 176.20ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 177.65ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 173.48ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 166.76ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 170.88ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 169.94ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 167.14ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 169.75ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 171.00ms | 📦 Size: 23 bytes
+
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 173.93ms | 📦 Size: 23 bytes
+🚀 Rapid requests: 10 in 1.73s
+✅ Success rate: 0.0%
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_user_id</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 165.29ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_missing_message</td>
+          <td class="col-duration">0.18</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 181.16ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestPersonaEndpoint::test_persona_conversations</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /persona/conversations?user_id=api-test-user
+📊 Status: 404 | ⏱️  Time: 157.95ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestElevatorEndpoint::test_elevator_missing_mission_id</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /elevator/call
+📊 Status: 404 | ⏱️  Time: 166.51ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_endpoint</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /invalid-endpoint
+📊 Status: 404 | ⏱️  Time: 164.73ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_invalid_method</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 DELETE /health
+📊 Status: 404 | ⏱️  Time: 160.35ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_endpoints.py::TestErrorHandling::test_malformed_json</td>
+          <td class="col-duration">0.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ----------------------------Captured stdout teardown---------------------------- <br/>
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestPerformance::test_response_time_under_threshold</td>
+          <td class="col-duration">0.83</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET /health
+📊 Status: 404 | ⏱️  Time: 170.54ms | 📦 Size: 23 bytes
+
+🚀 GET /director
+📊 Status: 404 | ⏱️  Time: 162.57ms | 📦 Size: 23 bytes
+
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 165.87ms | 📦 Size: 23 bytes
+
+🚀 POST /psim/search
+📊 Status: 404 | ⏱️  Time: 162.91ms | 📦 Size: 23 bytes
+
+🚀 GET /coordinator/missions/perf-test-123
+📊 Status: 404 | ⏱️  Time: 164.16ms | 📦 Size: 23 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestStressScenarios::test_special_characters_in_requests</td>
+          <td class="col-duration">0.51</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 169.24ms | 📦 Size: 23 bytes
+
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 168.98ms | 📦 Size: 23 bytes
+
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 170.28ms | 📦 Size: 23 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_empty_payloads</td>
+          <td class="col-duration">0.52</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 166.87ms | 📦 Size: 23 bytes
+
+🚀 POST /elevator/call
+📊 Status: 404 | ⏱️  Time: 172.98ms | 📦 Size: 23 bytes
+
+🚀 POST /psim/search
+📊 Status: 404 | ⏱️  Time: 178.17ms | 📦 Size: 23 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_null_values_in_payload</td>
+          <td class="col-duration">0.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 POST /persona
+📊 Status: 404 | ⏱️  Time: 160.43ms | 📦 Size: 23 bytes
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">test_performance.py::TestBoundaryConditions::test_extremely_long_mission_id</td>
+          <td class="col-duration">0.31</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>
+🚀 GET 
+/coordinator/missions/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+📊 Status: 404 | ⏱️  Time: 173.00ms | 📦 Size: 23 bytes
+<br/> ----------------------------Captured stdout teardown---------------------------- <br/>
+📊 Test Session Complete
+                              🔍 Request Summary                               
+┌────────┬─────────────────────────────────────┬────────┬───────────┬─────────┐
+│ Method │ Endpoint                            │ Status │ Time (ms) │ Success │
+├────────┼─────────────────────────────────────┼────────┼───────────┼─────────┤
+│ GET    │ /health                             │ 404    │ 1259.91   │ ❌      │
+│ GET    │ /health                             │ 404    │ 163.06    │ ❌      │
+│ GET    │ /director                           │ 404    │ 164.14    │ ❌      │
+│ GET    │ /director?user_request=Test mission │ 404    │ 162.65    │ ❌      │
+│        │ from Python API tests               │        │           │         │
+│ GET    │ /director?user_id=api-test-user     │ 404    │ 164.14    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 164.34    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 165.29    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 181.16    │ ❌      │
+│ GET    │ /persona/conversations?user_id=api… │ 404    │ 157.95    │ ❌      │
+│ POST   │ /elevator/call                      │ 404    │ 170.67    │ ❌      │
+│ POST   │ /elevator/call                      │ 404    │ 166.51    │ ❌      │
+│ POST   │ /psim/search                        │ 404    │ 169.51    │ ❌      │
+│ POST   │ /psim/search                        │ 404    │ 166.91    │ ❌      │
+│ GET    │ /coordinator/missions/test-mission… │ 404    │ 165.11    │ ❌      │
+│ GET    │ /coordinator/missions/python-test-… │ 404    │ 162.39    │ ❌      │
+│ GET    │ /health                             │ 404    │ 165.22    │ ❌      │
+│ GET    │ /director                           │ 404    │ 161.85    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 159.95    │ ❌      │
+│ POST   │ /elevator/call                      │ 404    │ 163.58    │ ❌      │
+│ POST   │ /psim/search                        │ 404    │ 167.48    │ ❌      │
+│ GET    │ /coordinator/missions/test-123      │ 404    │ 161.71    │ ❌      │
+│ GET    │ /invalid-endpoint                   │ 404    │ 164.73    │ ❌      │
+│ DELETE │ /health                             │ 404    │ 160.35    │ ❌      │
+│ GET    │ /health                             │ 404    │ 170.54    │ ❌      │
+│ GET    │ /director                           │ 404    │ 162.57    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 165.87    │ ❌      │
+│ POST   │ /psim/search                        │ 404    │ 162.91    │ ❌      │
+│ GET    │ /coordinator/missions/perf-test-123 │ 404    │ 164.16    │ ❌      │
+│ GET    │ /health                             │ 404    │ 161.5     │ ❌      │
+│ GET    │ /health                             │ 404    │ 1509.67   │ ❌      │
+│ GET    │ /health                             │ 404    │ 1518.68   │ ❌      │
+│ GET    │ /health                             │ 404    │ 1571.86   │ ❌      │
+│ GET    │ /health                             │ 404    │ 1580.45   │ ❌      │
+│ GET    │ /health                             │ 404    │ 164.39    │ ❌      │
+│ GET    │ /health                             │ 404    │ 169.98    │ ❌      │
+│ GET    │ /health                             │ 404    │ 173.4     │ ❌      │
+│ GET    │ /health                             │ 404    │ 168.62    │ ❌      │
+│ GET    │ /health                             │ 404    │ 175.8     │ ❌      │
+│ GET    │ /health                             │ 404    │ 196.69    │ ❌      │
+│ GET    │ /health                             │ 404    │ 164.12    │ ❌      │
+│ GET    │ /health                             │ 404    │ 170.13    │ ❌      │
+│ GET    │ /health                             │ 404    │ 170.55    │ ❌      │
+│ GET    │ /health                             │ 404    │ 171.69    │ ❌      │
+│ GET    │ /health                             │ 404    │ 173.65    │ ❌      │
+│ GET    │ /health                             │ 404    │ 165.4     │ ❌      │
+│ GET    │ /health                             │ 404    │ 161.39    │ ❌      │
+│ GET    │ /health                             │ 404    │ 478.43    │ ❌      │
+│ GET    │ /health                             │ 404    │ 169.26    │ ❌      │
+│ GET    │ /health                             │ 404    │ 173.58    │ ❌      │
+│ GET    │ /health                             │ 404    │ 167.73    │ ❌      │
+│ GET    │ /health                             │ 404    │ 170.09    │ ❌      │
+│ GET    │ /health                             │ 404    │ 169.04    │ ❌      │
+│ GET    │ /health                             │ 404    │ 160.0     │ ❌      │
+│ POST   │ /persona                            │ 404    │ 958.81    │ ❌      │
+│ GET    │ /health                             │ 404    │ 176.2     │ ❌      │
+│ GET    │ /health                             │ 404    │ 177.65    │ ❌      │
+│ GET    │ /health                             │ 404    │ 173.48    │ ❌      │
+│ GET    │ /health                             │ 404    │ 166.76    │ ❌      │
+│ GET    │ /health                             │ 404    │ 170.88    │ ❌      │
+│ GET    │ /health                             │ 404    │ 169.94    │ ❌      │
+│ GET    │ /health                             │ 404    │ 167.14    │ ❌      │
+│ GET    │ /health                             │ 404    │ 169.75    │ ❌      │
+│ GET    │ /health                             │ 404    │ 171.0     │ ❌      │
+│ GET    │ /health                             │ 404    │ 173.93    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 169.24    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 168.98    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 170.28    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 166.87    │ ❌      │
+│ POST   │ /elevator/call                      │ 404    │ 172.98    │ ❌      │
+│ POST   │ /psim/search                        │ 404    │ 178.17    │ ❌      │
+│ POST   │ /persona                            │ 404    │ 160.43    │ ❌      │
+│ GET    │ /coordinator/missions/xxxxxxxxxxxx… │ 404    │ 173.0     │ ❌      │
+└────────┴─────────────────────────────────────┴────────┴───────────┴─────────┘
+💾 Results exported to: api-test-results-20250809-180621.json
+<br/></div></td></tr></tbody></table></body></html>

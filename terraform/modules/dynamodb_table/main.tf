@@ -19,5 +19,19 @@ resource "aws_dynamodb_table" "this" {
     }
   }
 
+  # Encryption configuration
+  dynamic "server_side_encryption" {
+    for_each = var.kms_key_arn != null ? [1] : []
+    content {
+      enabled     = true
+      kms_key_arn = var.kms_key_arn
+    }
+  }
+
+  # Point-in-time recovery
+  point_in_time_recovery {
+    enabled = var.point_in_time_recovery
+  }
+
   tags = var.tags
 }

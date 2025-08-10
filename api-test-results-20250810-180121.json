@@ -1,0 +1,44 @@
+[
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/elevator/call",
+    "timestamp": 1754859672.9101183,
+    "headers": {},
+    "payload": {
+      "mission_id": "test-mission-123",
+      "action": "call_elevator",
+      "parameters": {
+        "from_floor": 1,
+        "to_floor": 3
+      }
+    },
+    "status_code": 200,
+    "response_time_ms": 1335.9,
+    "response_size": 447,
+    "response_data": {
+      "message": "Task http-1754859672 completed successfully",
+      "result": {
+        "status": "error",
+        "message": "Network error calling elevator API: HTTPConnectionPool(host='elevador.clevertown.io', port=9090): Max retries exceeded with url: /elevator/010504/call (Caused by NameResolutionError(\"<urllib3.connection.HTTPConnection object at 0x7fde50330bd0>: Failed to resolve 'elevador.clevertown.io' ([Errno -2] Name or service not known)\"))",
+        "floor": 1
+      }
+    },
+    "success": true
+  },
+  {
+    "method": "POST",
+    "url": "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev/elevator/call",
+    "timestamp": 1754859674.2522628,
+    "headers": {},
+    "payload": {
+      "action": "call_elevator",
+      "parameters": {
+        "floor": 3
+      }
+    },
+    "status_code": 0,
+    "response_time_ms": 6823.71,
+    "error": "HTTPSConnectionPool(host='pj4vlvxrg7.execute-api.us-east-1.amazonaws.com', port=443): Max retries exceeded with url: /dev/elevator/call (Caused by ResponseError('too many 500 error responses'))",
+    "success": false
+  }
+]

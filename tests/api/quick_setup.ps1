@@ -51,14 +51,7 @@ Write-Host "   python -m pytest test_endpoints.py::TestElevatorEndpoint -v" -For
 Write-Host "   python -m pytest test_endpoints.py::TestPersonaEndpoint -v" -ForegroundColor White
 Write-Host "   python -m pytest test_endpoints.py::TestCORSHeaders -v" -ForegroundColor White
 Write-Host ""
-Write-Host "📊 View Recent Results:" -ForegroundColor Yellow
+Write-Host "📊 View Recent Results:" -ForegroundColor Green
 Write-Host "   Get-ChildItem api-test-results-*.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content | ConvertFrom-Json | Select-Object -ExpandProperty summary" -ForegroundColor White
-Write-Host ""
 
-# Run quick diagnosis
-Write-Host "🔍 Running quick diagnosis..." -ForegroundColor Yellow
-python diagnose_api.py
-
-Write-Host ""
-Write-Host "🎯 Ready for development! Use the commands above for testing." -ForegroundColor Green
-Write-Host "📋 See docs/03-development/03-api-fix-plan.md for the complete fix plan." -ForegroundColor Cyan
+Write-Host "`n🎯 Ready for development! Use the commands above for testing." -ForegroundColor Cyan

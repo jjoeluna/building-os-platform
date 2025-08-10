@@ -37,6 +37,10 @@ def handler(event, context):
     try:
         print(f"Agent PSIM received event: {json.dumps(event)}")
 
+        # Explicitly check for API Gateway event first
+        if "httpMethod" in event:
+            return handle_api_request(event, context)
+
         # Check if this is an SNS event
         if "Records" in event:
             for record in event["Records"]:
@@ -62,8 +66,12 @@ def handler(event, context):
         if "mission_id" in event and "task_id" in event and "action" in event:
             return handle_legacy_task(event)
 
-        # Otherwise, handle as API Gateway request (direct API call)
-        return handle_api_request(event, context)
+        # Fallback for unknown event types
+        print(f"Unknown event format: {event}")
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Invalid event format"}),
+        }
 
     except Exception as e:
         print(f"Error in PSIM agent: {str(e)}")

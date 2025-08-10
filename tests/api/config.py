@@ -9,7 +9,7 @@ import json
 class APIConfig:
     """Configuration for API tests"""
 
-    base_url: str = "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com"
+    base_url: str = "https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com/dev"
     timeout: int = 30
     retry_count: int = 3
     environment: str = "dev"
@@ -41,11 +41,13 @@ class TestPayloads:
         }
 
     @staticmethod
-    def elevator_call(mission_id: str = None, floor: int = 3) -> Dict[str, Any]:
+    def elevator_call(
+        mission_id: str = None, from_floor: int = 1, to_floor: int = 3
+    ) -> Dict[str, Any]:
         return {
             "mission_id": mission_id or "test-mission-123",
             "action": "call_elevator",
-            "parameters": {"floor": floor, "direction": "up"},
+            "parameters": {"from_floor": from_floor, "to_floor": to_floor},
         }
 
     @staticmethod

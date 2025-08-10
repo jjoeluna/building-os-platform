@@ -12,12 +12,11 @@
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| **[01 - Development Status](./01-development-status.md)** | Single source of truth for implementation progress | ✅ Authority |
-| **[02 - CLI Commands Reference](./02-cli-commands-reference.md)** | Complete command-line procedures and workflows | ✅ Active |
-| **[03 - Developer Context Prompt](./03-developer-context-prompt.md)** | AI assistant context for development tasks | ✅ Active |
-| **[04 - Architect Context Prompt](./04-architect-context-prompt.md)** | AI assistant context for architecture tasks | ✅ Active |
-| **[05 - Development Prompts](./05-development-prompts.md)** | Collection of AI-assisted development prompts | ✅ Active |
-| **[06 - Setup Guide](./06-setup-guide.md)** | Complete development environment setup | ✅ Active |
+| **[01 - Development Status](./01-project-management/README.md)** | Single source of truth for implementation progress | ✅ Authority |
+| **[02 - CLI Commands Reference](./02-cli-commands-reference/cli-commands-reference.md)** | Complete command-line procedures and workflows | ✅ Active |
+| **[03 - Setup Guide](./03-setup-guide/setup-guide.md)** | Complete development environment setup | ✅ Active |
+| **[98 - AI Prompts](./98-ai-prompts/README.md)** | AI assistant contexts and development prompts | ✅ Active |
+| **[99 - Lessons Learned](./99-lessons/README.md)** | Development lessons and best practices | ✅ Active |
 
 ---
 
@@ -37,17 +36,17 @@
 3. **👥 Multi-Tenant Conversations** - RESTful conversation management
 
 **Development Workflow:**
-1. Check `01-development-status.md` for current priorities
-2. Update `02-architecture/02-api-contract.md` before implementing
-3. Use CLI commands from `02-cli-commands-reference.md`
+1. Check `01-project-management/README.md` for current priorities
+2. Update `02-architecture/05-api-contract/api-contract.md` before implementing
+3. Use CLI commands from `02-cli-commands-reference/cli-commands-reference.md`
 4. Test incrementally and update status
 
 ---
 
 ## 🧠 **AI Assistant Integration**
 
-**For Development Sessions:** Use `03-developer-context-prompt.md`  
-**For Architecture Sessions:** Use `04-architect-context-prompt.md`
+**For Development Sessions:** Use `98-ai-prompts/developer-context-prompt.md`  
+**For Architecture Sessions:** Use `98-ai-prompts/development-prompts.md`
 
 Both prompts reference authority documents and provide consistent context for AI-assisted development.
 
