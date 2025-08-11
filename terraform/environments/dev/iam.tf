@@ -4,54 +4,14 @@
 # This file contains all IAM role and policy definitions
 # =============================================================================
 
-# --- Lambda Execution Role ---
-resource "aws_iam_role" "lambda_exec_role" {
-  name = local.iam_role_names.lambda_exec_role
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = merge(local.common_tags, {
-    Name      = "lambda-exec-role"
-    Type      = "IAM Role"
-    Component = "IAM"
-    Function  = "Lambda Execution"
-    ManagedBy = "Terraform"
-  })
-}
-
-# --- Lambda Basic Execution Policy ---
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-# --- Lambda VPC Access Policy ---
-resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
-# --- X-Ray Tracing Policy ---
-resource "aws_iam_role_policy_attachment" "lambda_xray_write_only" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
-}
+# -----------------------------------------------------------------------------
+# Standalone IAM Policies for Lambda Execution Role
+# -----------------------------------------------------------------------------
 
 # --- DynamoDB Access Policy ---
-resource "aws_iam_role_policy" "dynamodb_access" {
-  name = "${local.iam_role_names.lambda_exec_role}-dynamodb-policy"
-  role = aws_iam_role.lambda_exec_role.id
+resource "aws_iam_policy" "dynamodb_access" {
+  name        = "${local.resource_prefix}-dynamodb-access-policy"
+  description = "Policy for Lambda to access DynamoDB tables"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -78,18 +38,16 @@ resource "aws_iam_role_policy" "dynamodb_access" {
 }
 
 # --- SNS Publish Policy ---
-resource "aws_iam_role_policy" "sns_publish" {
-  name = "${local.iam_role_names.lambda_exec_role}-sns-policy"
-  role = aws_iam_role.lambda_exec_role.id
+resource "aws_iam_policy" "sns_publish" {
+  name        = "${local.resource_prefix}-sns-publish-policy"
+  description = "Policy for Lambda to publish to SNS topics"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
+        Action = ["sns:Publish"]
         Resource = [
           module.chat_intention_topic.topic_arn,
           module.persona_intention_topic.topic_arn,
@@ -105,73 +63,98 @@ resource "aws_iam_role_policy" "sns_publish" {
   })
 }
 
-# --- Lambda Invoke Policy ---
-resource "aws_iam_role_policy" "lambda_invoke" {
-  name = "${local.iam_role_names.lambda_exec_role}-lambda-invoke-policy"
-  role = aws_iam_role.lambda_exec_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "lambda:InvokeFunction"
-        ]
-        Resource = [
-          module.agent_health_check.function_arn,
-          module.agent_persona.function_arn,
-          module.agent_director.function_arn,
-          module.agent_coordinator.function_arn,
-          module.agent_elevator.function_arn,
-          module.agent_psim.function_arn
-        ]
-      }
-    ]
-  })
-}
-
 # --- Bedrock Access Policy ---
-resource "aws_iam_role_policy" "bedrock_access" {
-  name = "${local.iam_role_names.lambda_exec_role}-bedrock-policy"
-  role = aws_iam_role.lambda_exec_role.id
+resource "aws_iam_policy" "bedrock_access" {
+  name        = "${local.resource_prefix}-bedrock-access-policy"
+  description = "Policy for Lambda to invoke Bedrock models"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "bedrock:InvokeModel"
+        Action = ["bedrock:InvokeModel"]
+        Resource = [
+          "arn:aws:bedrock:${data.aws_region.current.name}::foundation-model/anthropic.claude-v2",
+          "arn:aws:bedrock:${data.aws_region.current.name}::foundation-model/anthropic.claude-instant-v1",
+          "arn:aws:bedrock:${data.aws_region.current.name}::foundation-model/amazon.titan-text-express-v1"
         ]
-        Resource = "*"
       }
     ]
   })
 }
 
 # --- API Gateway Management Policy ---
-resource "aws_iam_role_policy" "apigateway_management" {
-  name = "${local.iam_role_names.lambda_exec_role}-apigateway-policy"
-  role = aws_iam_role.lambda_exec_role.id
+resource "aws_iam_policy" "apigateway_management" {
+  name        = "${local.resource_prefix}-apigateway-management-policy"
+  description = "Policy for Lambda to manage WebSocket connections"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "execute-api:ManageConnections"
-        ]
+        Effect   = "Allow"
+        Action   = ["execute-api:ManageConnections"]
         Resource = "${module.websocket_api.websocket_api_execution_arn}/*"
       }
     ]
   })
 }
 
-# --- Additional Lambda Permissions ---
+# -----------------------------------------------------------------------------
+# Lambda Execution Role Module
+# -----------------------------------------------------------------------------
+# This module creates the IAM role that all Lambda functions will use.
+# It consumes the standalone policies created above.
+# -----------------------------------------------------------------------------
 
-# EventBridge Permission for Elevator
+module "lambda_iam_role" {
+  source      = "../../modules/iam_role"
+  role_name   = local.iam_role_names.lambda_exec_role
+  
+  assume_role_policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
+    "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+  ]
+
+  custom_policy_arns = [
+    aws_iam_policy.dynamodb_access.arn,
+    aws_iam_policy.sns_publish.arn,
+    aws_iam_policy.bedrock_access.arn,
+    aws_iam_policy.apigateway_management.arn
+  ]
+
+  tags = merge(local.common_tags, {
+    Name      = "lambda-exec-role"
+    Type      = "IAM Role Module"
+    Component = "IAM"
+    Function  = "Lambda Execution"
+    ManagedBy = "Terraform"
+  })
+}
+
+# -----------------------------------------------------------------------------
+# Additional Lambda Permissions
+# -----------------------------------------------------------------------------
+# These permissions are granted at the resource level, which is more specific
+# and secure than granting broad invoke permissions at the role level.
+# -----------------------------------------------------------------------------
+
+# EventBridge Permission for Elevator Agent
 resource "aws_lambda_permission" "allow_eventbridge_elevator" {
   statement_id  = "AllowEventBridgeInvokeElevator"
   action        = "lambda:InvokeFunction"

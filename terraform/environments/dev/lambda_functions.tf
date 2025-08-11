@@ -12,7 +12,7 @@ module "websocket_connect" {
 
   function_name = local.lambda_function_names.websocket_connect
   description   = "BuildingOS WebSocket Connect - Handles WebSocket connection establishment"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/tools/websocket_connect"
@@ -51,7 +51,7 @@ module "websocket_disconnect" {
 
   function_name = local.lambda_function_names.websocket_disconnect
   description   = "BuildingOS WebSocket Disconnect - Handles WebSocket connection termination"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/tools/websocket_disconnect"
@@ -90,7 +90,7 @@ module "websocket_default" {
 
   function_name = local.lambda_function_names.websocket_default
   description   = "BuildingOS WebSocket Default - Handles default WebSocket message processing"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/tools/websocket_default"
@@ -130,7 +130,7 @@ module "websocket_broadcast" {
 
   function_name = local.lambda_function_names.websocket_broadcast
   description   = "BuildingOS WebSocket Broadcast - Handles broadcasting messages to WebSocket connections"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/tools/websocket_broadcast"
@@ -171,7 +171,7 @@ module "agent_health_check" {
 
   function_name = local.lambda_function_names.agent_health_check
   description   = "BuildingOS Agent Health Check - Monitors the health of all agents"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/agents/agent_health_check"
@@ -206,7 +206,7 @@ module "agent_persona" {
 
   function_name = local.lambda_function_names.agent_persona
   description   = "BuildingOS Agent Persona - Manages user personas and conversations"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/agents/agent_persona"
@@ -248,7 +248,7 @@ module "agent_director" {
 
   function_name = local.lambda_function_names.agent_director
   description   = "BuildingOS Agent Director - Orchestrates mission planning and execution"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/agents/agent_director"
@@ -291,7 +291,7 @@ module "agent_coordinator" {
 
   function_name = local.lambda_function_names.agent_coordinator
   description   = "BuildingOS Agent Coordinator - Coordinates task execution and mission management"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/agents/agent_coordinator"
@@ -335,7 +335,7 @@ module "agent_elevator" {
 
   function_name = local.lambda_function_names.agent_elevator
   description   = "BuildingOS Agent Elevator - Manages elevator operations and monitoring"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/agents/agent_elevator"
@@ -384,7 +384,7 @@ module "agent_psim" {
 
   function_name = local.lambda_function_names.agent_psim
   description   = "BuildingOS Agent PSIM - Integrates with PSIM system for building management"
-  role_arn      = aws_iam_role.lambda_exec_role.arn
+  role_arn      = module.lambda_iam_role.role_arn
   handler       = "app.handler"
   runtime       = local.lambda_defaults.runtime
   source_dir    = "../../../src/agents/agent_psim"

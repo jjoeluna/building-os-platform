@@ -56,7 +56,7 @@ output "lambda_layer" {
 output "iam_roles" {
   description = "IAM role ARNs"
   value = {
-    lambda_exec_role = aws_iam_role.lambda_exec_role.arn
+    lambda_exec_role = module.lambda_iam_role.role_arn
   }
 }
 

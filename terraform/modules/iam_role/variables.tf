@@ -14,6 +14,12 @@ variable "policy_arns" {
   default     = []
 }
 
+variable "custom_policy_arns" {
+  description = "A list of custom IAM policy ARNs to attach to the role (for policies created in the same apply)."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "A map of tags to assign to the resource."
   type        = map(string)
