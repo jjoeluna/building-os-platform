@@ -1,0 +1,1612 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 6.33163857460022,
+    "total_tests": 228,
+    "passed_tests": 218,
+    "warned_tests": 8,
+    "failed_tests": 2,
+    "success_rate_percentage": 95.6140350877193,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Code Quality - agent-persona - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.706193+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-persona - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.712201+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-persona - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.718769+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-persona - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1001 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.719636+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-persona - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 15 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.720096+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-persona - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.721082+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-director - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.757540+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-director - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.763767+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-director - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.769653+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-director - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1060 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.770406+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-director - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 16 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.770742+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-director - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.771698+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-coordinator - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.780024+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-coordinator - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.813583+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-coordinator - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.819325+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-coordinator - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (658 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.819737+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-coordinator - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 14 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.821082+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-coordinator - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.821556+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-elevator - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:03.930506+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-elevator - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.075192+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-elevator - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.195622+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-elevator - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1151 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.323385+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-elevator - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 12 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.363035+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-elevator - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.363691+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-psim - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.453790+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-psim - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.468577+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-psim - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.476128+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-psim - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1059 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.476802+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-psim - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 15 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.477109+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-psim - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.477534+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-health-check - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.614072+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-health-check - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.707648+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-health-check - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.762041+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-health-check - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1528 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.764528+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-health-check - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 11 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.765200+00:00"
+    },
+    {
+      "test_name": "Code Quality - agent-health-check - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.765589+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-default - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.862348+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-default - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.865548+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-default - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.870797+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-default - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (878 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.871475+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-default - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.871745+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-default - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.872114+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-broadcast - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.875609+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-broadcast - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.878393+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-broadcast - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.880639+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-broadcast - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (894 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.881012+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-broadcast - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.881189+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-broadcast - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.881451+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-connect - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.885243+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-connect - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.888239+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-connect - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.890068+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-connect - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1466 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.890571+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-connect - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.890728+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-connect - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.891013+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-disconnect - Syntax",
+      "status": "PASS",
+      "message": "Python syntax is valid",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.893525+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-disconnect - Required Imports",
+      "status": "PASS",
+      "message": "Required imports (typing, json) present",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.896067+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-disconnect - Handler Signature",
+      "status": "PASS",
+      "message": "Handler function has correct signature (event, context)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.898120+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-disconnect - Handler Documentation",
+      "status": "PASS",
+      "message": "Handler has comprehensive docstring (1382 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.898433+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-disconnect - Modularity",
+      "status": "PASS",
+      "message": "Good modularity with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.898632+00:00"
+    },
+    {
+      "test_name": "Code Quality - websocket-disconnect - File Header",
+      "status": "PASS",
+      "message": "Comprehensive file header with all required sections",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.899078+00:00"
+    },
+    {
+      "test_name": "Common Layer - Structure",
+      "status": "PASS",
+      "message": "All required components present: aws_clients.py, utils.py, models.py, __init__.py",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.902981+00:00"
+    },
+    {
+      "test_name": "Common Layer - aws_clients.py Content",
+      "status": "PASS",
+      "message": "Component has substantial implementation (5449 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.904460+00:00"
+    },
+    {
+      "test_name": "Common Layer - utils.py Content",
+      "status": "PASS",
+      "message": "Component has substantial implementation (9960 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.906157+00:00"
+    },
+    {
+      "test_name": "Common Layer - models.py Content",
+      "status": "PASS",
+      "message": "Component has substantial implementation (11217 chars)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.906918+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-persona - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.907690+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-persona - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.908066+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-director - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.909011+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-director - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.909231+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-coordinator - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.913278+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-coordinator - Client Management",
+      "status": "WARN",
+      "message": "Some direct boto3 usage found (1 instances)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.913686+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-elevator - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.957794+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-elevator - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.958144+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-psim - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.959432+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-psim - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.959690+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-health-check - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.960326+00:00"
+    },
+    {
+      "test_name": "Common Layer - agent-health-check - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.962354+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-default - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.963275+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-default - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.963516+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-broadcast - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.964545+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-broadcast - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.965040+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-connect - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:04.966226+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-connect - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.014698+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-disconnect - Integration",
+      "status": "PASS",
+      "message": "Properly integrates common layer components: aws_clients, utils, models",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.019525+00:00"
+    },
+    {
+      "test_name": "Common Layer - websocket-disconnect - Client Management",
+      "status": "PASS",
+      "message": "Uses common layer for AWS client management",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.020988+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-persona - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.069965+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-persona - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.070471+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-persona - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.070706+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-director - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.071989+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-director - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.072441+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-director - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.072895+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-coordinator - Logging",
+      "status": "WARN",
+      "message": "Basic logging implemented (2/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.122098+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-coordinator - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.128003+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-coordinator - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.130479+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-elevator - Logging",
+      "status": "WARN",
+      "message": "Basic logging implemented (2/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.132013+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-elevator - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.132570+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-elevator - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.132809+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-psim - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.133831+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-psim - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.134082+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-psim - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.134484+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-health-check - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.135454+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-health-check - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.135707+00:00"
+    },
+    {
+      "test_name": "Error Handling - agent-health-check - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.136048+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-default - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.138152+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-default - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.138552+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-default - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.138890+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-broadcast - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.139770+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-broadcast - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.139970+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-broadcast - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.140352+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-connect - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.141415+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-connect - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.141676+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-connect - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.142026+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-disconnect - Logging",
+      "status": "PASS",
+      "message": "Comprehensive structured logging implemented (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.142768+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-disconnect - Correlation IDs",
+      "status": "PASS",
+      "message": "Implements correlation ID tracking",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.142979+00:00"
+    },
+    {
+      "test_name": "Error Handling - websocket-disconnect - Exception Handling",
+      "status": "PASS",
+      "message": "Comprehensive exception handling implemented",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.143161+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-persona - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.155846+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-persona - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 2 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.161972+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-persona - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.162436+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-director - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.218679+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-director - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 2 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.267109+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-director - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.268469+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-coordinator - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.371031+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-coordinator - Function Organization",
+      "status": "WARN",
+      "message": "Consider more helper functions for better organization",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.421838+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-coordinator - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.422132+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-elevator - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.484043+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-elevator - Function Organization",
+      "status": "WARN",
+      "message": "Consider more helper functions for better organization",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.536017+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-elevator - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.536567+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-psim - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.641885+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-psim - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 3 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.695073+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-psim - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.695509+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-health-check - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.743422+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-health-check - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 11 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.788498+00:00"
+    },
+    {
+      "test_name": "Architecture - agent-health-check - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.788775+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-default - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.793373+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-default - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.796390+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-default - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.796678+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-broadcast - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.802308+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-broadcast - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.804891+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-broadcast - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.805243+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-connect - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.808177+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-connect - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.810032+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-connect - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.810385+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-disconnect - Event Routing",
+      "status": "PASS",
+      "message": "Implements proper event routing patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.813568+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-disconnect - Function Organization",
+      "status": "PASS",
+      "message": "Good function organization with 4 helper functions",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.815295+00:00"
+    },
+    {
+      "test_name": "Architecture - websocket-disconnect - Response Standards",
+      "status": "PASS",
+      "message": "Implements standardized response patterns",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:05.815522+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-persona - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.077297+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-persona - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.077578+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-persona - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 512MB, 60s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.077738+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-persona - Environment Variables",
+      "status": "PASS",
+      "message": "Has 5 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.077898+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-director - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.328988+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-director - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.329276+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-director - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 256MB, 45s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.329442+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-director - Environment Variables",
+      "status": "PASS",
+      "message": "Has 4 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.329586+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-coordinator - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.612243+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-coordinator - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.612561+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-coordinator - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 256MB, 45s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.612720+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-coordinator - Environment Variables",
+      "status": "PASS",
+      "message": "Has 5 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.612864+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-elevator - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.878942+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-elevator - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.879278+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-elevator - Resource Configuration",
+      "status": "WARN",
+      "message": "Review resource settings: 256MB, 360s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.879646+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-elevator - Environment Variables",
+      "status": "PASS",
+      "message": "Has 6 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:07.879902+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-psim - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.179955+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-psim - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.180213+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-psim - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 256MB, 30s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.180358+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-psim - Environment Variables",
+      "status": "PASS",
+      "message": "Has 6 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.180490+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-health-check - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.432042+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-health-check - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.432257+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-health-check - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 128MB, 10s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.432396+00:00"
+    },
+    {
+      "test_name": "AWS Integration - agent-health-check - Environment Variables",
+      "status": "PASS",
+      "message": "Has 1 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.432538+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-default - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.668857+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-default - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.670462+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-default - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 256MB, 30s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.670977+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-default - Environment Variables",
+      "status": "PASS",
+      "message": "Has 3 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.671328+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-broadcast - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.985774+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-broadcast - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.986518+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-broadcast - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 256MB, 30s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.986732+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-broadcast - Environment Variables",
+      "status": "PASS",
+      "message": "Has 2 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:08.987024+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-connect - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.243207+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-connect - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.243462+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-connect - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 128MB, 15s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.243619+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-connect - Environment Variables",
+      "status": "PASS",
+      "message": "Has 2 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.243799+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-disconnect - Runtime",
+      "status": "PASS",
+      "message": "Using python3.11 runtime",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.478829+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-disconnect - Layer Attachment",
+      "status": "PASS",
+      "message": "Common utilities layer attached",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.479100+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-disconnect - Resource Configuration",
+      "status": "PASS",
+      "message": "Appropriate resources: 128MB, 15s timeout",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.479260+00:00"
+    },
+    {
+      "test_name": "AWS Integration - websocket-disconnect - Environment Variables",
+      "status": "PASS",
+      "message": "Has 2 environment variables configured",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.479650+00:00"
+    },
+    {
+      "test_name": "Enterprise Standards - Overall Compliance",
+      "status": "PASS",
+      "message": "Excellent compliance: 100.0% average across standards",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.484532+00:00"
+    },
+    {
+      "test_name": "Enterprise Standards - Documentation Headers",
+      "status": "PASS",
+      "message": "100.0% functions have comprehensive headers (10/10)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.485849+00:00"
+    },
+    {
+      "test_name": "Enterprise Standards - Type Annotations",
+      "status": "PASS",
+      "message": "100.0% functions use type annotations (10/10)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.486090+00:00"
+    },
+    {
+      "test_name": "Enterprise Standards - Structured Logging",
+      "status": "PASS",
+      "message": "100.0% functions use structured logging (10/10)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.486375+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-persona - Function Annotations",
+      "status": "FAIL",
+      "message": "43.8% functions have type annotations (7/16)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.502096+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-persona - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.504049+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-director - Function Annotations",
+      "status": "FAIL",
+      "message": "47.1% functions have type annotations (8/17)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.558130+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-director - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.560450+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-coordinator - Function Annotations",
+      "status": "PASS",
+      "message": "86.7% functions have type annotations (13/15)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.613851+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-coordinator - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.614260+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-elevator - Function Annotations",
+      "status": "WARN",
+      "message": "69.2% functions have type annotations (9/13)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.713977+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-elevator - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.714319+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-psim - Function Annotations",
+      "status": "WARN",
+      "message": "75.0% functions have type annotations (12/16)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.764965+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-psim - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.765264+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-health-check - Function Annotations",
+      "status": "PASS",
+      "message": "100.0% functions have type annotations (12/12)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.812007+00:00"
+    },
+    {
+      "test_name": "Type Safety - agent-health-check - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.812289+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-default - Function Annotations",
+      "status": "PASS",
+      "message": "100.0% functions have type annotations (5/5)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.817372+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-default - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (3/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.821492+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-broadcast - Function Annotations",
+      "status": "PASS",
+      "message": "100.0% functions have type annotations (5/5)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.865356+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-broadcast - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (4/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.865658+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-connect - Function Annotations",
+      "status": "PASS",
+      "message": "100.0% functions have type annotations (5/5)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.873309+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-connect - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (3/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.873637+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-disconnect - Function Annotations",
+      "status": "PASS",
+      "message": "100.0% functions have type annotations (5/5)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.918233+00:00"
+    },
+    {
+      "test_name": "Type Safety - websocket-disconnect - Type Imports",
+      "status": "PASS",
+      "message": "Uses diverse type annotations (3/6 types)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.918869+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-persona - Testability",
+      "status": "PASS",
+      "message": "High testability score (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.921653+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-persona - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.922986+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-director - Testability",
+      "status": "PASS",
+      "message": "High testability score (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.924770+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-director - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.925007+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-coordinator - Testability",
+      "status": "PASS",
+      "message": "High testability score (3/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.926443+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-coordinator - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.926695+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-elevator - Testability",
+      "status": "PASS",
+      "message": "High testability score (3/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.968014+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-elevator - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.971420+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-psim - Testability",
+      "status": "PASS",
+      "message": "High testability score (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.972544+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-psim - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.972791+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-health-check - Testability",
+      "status": "PASS",
+      "message": "High testability score (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.973935+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - agent-health-check - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.974918+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-default - Testability",
+      "status": "PASS",
+      "message": "High testability score (3/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.976288+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-default - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.976513+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-broadcast - Testability",
+      "status": "PASS",
+      "message": "High testability score (3/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.978384+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-broadcast - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.978667+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-connect - Testability",
+      "status": "PASS",
+      "message": "High testability score (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:09.979834+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-connect - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:10.023104+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-disconnect - Testability",
+      "status": "PASS",
+      "message": "High testability score (4/4 patterns)",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:10.024465+00:00"
+    },
+    {
+      "test_name": "Testing Readiness - websocket-disconnect - Dependency Injection",
+      "status": "PASS",
+      "message": "Ready for dependency injection in tests",
+      "details": {},
+      "timestamp": "2025-08-11T21:32:10.024723+00:00"
+    }
+  ],
+  "timestamp": "2025-08-11T21:32:10.085626+00:00"
+}

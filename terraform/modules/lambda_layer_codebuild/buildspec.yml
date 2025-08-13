@@ -1,0 +1,90 @@
+version: 0.2
+
+# =============================================================================
+# CodeBuild Specification for Lambda Layer Building
+# =============================================================================
+#
+# **Purpose:** Build Lambda layers with Linux-compatible Python dependencies
+# **Environment:** Amazon Linux 2 x86_64 - matches Lambda runtime environment
+# **Output:** ZIP file containing Python dependencies and utility modules
+#
+# **Process:**
+# 1. Setup Python environment
+# 2. Install dependencies with Linux compatibility
+# 3. Copy utility Python files
+# 4. Create layer ZIP archive
+# 5. Upload to S3 artifacts bucket
+#
+# =============================================================================
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo "=== Lambda Layer Build Started ==="
+      - echo "Environment - $(uname -a)"
+      - echo "Python Version - $(python3 --version)"
+      - echo "Pip Version - $(pip3 --version)"
+      - echo "Layer Name - $LAYER_NAME"
+
+  pre_build:
+    commands:
+      - echo "=== Pre-Build Phase ==="
+      - echo "Creating layer directory structure"
+      - mkdir -p /tmp/layer/python
+      - echo "Extracting source files"
+      - ls -la .
+      - echo "Current directory contents:"
+      - find . -type f -name "*.zip" || echo "No ZIP files in current directory"
+      - echo "Copying current directory to /tmp/source"
+      - cp -r . /tmp/source
+      - ls -la /tmp/source
+
+  build:
+    commands:
+      - echo "=== Build Phase ==="
+      - echo "Installing Python dependencies for Lambda (Linux x86_64)"
+      - cd /tmp/source
+      
+      # Install requirements with Linux compatibility
+      - |
+        if [ -f requirements.txt ]; then
+          echo "Installing from requirements.txt"
+          pip3 install -r requirements.txt -t /tmp/layer/python --platform linux_x86_64 --only-binary=:all: --upgrade || \
+          pip3 install -r requirements.txt -t /tmp/layer/python --upgrade
+        else
+          echo "No requirements.txt found"
+        fi
+      
+      # Copy utility Python files
+      - echo "Copying Python utility files"
+      - find . -name "*.py" -exec cp {} /tmp/layer/python/ \;
+      
+      # Verify layer contents
+      - echo "Layer contents:"
+      - find /tmp/layer -type f | head -20
+      - echo "Layer size:"
+      - du -sh /tmp/layer
+
+  post_build:
+    commands:
+      - echo "=== Post-Build Phase ==="
+      - cd /tmp/layer
+      - echo "Creating layer ZIP archive"
+      - zip -r layer.zip python/
+      - echo "Layer ZIP size:"
+      - ls -lh layer.zip
+      - echo "Uploading to S3"
+      - aws s3 cp layer.zip s3://${ARTIFACTS_BUCKET}/${LAYER_NAME}/layer.zip
+      - echo "=== Build Completed Successfully ==="
+
+artifacts:
+  files:
+    - layer.zip
+  base-directory: /tmp/layer
+  name: $LAYER_NAME
+
+cache:
+  paths:
+    - '/root/.cache/pip/**/*'

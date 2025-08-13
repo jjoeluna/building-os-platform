@@ -1,0 +1,69 @@
+{
+  "timestamp": "20250811_161435",
+  "environment": "dev",
+  "total_tests": 12,
+  "passed_tests": 8,
+  "success_rate": 66.66666666666666,
+  "results": [
+    {
+      "test": "DynamoDB Table Exists and Configured: bos-dev-websocket-connections",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "DynamoDB Table Exists and Configured: bos-dev-short-term-memory",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "DynamoDB Table Exists and Configured: bos-dev-mission-state",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "DynamoDB Table Exists and Configured: bos-dev-elevator-monitoring",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "DynamoDB Table Tags and Compliance: bos-dev-websocket-connections",
+      "status": "FAIL",
+      "details": "Test failed validation criteria"
+    },
+    {
+      "test": "DynamoDB Table Tags and Compliance: bos-dev-short-term-memory",
+      "status": "FAIL",
+      "details": "Test failed validation criteria"
+    },
+    {
+      "test": "DynamoDB Table Tags and Compliance: bos-dev-mission-state",
+      "status": "FAIL",
+      "details": "Test failed validation criteria"
+    },
+    {
+      "test": "DynamoDB Table Tags and Compliance: bos-dev-elevator-monitoring",
+      "status": "FAIL",
+      "details": "Test failed validation criteria"
+    },
+    {
+      "test": "S3 Bucket Exists and Configured: buildingos-frontend-dev",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "S3 Bucket Tags and Compliance: buildingos-frontend-dev",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "CloudFront Distribution Configuration",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    },
+    {
+      "test": "Lambda Functions DynamoDB Integration",
+      "status": "PASS",
+      "details": "Test completed successfully"
+    }
+  ]
+}

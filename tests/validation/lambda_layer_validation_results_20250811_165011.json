@@ -1,0 +1,126 @@
+{
+  "validation_timestamp": "2025-08-11T16:50:11.673562",
+  "overall_success": true,
+  "passed_tests": 8,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "Layer Existence",
+      "success": true,
+      "message": "Layer found with ARN: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:4",
+      "details": {
+        "layer_name": "bos-dev-common-utils-layer",
+        "version": 4,
+        "compatible_runtimes": [
+          "python3.11"
+        ],
+        "created_date": "2025-08-11T12:14:46.714+0000"
+      },
+      "timestamp": "2025-08-11T16:50:09.182971"
+    },
+    {
+      "test_name": "Layer Module Structure",
+      "success": true,
+      "message": "All 4 modules found",
+      "details": {
+        "modules": [
+          "aws_clients.py",
+          "utils.py",
+          "models.py",
+          "__init__.py"
+        ]
+      },
+      "timestamp": "2025-08-11T16:50:09.183951"
+    },
+    {
+      "test_name": "Layer Dependencies",
+      "success": true,
+      "message": "All 3 dependencies found",
+      "details": {
+        "dependencies": [
+          "boto3",
+          "requests",
+          "PyJWT"
+        ],
+        "requirements_lines": [
+          "boto3==1.34.145",
+          "requests==2.32.3",
+          "PyJWT==2.8.0"
+        ]
+      },
+      "timestamp": "2025-08-11T16:50:09.184642"
+    },
+    {
+      "test_name": "Lambda Function Layer Integration",
+      "success": true,
+      "message": "All 10 functions using common_utils layer",
+      "details": {
+        "functions_with_layer": [
+          "websocket-connect",
+          "websocket-disconnect",
+          "websocket-default",
+          "websocket-broadcast",
+          "agent-health-check",
+          "agent-persona",
+          "agent-director",
+          "agent-coordinator",
+          "agent-elevator",
+          "agent-psim"
+        ],
+        "total_functions": 10
+      },
+      "timestamp": "2025-08-11T16:50:11.657836"
+    },
+    {
+      "test_name": "Python Code Quality",
+      "success": true,
+      "message": "All 4 modules have valid syntax and imports",
+      "details": {
+        "valid_modules": [
+          "aws_clients.py",
+          "utils.py",
+          "models.py",
+          "__init__.py"
+        ]
+      },
+      "timestamp": "2025-08-11T16:50:11.666052"
+    },
+    {
+      "test_name": "Documentation Standards",
+      "success": true,
+      "message": "All 4 modules meet documentation standards",
+      "details": {
+        "documented_modules": [
+          "aws_clients.py",
+          "utils.py",
+          "models.py",
+          "__init__.py"
+        ]
+      },
+      "timestamp": "2025-08-11T16:50:11.667818"
+    },
+    {
+      "test_name": "Layer Size Optimization",
+      "success": true,
+      "message": "Layer size optimized: 0.03MB with 5 files",
+      "details": {
+        "total_size_mb": 0.03,
+        "file_count": 5,
+        "large_files": [],
+        "aws_limit_mb": 250
+      },
+      "timestamp": "2025-08-11T16:50:11.670069"
+    },
+    {
+      "test_name": "Terraform Layer Configuration",
+      "success": true,
+      "message": "Layer properly configured with 10 function references",
+      "details": {
+        "layer_references": 10,
+        "expected_functions": 10
+      },
+      "timestamp": "2025-08-11T16:50:11.671285"
+    }
+  ]
+}

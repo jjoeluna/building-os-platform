@@ -11,10 +11,16 @@ output "api_gateway_stage_name" {
   value       = aws_apigatewayv2_stage.default.name
 }
 
+output "websocket_api_url" {
+  description = "The WebSocket API Gateway URL"
+  value       = module.websocket_api.websocket_stage_invoke_url
+}
+
 # --- Lambda Functions ---
 output "lambda_functions" {
   description = "Lambda function names and ARNs"
   value = {
+    # Agent Functions
     agent_persona = {
       name = module.agent_persona.function_name
       arn  = module.agent_persona.function_arn
@@ -39,6 +45,23 @@ output "lambda_functions" {
       name = module.agent_psim.function_name
       arn  = module.agent_psim.function_arn
     }
+    # WebSocket Functions
+    websocket_connect = {
+      name = module.websocket_connect.function_name
+      arn  = module.websocket_connect.function_arn
+    }
+    websocket_disconnect = {
+      name = module.websocket_disconnect.function_name
+      arn  = module.websocket_disconnect.function_arn
+    }
+    websocket_default = {
+      name = module.websocket_default.function_name
+      arn  = module.websocket_default.function_arn
+    }
+    websocket_broadcast = {
+      name = module.websocket_broadcast.function_name
+      arn  = module.websocket_broadcast.function_arn
+    }
   }
 }
 
@@ -47,7 +70,7 @@ output "lambda_layer" {
   description = "Lambda layer ARN"
   value = {
     common_utils = {
-      arn = module.common_utils_layer.layer_arn
+      arn = local.common_layer_arn
     }
   }
 }
@@ -64,7 +87,7 @@ output "iam_roles" {
 output "sns_topics" {
   description = "SNS topic ARNs"
   value = {
-    # Novos tópicos com nomenclatura padronizada
+    # Standardized topic naming convention
     chat_intention_topic             = module.chat_intention_topic.topic_arn
     persona_intention_topic          = module.persona_intention_topic.topic_arn
     director_mission_topic           = module.director_mission_topic.topic_arn

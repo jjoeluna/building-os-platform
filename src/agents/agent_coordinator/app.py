@@ -1,97 +1,250 @@
+# =============================================================================
+# BuildingOS Platform - Agent Coordinator (Task Orchestration & Management)
+# =============================================================================
+#
+# **Purpose:** Orchestrates task execution across specialized building system agents
+# **Scope:** Central task distribution and result aggregation for mission completion
+# **Usage:** Invoked by SNS when Director Agent creates missions requiring execution
+#
+# **Key Features:**
+# - Receives mission plans from Agent Director with task breakdowns
+# - Distributes individual tasks to specialized agents (Elevator, PSIM, etc.)
+# - Manages task execution state and progress tracking in DynamoDB
+# - Aggregates task results and reports mission completion status
+# - Handles task failures and retry logic for robust mission execution
+# - Uses common utilities layer for AWS client management
+#
+# **Event Flow (Incoming - Missions):**
+# 1. Agent Director creates mission plan → director_mission_topic
+# 2. This Lambda receives mission with task breakdown
+# 3. Distributes tasks to appropriate specialized agents
+# 4. Tracks task execution progress and handles failures
+#
+# **Event Flow (Incoming - Results):**
+# 1. Specialized agents complete tasks → agent_task_result_topic
+# 2. This Lambda receives individual task completion results
+# 3. Aggregates results and checks mission completion status
+# 4. Reports final results to coordinator_mission_result_topic → Agent Director
+#
+# **Dependencies:**
+# - Common utilities layer for AWS client management
+# - DynamoDB table for mission and task state tracking
+# - SNS topics for event-driven communication with agents
+# - Specialized agent registry for capability-based task routing
+#
+# **Integration:**
+# - Triggers: SNS director_mission_topic, agent_task_result_topic
+# - Publishes to: coordinator_task_topic, coordinator_mission_result_topic
+# - Stores in: Mission state table for task progress tracking
+# - Coordinates: agent_elevator, agent_psim, and other specialized agents
+# - Monitoring: CloudWatch logs and X-Ray tracing enabled
+#
+# =============================================================================
+
 import json
 import os
-import boto3
 import uuid
 import time
 from datetime import datetime, timezone
-from typing import Dict, Any, List
 from decimal import Decimal
+from typing import Dict, Any, List, Optional
 
+# Import common utilities from Lambda layer
+from aws_clients import get_dynamodb_resource, get_sns_client, get_lambda_client
+from utils import (
+    get_required_env_var,
+    get_optional_env_var,
+    create_error_response,
+    create_success_response,
+    setup_logging,
+    generate_correlation_id,
+    serialize_dynamodb_item,
+)
+from models import (
+    SNSMessage,
+    MissionState,
+    TaskExecution,
+    AgentCapability,
+    convert_task_message_to_acp,
+    is_acp_message,
+)
+from acp_protocol import ACPProtocol, AgentType, MessageType, StandardActions
 
-# Helper function to handle Decimal serialization
-def decimal_default(obj):
-    """Helper function to serialize Decimal objects"""
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError
+# Initialize structured logging
+logger = setup_logging(__name__)
 
-
-# AWS clients
-dynamodb = boto3.resource("dynamodb")
-sns = boto3.client("sns")
-
-# Environment variables
-MISSION_STATE_TABLE_NAME = os.environ["MISSION_STATE_TABLE_NAME"]
-
-# New standardized topics
-COORDINATOR_TASK_TOPIC_ARN = os.environ.get("COORDINATOR_TASK_TOPIC_ARN")
-AGENT_TASK_RESULT_TOPIC_ARN = os.environ.get("AGENT_TASK_RESULT_TOPIC_ARN")
-COORDINATOR_MISSION_RESULT_TOPIC_ARN = os.environ.get(
+# Environment variables configured by Terraform (validated at startup)
+MISSION_STATE_TABLE_NAME = get_required_env_var("MISSION_STATE_TABLE_NAME")
+COORDINATOR_TASK_TOPIC_ARN = get_required_env_var("COORDINATOR_TASK_TOPIC_ARN")
+AGENT_TASK_RESULT_TOPIC_ARN = get_required_env_var("AGENT_TASK_RESULT_TOPIC_ARN")
+COORDINATOR_MISSION_RESULT_TOPIC_ARN = get_required_env_var(
     "COORDINATOR_MISSION_RESULT_TOPIC_ARN"
 )
+# ACP Standard Topics
+ACP_TASK_TOPIC_ARN = get_optional_env_var("ACP_TASK_TOPIC_ARN", "")
+ACP_RESULT_TOPIC_ARN = get_optional_env_var("ACP_RESULT_TOPIC_ARN", "")
+ACP_EVENT_TOPIC_ARN = get_optional_env_var("ACP_EVENT_TOPIC_ARN", "")
+ACP_HEARTBEAT_TOPIC_ARN = get_optional_env_var("ACP_HEARTBEAT_TOPIC_ARN", "")
+ENVIRONMENT = get_optional_env_var("ENVIRONMENT", "dev")
 
-# Determine which architecture to use (require new architecture)
-USE_NEW_ARCHITECTURE = bool(
-    COORDINATOR_TASK_TOPIC_ARN
-    and AGENT_TASK_RESULT_TOPIC_ARN
-    and COORDINATOR_MISSION_RESULT_TOPIC_ARN
+# Initialize AWS clients using common utilities layer
+dynamodb_resource = get_dynamodb_resource()
+sns_client = get_sns_client()
+
+# Initialize DynamoDB table reference
+mission_table = dynamodb_resource.Table(MISSION_STATE_TABLE_NAME)
+
+# Initialize ACP Protocol
+acp = ACPProtocol("coordinator-001", AgentType.COORDINATOR)
+
+# Validate event-driven architecture configuration
+logger.info(
+    "Agent Coordinator initialized with task orchestration capabilities",
+    extra={
+        "mission_state_table": MISSION_STATE_TABLE_NAME,
+        "coordinator_task_topic": COORDINATOR_TASK_TOPIC_ARN,
+        "agent_task_result_topic": AGENT_TASK_RESULT_TOPIC_ARN,
+        "coordinator_result_topic": COORDINATOR_MISSION_RESULT_TOPIC_ARN,
+        # ACP Topics
+        "acp_task_topic": ACP_TASK_TOPIC_ARN,
+        "acp_result_topic": ACP_RESULT_TOPIC_ARN,
+        "acp_event_topic": ACP_EVENT_TOPIC_ARN,
+        "acp_heartbeat_topic": ACP_HEARTBEAT_TOPIC_ARN,
+        "acp_protocol": "enabled",
+        "environment": ENVIRONMENT,
+    },
 )
 
-if not USE_NEW_ARCHITECTURE:
-    print("ERROR: New architecture topics not configured")
-    raise ValueError("Required SNS topics for new architecture not available")
 
-print("Agent Coordinator using NEW architecture (legacy support removed)")
+# Helper function to handle Decimal serialization (legacy compatibility)
+def decimal_default(obj):
+    """Helper function to serialize Decimal objects for JSON compatibility."""
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-# DynamoDB table
-mission_table = dynamodb.Table(MISSION_STATE_TABLE_NAME)
 
-
-def handler(event, context):
+def _determine_event_source(event: Dict[str, Any]) -> str:
     """
-    Coordinator Agent - Manages mission state and orchestrates task execution
+    Helper function to determine the source of an incoming event.
 
-    Supports two types of events:
-    1. SNS events (missions from Director Agent, task completions from Agent Tools)
-    2. API Gateway GET requests (mission status queries for debugging)
+    Args:
+        event: The Lambda event dictionary
+
+    Returns:
+        str: Event source type ('sns', 'api_gateway', 'unknown')
     """
+    if "Records" in event:
+        for record in event["Records"]:
+            if record.get("EventSource") == "aws:sns":
+                return "sns"
+    elif event.get("httpMethod") == "GET":
+        return "api_gateway"
+    return "unknown"
+
+
+def _extract_sns_message_data(record: Dict[str, Any]) -> tuple[str, Dict[str, Any]]:
+    """
+    Helper function to extract topic ARN and message data from SNS record.
+
+    Args:
+        record: SNS record from event
+
+    Returns:
+        tuple: (topic_arn, message_body)
+    """
+    topic_arn = record["Sns"]["TopicArn"]
+    message_body = json.loads(record["Sns"]["Message"])
+    return topic_arn, message_body
+
+
+def _route_sns_event(topic_arn: str, message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Helper function to route SNS events to appropriate handlers.
+
+    Args:
+        topic_arn: The SNS topic ARN
+        message_body: The parsed message content
+
+    Returns:
+        dict: Handler response
+    """
+    # Check if this is an ACP standard message
+    if is_acp_message(message_body):
+        return handle_acp_message(message_body)
+
+    # Determine event type based on topic and message structure (legacy)
+    if "mission-topic" in topic_arn or "director-mission-topic" in topic_arn:
+        # This is a new mission from Director
+        return handle_new_mission(message_body)
+    elif "task-result-topic" in topic_arn or "agent-task-result-topic" in topic_arn:
+        # This is a task completion from an agent
+        return handle_task_completion(message_body)
+    elif "acp-task-topic" in topic_arn:
+        # ACP standard task message
+        return handle_acp_task(message_body)
+    elif "acp-result-topic" in topic_arn:
+        # ACP standard result message
+        return handle_acp_result(message_body)
+    elif "acp-event-topic" in topic_arn:
+        # ACP standard event message
+        return handle_acp_event(message_body)
+    elif "notification_type" in message_body and "mission_id" in message_body:
+        # This is a monitoring notification from an agent
+        return handle_monitoring_notification(message_body)
+    else:
+        logger.warning(
+            "Unknown SNS event received from unrecognized topic",
+            extra={"topic_arn": topic_arn, "message": message_body},
+        )
+        return {"status": "ERROR", "error": "Unknown event type"}
+
+
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    """
+    Agent Coordinator Main Handler with enhanced task orchestration and management.
+
+    Orchestrates task execution across specialized building system agents in the BuildingOS
+    event-driven architecture. Manages mission state and aggregates task results.
+
+    Args:
+        event: Event data from various sources (SNS, API Gateway)
+            SNS Events:
+            - director_mission_topic: Mission plans from Agent Director
+            - agent_task_result_topic: Task completion results from specialized agents
+        context: Lambda runtime context information
+
+    Returns:
+        dict: Response appropriate to event source
+
+    Raises:
+        Exception: Logs and handles all exceptions gracefully
+    """
+    # Generate correlation ID for request tracing
+    correlation_id = generate_correlation_id()
+
+    logger.info(
+        "Agent Coordinator processing started",
+        extra={
+            "correlation_id": correlation_id,
+            "function_name": context.function_name if context else "unknown",
+            "request_id": context.aws_request_id if context else "unknown",
+            "event_keys": list(event.keys()),
+        },
+    )
+
     try:
-        print(f"Received event: {json.dumps(event)}")
+        # Determine event source and route accordingly
+        event_source = _determine_event_source(event)
 
-        # Check if this is an SNS event
-        if "Records" in event:
+        if event_source == "sns":
+            # Process SNS events using helper functions
             for record in event["Records"]:
                 if record.get("EventSource") == "aws:sns":
-                    topic_arn = record["Sns"]["TopicArn"]
-                    message_body = json.loads(record["Sns"]["Message"])
-
-                    # Determine event type based on topic and message structure
-                    if (
-                        "mission-topic" in topic_arn
-                        or "director-mission-topic" in topic_arn
-                    ):
-                        # This is a new mission from Director
-                        return handle_new_mission(message_body)
-                    elif (
-                        "task-result-topic" in topic_arn
-                        or "agent-task-result-topic" in topic_arn
-                    ):
-                        # This is a task completion from agents
-                        return handle_task_completion(message_body)
-                    elif (
-                        "notification_type" in message_body
-                        and "mission_id" in message_body
-                    ):
-                        # This is a monitoring notification from an agent
-                        return handle_monitoring_notification(message_body)
-                    else:
-                        print(
-                            f"Unknown SNS event from topic {topic_arn}: {message_body}"
-                        )
-                        return {"status": "ERROR", "error": "Unknown event type"}
-
-        # Handle API Gateway requests (mission status queries)
-        if event.get("httpMethod") == "GET":
+                    topic_arn, message_body = _extract_sns_message_data(record)
+                    return _route_sns_event(topic_arn, message_body)
+        elif event_source == "api_gateway":
+            # Handle API Gateway requests (mission status queries)
             return handle_api_request(event, context)
 
         return {
@@ -100,7 +253,10 @@ def handler(event, context):
         }
 
     except Exception as e:
-        print(f"Error in coordinator agent: {str(e)}")
+        logger.error(
+            "Critical error in coordinator agent handler",
+            extra={"correlation_id": correlation_id, "error": str(e)},
+        )
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
 
 
@@ -207,7 +363,10 @@ def handle_api_request(event, context):
         }
 
     except Exception as e:
-        print(f"Error in API request: {str(e)}")
+        logger.error(
+            "Error processing API request",
+            extra={"mission_id": mission_id, "error": str(e)},
+        )
         return {
             "statusCode": 500,
             "headers": headers,
@@ -226,7 +385,9 @@ def handle_new_mission(mission_data: Dict[str, Any]) -> Dict[str, Any]:
 
         # Store mission in DynamoDB
         mission_table.put_item(Item=mission_data)
-        print(f"Stored mission {mission_id} in DynamoDB")
+        logger.info(
+            "Mission stored successfully in DynamoDB", extra={"mission_id": mission_id}
+        )
 
         # Dispatch tasks to agents
         for task in mission_data["tasks"]:
@@ -238,7 +399,10 @@ def handle_new_mission(mission_data: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"Error handling new mission: {str(e)}")
+        logger.error(
+            "Error handling new mission",
+            extra={"mission_id": mission_id, "error": str(e)},
+        )
         raise
 
 
@@ -274,7 +438,10 @@ def handle_task_completion(completion_data: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"Error handling task completion: {str(e)}")
+        logger.error(
+            "Error handling task completion",
+            extra={"task_id": completion_data.get("task_id"), "error": str(e)},
+        )
         raise
 
 
@@ -304,9 +471,10 @@ def dispatch_task_via_sns(
     agent_name: str, task_message: Dict[str, Any], mission_id: str, task_id: str
 ) -> None:
     """
-    Dispatch task via new SNS architecture using coordinator-task-topic
+    Dispatch task via SNS architecture (both current and ACP standard)
     """
     try:
+        # Current BuildingOS format
         sns.publish(
             TopicArn=COORDINATOR_TASK_TOPIC_ARN,
             Message=json.dumps(task_message),
@@ -316,13 +484,46 @@ def dispatch_task_via_sns(
                 "task_id": {"DataType": "String", "StringValue": task_id},
             },
         )
-        print(f"Dispatched task {task_id} to {agent_name} via NEW SNS architecture")
+        print(f"Dispatched task {task_id} to {agent_name} via current SNS architecture")
+
+        # ACP Standard format (if configured)
+        if ACP_TASK_TOPIC_ARN:
+            acp_task = acp.create_task(
+                target_agent=agent_name,
+                task_id=task_id,
+                action=task_message.get("action", StandardActions.TASK_EXECUTE),
+                parameters=task_message.get("parameters", {}),
+                correlation_id=mission_id,
+            )
+
+            sns.publish(
+                TopicArn=ACP_TASK_TOPIC_ARN,
+                Message=acp_task.to_json(),
+                Subject=f"ACP Task {task_id} for {agent_name}",
+                MessageAttributes={
+                    "message_type": {"DataType": "String", "StringValue": "task"},
+                    "agent_name": {"DataType": "String", "StringValue": agent_name},
+                    "task_id": {"DataType": "String", "StringValue": task_id},
+                    "protocol": {"DataType": "String", "StringValue": "acp"},
+                },
+            )
+            print(
+                f"Dispatched ACP task {task_id} to {agent_name} via ACP standard protocol"
+            )
 
         # Update task status to 'in_progress'
         update_task_status(mission_id, task_id, "in_progress")
 
     except Exception as e:
-        print(f"Error dispatching task via SNS to {agent_name}: {str(e)}")
+        logger.error(
+            "Error dispatching task via SNS",
+            extra={
+                "agent_name": agent_name,
+                "task_id": task_id,
+                "mission_id": mission_id,
+                "error": str(e),
+            },
+        )
         # Update task status to 'failed'
         update_task_status(mission_id, task_id, "failed")
 
@@ -333,7 +534,7 @@ def dispatch_task_via_lambda(
     """
     Legacy task dispatch using direct Lambda invocation
     """
-    lambda_client = boto3.client("lambda")
+    lambda_client = get_lambda_client()
 
     # Map agent names to Lambda function names using environment variable
     environment = os.environ.get("ENVIRONMENT", "dev")
@@ -359,11 +560,26 @@ def dispatch_task_via_lambda(
             update_task_status(mission_id, task_id, "in_progress")
 
         except Exception as e:
-            print(f"Error dispatching task to {agent_name}: {str(e)}")
+            logger.error(
+                "Error dispatching task via Lambda",
+                extra={
+                    "agent_name": agent_name,
+                    "task_id": task_id,
+                    "mission_id": mission_id,
+                    "error": str(e),
+                },
+            )
             # Update task status to 'failed'
             update_task_status(mission_id, task_id, "failed")
     else:
-        print(f"Unknown agent: {agent_name}")
+        logger.warning(
+            "Unknown agent requested for task dispatch",
+            extra={
+                "agent_name": agent_name,
+                "task_id": task_id,
+                "mission_id": mission_id,
+            },
+        )
         update_task_status(mission_id, task_id, "failed")
 
 
@@ -409,7 +625,10 @@ def update_task_completion(
         print(f"Updated task {task_id} status to {completion_data['status']}")
 
     except Exception as e:
-        print(f"Error updating task completion: {str(e)}")
+        logger.error(
+            "Error updating task completion in DynamoDB",
+            extra={"mission_id": mission_id, "task_id": task_id, "error": str(e)},
+        )
         raise
 
 
@@ -463,7 +682,15 @@ def update_task_status(mission_id: str, task_id: str, status: str) -> None:
         print(f"Updated task {task_id} status to {status}")
 
     except Exception as e:
-        print(f"Error updating task status: {str(e)}")
+        logger.error(
+            "Error updating task status in DynamoDB",
+            extra={
+                "mission_id": mission_id,
+                "task_id": task_id,
+                "status": status,
+                "error": str(e),
+            },
+        )
 
 
 def get_mission(mission_id: str) -> Dict[str, Any]:
@@ -475,7 +702,10 @@ def get_mission(mission_id: str) -> Dict[str, Any]:
         return response.get("Item", {})
 
     except Exception as e:
-        print(f"Error getting mission: {str(e)}")
+        logger.error(
+            "Error retrieving mission from DynamoDB",
+            extra={"mission_id": mission_id, "error": str(e)},
+        )
         raise
 
 
@@ -538,7 +768,10 @@ def publish_mission_result(mission: Dict[str, Any], overall_status: str) -> None
         )
         print(f"Published mission result for {mission_id}")
     except Exception as e:
-        print(f"Error publishing mission result: {str(e)}")
+        logger.error(
+            "Error publishing mission result to SNS",
+            extra={"mission_id": mission_id, "topic_arn": topic_arn, "error": str(e)},
+        )
         raise
 
 
@@ -581,7 +814,10 @@ def publish_monitoring_notification(notification_data: Dict[str, Any]) -> None:
         )
         print(f"Forwarded monitoring notification for mission {mission_id} to user")
     except Exception as e:
-        print(f"Error publishing monitoring notification: {str(e)}")
+        logger.error(
+            "Error publishing monitoring notification to SNS",
+            extra={"mission_id": notification_data.get("mission_id"), "error": str(e)},
+        )
         raise
 
 
@@ -608,5 +844,137 @@ def handle_monitoring_notification(notification_data: Dict[str, Any]) -> Dict[st
         }
 
     except Exception as e:
-        print(f"Error handling monitoring notification: {str(e)}")
+        logger.error(
+            "Error handling monitoring notification",
+            extra={"mission_id": notification_data.get("mission_id"), "error": str(e)},
+        )
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+
+# =============================================================================
+# ACP Standard Message Handlers
+# =============================================================================
+
+
+def handle_acp_message(message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle ACP standard format messages"""
+    try:
+        acp_message = acp.validate_message(message_body)
+
+        if acp_message.header.message_type == MessageType.TASK:
+            return handle_acp_task(message_body)
+        elif acp_message.header.message_type == MessageType.RESULT:
+            return handle_acp_result(message_body)
+        elif acp_message.header.message_type == MessageType.EVENT:
+            return handle_acp_event(message_body)
+        else:
+            logger.warning(
+                f"Unsupported ACP message type: {acp_message.header.message_type}"
+            )
+            return {
+                "status": "ERROR",
+                "error": f"Unsupported ACP message type: {acp_message.header.message_type}",
+            }
+
+    except Exception as e:
+        logger.error(f"Error processing ACP message: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def handle_acp_task(message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle ACP standard task messages"""
+    try:
+        acp_message = acp.validate_message(message_body)
+        task_data = acp_message.payload.data
+
+        logger.info(
+            "Processing ACP standard task",
+            extra={
+                "task_id": task_data.get("task_id"),
+                "target_agent": acp_message.header.target_agent,
+                "action": acp_message.payload.action,
+            },
+        )
+
+        # Convert ACP task to current format and process
+        legacy_task = {
+            "task_id": task_data.get("task_id"),
+            "mission_id": acp_message.header.correlation_id,
+            "agent": acp_message.header.target_agent,
+            "action": acp_message.payload.action,
+            "parameters": task_data.get("parameters", {}),
+            "status": "pending",
+        }
+
+        # Process using existing mission handling logic
+        return handle_new_mission(
+            {"mission_id": acp_message.header.correlation_id, "tasks": [legacy_task]}
+        )
+
+    except Exception as e:
+        logger.error(f"Error handling ACP task: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def handle_acp_result(message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle ACP standard result messages"""
+    try:
+        acp_message = acp.validate_message(message_body)
+        result_data = acp_message.payload.data
+
+        logger.info(
+            "Processing ACP standard result",
+            extra={
+                "task_id": result_data.get("task_id"),
+                "source_agent": acp_message.header.source_agent,
+                "status": acp_message.status,
+            },
+        )
+
+        # Convert ACP result to current format and process
+        legacy_result = {
+            "task_id": result_data.get("task_id"),
+            "mission_id": acp_message.header.correlation_id,
+            "agent": acp_message.header.source_agent,
+            "success": acp_message.status == "completed",
+            "result": result_data.get("result", {}),
+            "timestamp": (
+                acp_message.header.timestamp.isoformat()
+                if hasattr(acp_message.header.timestamp, "isoformat")
+                else str(acp_message.header.timestamp)
+            ),
+        }
+
+        # Process using existing task completion logic
+        return handle_task_completion(legacy_result)
+
+    except Exception as e:
+        logger.error(f"Error handling ACP result: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}
+
+
+def handle_acp_event(message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle ACP standard event messages"""
+    try:
+        acp_message = acp.validate_message(message_body)
+
+        logger.info(
+            "Processing ACP standard event",
+            extra={
+                "event_action": acp_message.payload.action,
+                "source_agent": acp_message.header.source_agent,
+                "event_data": acp_message.payload.data,
+            },
+        )
+
+        # Process event based on action
+        if acp_message.payload.action == "mission_status_update":
+            # Handle mission status updates
+            return handle_monitoring_notification(acp_message.payload.data)
+        else:
+            logger.info(f"ACP event processed: {acp_message.payload.action}")
+            return {"status": "SUCCESS", "message": "ACP event processed"}
+
+    except Exception as e:
+        logger.error(f"Error handling ACP event: {str(e)}")
+        return {"status": "ERROR", "error": str(e)}

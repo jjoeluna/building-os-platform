@@ -1,0 +1,446 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 26.855867624282837,
+    "total_tests": 60,
+    "passed_tests": 59,
+    "warned_tests": 0,
+    "failed_tests": 1,
+    "success_rate_percentage": 98.33333333333333,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - agent_persona - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:40.193312+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 512MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:40.193963+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:40.194477+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:40.194823+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_persona - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1261.3ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:41.456471+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_persona - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1261.3ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:41.456912+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:42.597110+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:42.597468+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:42.597745+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:42.598038+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_director - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Required environment variable 'COORDINATOR_MISSION_RESULT_TOPIC_ARN' is not set",
+      "details": {
+        "execution_time_ms": 1822.1526145935059,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T11:04:42.598439+00:00",
+          "function_type": "agent_director"
+        },
+        "error_type": "ValueError",
+        "error_message": "Required environment variable 'COORDINATOR_MISSION_RESULT_TOPIC_ARN' is not set"
+      },
+      "timestamp": "2025-08-12T11:04:44.420729+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:44.648149+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:44.648517+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:44.648844+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:44.649118+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_coordinator - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1259.9ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:45.909405+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_coordinator - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1259.9ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:45.909767+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:47.145574+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:47.146171+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:47.146773+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:47.147057+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_elevator - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1546.5ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:48.693812+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_elevator - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1546.5ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:48.694215+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:49.876636+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:49.876983+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:49.877258+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:49.877517+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_psim - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1313.9ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:51.191724+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_psim - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1313.9ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:51.192114+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:52.319678+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:52.320229+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:52.320586+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:52.320842+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_health_check - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1271.7ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:53.592947+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_health_check - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1271.7ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:53.593439+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:54.724576+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:54.724925+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:54.725205+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:54.725479+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_connect - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1367.5ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:56.093451+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_connect - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1367.5ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:56.093820+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:57.232651+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:57.233635+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:57.233987+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:57.234269+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_disconnect - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1405.7ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:58.640288+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_disconnect - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1405.7ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:58.640659+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:59.802121+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:59.802524+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:59.802860+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:04:59.803106+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_default - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1280.4ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:01.083793+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_default - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1280.4ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:01.084162+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:03.474862+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:03.475237+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:03.475550+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:12",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:03.475829+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_broadcast - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1097.0ms",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:04.573274+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_broadcast - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1097.0ms execution time",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:04.573656+00:00"
+    },
+    {
+      "test_name": "Integration Test - SNS Topics - Existence",
+      "status": "PASS",
+      "message": "All 8 SNS topics exist and are accessible",
+      "details": {},
+      "timestamp": "2025-08-12T11:05:05.844105+00:00"
+    }
+  ],
+  "timestamp": "2025-08-12T11:05:05.846329+00:00"
+}

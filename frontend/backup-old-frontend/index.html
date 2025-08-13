@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildingOS - Sistema de Gestão Predial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #00d4aa;
+            --warning-color: #ffa726;
+            --error-color: #ff5252;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e2e8f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background animation */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .container {
+            background: var(--bg-primary);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: var(--transition);
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+            border-color: var(--primary-color);
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .option-content {
+            flex: 1;
+            text-align: left;
+        }
+
+        .option-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .status {
+            padding: 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .status.online {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-icon {
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1.5rem;
+                margin: 0.5rem;
+            }
+
+            .logo {
+                font-size: 3rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .option {
+                padding: 1rem 1.25rem;
+            }
+
+            .option-icon {
+                font-size: 1.25rem;
+                width: 35px;
+            }
+
+            .option-title {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏢</div>
+        <h1>BuildingOS</h1>
+        <p class="subtitle">Sistema Inteligente de Gestão Predial</p>
+        
+        <div style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #1565c0; padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px solid #90caf9; font-weight: 600;">
+            ⚡ WebSocket Real-Time disponível! Comunicação instantânea sem polling
+        </div>
+        
+        <div class="options">
+            <a href="chat-websocket-pure.html" class="option" style="background: linear-gradient(135deg, #e8f5e8, #c3e6cb); border: 2px solid #00d4aa;">
+                <div class="option-icon" style="color: #00d4aa;">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title" style="color: #155724; font-weight: 700;">⚡ WebSocket Real-Time</div>
+                    <div class="option-description" style="color: #155724;">Comunicação instantânea bidirecional sem polling (&lt;500ms)</div>
+                </div>
+            </a>
+            
+            <a href="chat-new-architecture.html" class="option" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #90caf9;">
+                <div class="option-icon" style="color: #1565c0;">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title" style="color: #1565c0; font-weight: 600;">🚀 Nova Arquitetura SNS</div>
+                    <div class="option-description" style="color: #1976d2;">Interface com polling inteligente e arquitetura SNS otimizada</div>
+                </div>
+            </a>
+            
+            <a href="chat.html" class="option">
+                <div class="option-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title">Chat Principal</div>
+                    <div class="option-description">Interface completa com animações e recursos avançados</div>
+                </div>
+            </a>
+            
+            <a href="chat-simple.html" class="option">
+                <div class="option-icon">
+                    <i class="fas fa-comment"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title">Chat Simples</div>
+                    <div class="option-description">Interface minimalista e rápida</div>
+                </div>
+            </a>
+            
+            <a href="test-complete.html" class="option">
+                <div class="option-icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title">Testes do Sistema</div>
+                    <div class="option-description">Verificações completas da API</div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="status" id="status">
+            <div class="loading"></div>
+            Verificando sistema...
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://pj4vlvxrg7.execute-api.us-east-1.amazonaws.com';
+        
+        async function checkSystemStatus() {
+            const statusElement = document.getElementById('status');
+            
+            try {
+                console.log('Checking system status...');
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Health data:', data);
+                    
+                    statusElement.className = 'status online';
+                    statusElement.innerHTML = `
+                        <span class="status-icon">✅</span>
+                        Sistema Online - Todos os serviços operacionais
+                    `;
+                } else {
+                    statusElement.className = 'status warning';
+                    statusElement.innerHTML = `
+                        <span class="status-icon">⚠️</span>
+                        Sistema com problemas - Status ${response.status}
+                    `;
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
+                statusElement.className = 'status error';
+                statusElement.innerHTML = `
+                    <span class="status-icon">❌</span>
+                    Sistema Offline - ${error.message}
+                `;
+            }
+        }
+        
+        // Check status on load
+        document.addEventListener('DOMContentLoaded', checkSystemStatus);
+        
+        // Recheck every 30 seconds
+        setInterval(checkSystemStatus, 30000);
+    </script>
+</body>
+</html>

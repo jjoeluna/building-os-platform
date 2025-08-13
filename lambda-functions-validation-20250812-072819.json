@@ -1,0 +1,493 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 25.393142700195312,
+    "total_tests": 51,
+    "passed_tests": 41,
+    "warned_tests": 0,
+    "failed_tests": 10,
+    "success_rate_percentage": 80.3921568627451,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - agent_persona - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:55.084816+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 512MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:55.085194+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:55.085480+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:55.085734+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_persona - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1817.1942234039307,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:27:55.086099+00:00",
+          "function_type": "agent_persona"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:27:56.903423+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:57.131620+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:57.131973+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:57.132234+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:57.132481+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_director - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1971.0547924041748,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:27:57.132773+00:00",
+          "function_type": "agent_director"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:27:59.103943+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:59.337569+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:59.337898+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:59.338144+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:27:59.338406+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_coordinator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1969.724178314209,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:27:59.338668+00:00",
+          "function_type": "agent_coordinator"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:01.308497+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:02.011415+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:02.011801+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:02.012087+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:02.012349+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_elevator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 2671.5786457061768,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:28:02.012682+00:00",
+          "function_type": "agent_elevator"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:04.684376+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:05.173506+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:05.173825+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:05.174063+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:05.174378+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_psim - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 2504.2524337768555,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:28:05.174617+00:00",
+          "function_type": "agent_psim"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:07.678979+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:07.917059+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:07.923262+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:07.924279+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:07.925338+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_health_check - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1753.9827823638916,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:28:07.925843+00:00",
+          "function_type": "agent_health_check"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:09.679937+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:09.908827+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:09.909163+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:09.909475+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:09.909692+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_connect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1753.0877590179443,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-90fc14e9",
+            "routeKey": "$connect",
+            "eventType": "CONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:11.663182+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:11.884083+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:11.884437+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:11.884758+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:11.884946+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_disconnect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1910.7646942138672,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-68930683",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:13.796142+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:14.025773+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:14.026131+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:14.026460+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:14.026703+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_default - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1859.31396484375,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-d6e51927",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:15.886749+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:16.121538+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:16.121886+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:16.122226+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:9",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:16.122448+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_broadcast - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1743.556022644043,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-b4b18dab",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:28:17.866360+00:00"
+    },
+    {
+      "test_name": "Integration Test - SNS Topics - Existence",
+      "status": "PASS",
+      "message": "All 8 SNS topics exist and are accessible",
+      "details": {},
+      "timestamp": "2025-08-12T10:28:19.154523+00:00"
+    }
+  ],
+  "timestamp": "2025-08-12T10:28:19.156789+00:00"
+}

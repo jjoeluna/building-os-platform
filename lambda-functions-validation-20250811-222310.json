@@ -1,0 +1,136 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 5.092106103897095,
+    "total_tests": 13,
+    "passed_tests": 4,
+    "warned_tests": 7,
+    "failed_tests": 2,
+    "success_rate_percentage": 30.76923076923077,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Functional Test - agent-persona - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (60s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:06.393337+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-director - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (45s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:06.639667+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-coordinator - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (45s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:06.916694+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-elevator - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (360s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:07.172164+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-psim - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (30s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:07.443690+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-health-check - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 212.0ms",
+      "details": {
+        "execution_time_ms": 212.0,
+        "response_keys": [
+          "statusCode",
+          "headers",
+          "body"
+        ]
+      },
+      "timestamp": "2025-08-11T22:23:07.892392+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-health-check - Performance",
+      "status": "PASS",
+      "message": "Excellent performance: 212.0ms execution time",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:07.892613+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-default - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (30s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:08.131106+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-broadcast - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (30s) exceeds test timeout (20s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:08.365492+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-connect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': No module named 'aws_clients'",
+      "details": {
+        "execution_time_ms": 714.0,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-123",
+            "routeKey": "$connect",
+            "eventType": "CONNECT"
+          },
+          "headers": {
+            "User-Agent": "Test-Agent/1.0",
+            "Origin": "https://test.example.com"
+          }
+        }
+      },
+      "timestamp": "2025-08-11T22:23:09.319786+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-connect - Performance",
+      "status": "PASS",
+      "message": "Excellent performance: 714.0ms execution time",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:09.320107+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-disconnect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': No module named 'aws_clients'",
+      "details": {
+        "execution_time_ms": 682.61,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-123",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          }
+        }
+      },
+      "timestamp": "2025-08-11T22:23:10.245731+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-disconnect - Performance",
+      "status": "PASS",
+      "message": "Excellent performance: 682.61ms execution time",
+      "details": {},
+      "timestamp": "2025-08-11T22:23:10.246011+00:00"
+    }
+  ],
+  "timestamp": "2025-08-11T22:23:10.248248+00:00"
+}

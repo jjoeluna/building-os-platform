@@ -8,6 +8,11 @@ variable "requirements_file" {
   type        = string
 }
 
+variable "source_dir" {
+  description = "The path to the source directory containing Python utility files to include in the layer."
+  type        = string
+}
+
 variable "runtime" {
   description = "The Lambda runtime compatible with the layer (e.g., python3.11)."
   type        = string

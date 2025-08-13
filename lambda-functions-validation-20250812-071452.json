@@ -1,0 +1,493 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 23.91185998916626,
+    "total_tests": 51,
+    "passed_tests": 41,
+    "warned_tests": 0,
+    "failed_tests": 10,
+    "success_rate_percentage": 80.3921568627451,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - agent_persona - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:30.007107+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 512MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:30.007567+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:30.008067+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:30.008646+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_persona - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1758.6798667907715,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:14:30.009063+00:00",
+          "function_type": "agent_persona"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:14:31.767876+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:31.992633+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:31.992975+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:31.993213+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:31.993431+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_director - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_bedrock_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 2085.1564407348633,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:14:31.993676+00:00",
+          "function_type": "agent_director"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_bedrock_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:14:34.078928+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:34.318230+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:34.318641+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:34.319082+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:34.319405+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_coordinator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_lambda_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1849.6026992797852,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:14:34.319748+00:00",
+          "function_type": "agent_coordinator"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_lambda_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:14:36.169447+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:36.396679+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:36.397039+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:36.397437+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:36.397670+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_elevator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_events_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 2107.5332164764404,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:14:36.397884+00:00",
+          "function_type": "agent_elevator"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_events_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:14:38.505508+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:38.730208+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:38.730537+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:38.730803+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:38.731045+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_psim - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1906.7704677581787,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:14:38.731327+00:00",
+          "function_type": "agent_psim"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:14:40.638197+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:40.870727+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:40.871172+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:40.871656+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:40.871965+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_health_check - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_bedrock_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1905.9796333312988,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:14:40.872292+00:00",
+          "function_type": "agent_health_check"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_bedrock_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:14:42.778368+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:43.002365+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:43.004227+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:43.005157+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:43.005942+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_connect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1867.5482273101807,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-1fad8741",
+            "routeKey": "$connect",
+            "eventType": "CONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:14:44.874528+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:45.345364+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:45.345737+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:45.346022+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:45.346248+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_disconnect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1789.2298698425293,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-e7eca33d",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:14:47.135895+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:47.365254+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:47.365612+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:47.365853+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:47.366054+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_default - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1804.4970035552979,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-4707c7b1",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_required_env_var' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:14:49.170990+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:49.391945+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:49.392279+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:49.392685+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:6",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:49.392891+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_broadcast - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_apigateway_management_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1957.1723937988281,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-25b275bf",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_apigateway_management_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:14:51.350385+00:00"
+    },
+    {
+      "test_name": "Integration Test - SNS Topics - Existence",
+      "status": "PASS",
+      "message": "All 8 SNS topics exist and are accessible",
+      "details": {},
+      "timestamp": "2025-08-12T10:14:52.636797+00:00"
+    }
+  ],
+  "timestamp": "2025-08-12T10:14:52.638864+00:00"
+}

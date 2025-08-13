@@ -1,0 +1,179 @@
+{
+  "validation_type": "api_gateway_step_2_4",
+  "timestamp": "2025-08-12T12:24:19.161424+00:00",
+  "overall_status": "PASS",
+  "summary": {
+    "total_tests": 20,
+    "passed_tests": 20,
+    "failed_tests": 0,
+    "warned_tests": 0,
+    "success_rate": 100.0,
+    "execution_time": 20.763980865478516
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - WebSocket API - Discovery",
+      "status": "PASS",
+      "message": "WebSocket API found: bos-websocket-api-dev (08ozbst1md)",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "Infrastructure Test - HTTP API - Discovery",
+      "status": "PASS",
+      "message": "HTTP API found: bos-dev-http-api (wo8q9fl0hj)",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - health - Status Code",
+      "status": "PASS",
+      "message": "GET /health returned 200",
+      "details": {
+        "response_body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2025-08-12T12:24:01.312940+00:00\",\n  \"correlation_id\": \"1ce5c088-6cac-4ec4-9efd-6096a6458837\",\n  \"environment\": \"dev\",\n  \"version\": \"1.0.0\",\n  \"response_time_m",
+        "execution_time_ms": 2377.737283706665
+      },
+      "execution_time": 2377.737283706665
+    },
+    {
+      "test_name": "HTTP API Test - health - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2377.7ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - persona_post - Status Code",
+      "status": "PASS",
+      "message": "POST /persona returned 200",
+      "details": {
+        "response_body": "{\"message\": \"Direct user message processed\", \"correlation_id\": \"2e22c3f7-caa7-48e0-bbc9-9051f3d0c4f0\"}",
+        "execution_time_ms": 2372.6139068603516
+      },
+      "execution_time": 2372.6139068603516
+    },
+    {
+      "test_name": "HTTP API Test - persona_post - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2372.6ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - persona_get - Status Code",
+      "status": "PASS",
+      "message": "GET /persona/conversations returned 200",
+      "details": {
+        "response_body": "{\"message\": \"Conversation retrieval processed\", \"correlation_id\": \"6a5b51f6-3e6b-4816-8166-6255080b2dae\"}",
+        "execution_time_ms": 1073.857069015503
+      },
+      "execution_time": 1073.857069015503
+    },
+    {
+      "test_name": "HTTP API Test - persona_get - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1073.9ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - director - Status Code",
+      "status": "PASS",
+      "message": "GET /director returned 200",
+      "details": {
+        "response_body": "{\"message\": \"Mission status request processed\", \"correlation_id\": \"0c56986f-b6b1-408b-977d-17b103a12f6e\"}",
+        "execution_time_ms": 2347.7623462677
+      },
+      "execution_time": 2347.7623462677
+    },
+    {
+      "test_name": "HTTP API Test - director - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2347.8ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - elevator - Status Code",
+      "status": "PASS",
+      "message": "POST /elevator/call returned 400",
+      "details": {
+        "response_body": "{\"error\": \"mission_id is required in request body\"}",
+        "execution_time_ms": 2247.6046085357666
+      },
+      "execution_time": 2247.6046085357666
+    },
+    {
+      "test_name": "HTTP API Test - elevator - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2247.6ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - psim - Status Code",
+      "status": "PASS",
+      "message": "POST /psim/search returned 200",
+      "details": {
+        "response_body": "{\"message\": \"API Gateway request processed\", \"correlation_id\": \"fdbdb275-25b2-40d6-9edb-e55bdf81baa3\"}",
+        "execution_time_ms": 2359.998941421509
+      },
+      "execution_time": 2359.998941421509
+    },
+    {
+      "test_name": "HTTP API Test - psim - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2360.0ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_mission - Status Code",
+      "status": "PASS",
+      "message": "GET /coordinator/missions/test-123 returned 404",
+      "details": {
+        "response_body": "{\"error\": \"Mission test-123 not found\"}",
+        "execution_time_ms": 2348.8168716430664
+      },
+      "execution_time": 2348.8168716430664
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_mission - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2348.8ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_status - Status Code",
+      "status": "PASS",
+      "message": "GET /coordinator/status returned 200",
+      "details": {
+        "response_body": "{\"status\": \"healthy\", \"service\": \"coordinator\", \"timestamp\": 1755001455, \"message\": \"Coordinator agent is running\"}",
+        "execution_time_ms": 1069.2012310028076
+      },
+      "execution_time": 1069.2012310028076
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_status - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1069.2ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "CORS Test - Preflight Request",
+      "status": "PASS",
+      "message": "CORS preflight successful with headers: {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'DELETE,GET,OPTIONS,POST,PUT', 'Access-Control-Allow-Headers': 'authorization,content-type,x-requested-with'}",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "WebSocket Test - Connectivity",
+      "status": "PASS",
+      "message": "WebSocket connection successful to wss://08ozbst1md.execute-api.us-east-1.amazonaws.com/dev",
+      "details": null,
+      "execution_time": null
+    }
+  ]
+}

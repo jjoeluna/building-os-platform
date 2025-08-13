@@ -1,0 +1,493 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 22.398173093795776,
+    "total_tests": 51,
+    "passed_tests": 41,
+    "warned_tests": 0,
+    "failed_tests": 10,
+    "success_rate_percentage": 80.3921568627451,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - agent_persona - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:57.642575+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 512MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:57.643037+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:57.643272+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:57.643477+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_persona - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1833.1851959228516,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:07:57.643718+00:00",
+          "function_type": "agent_persona"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:07:59.477021+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:59.706321+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:59.706675+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:59.706924+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:07:59.707165+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_director - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1742.081642150879,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:07:59.707492+00:00",
+          "function_type": "agent_director"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:01.449711+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:01.677633+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:01.678015+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:01.678359+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:01.678597+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_coordinator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1689.6321773529053,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:08:01.678892+00:00",
+          "function_type": "agent_coordinator"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:03.368617+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:03.605221+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:03.650426+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:03.650982+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:03.651401+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_elevator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 2071.8560218811035,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:08:03.652049+00:00",
+          "function_type": "agent_elevator"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:05.724039+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:05.961279+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:05.961656+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:05.961919+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:05.962195+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_psim - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_sns_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1675.095796585083,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:08:05.962498+00:00",
+          "function_type": "agent_psim"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_sns_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:07.637707+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:07.879886+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:07.880243+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:07.880518+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:07.880734+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_health_check - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1504.3394565582275,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:08:07.880988+00:00",
+          "function_type": "agent_health_check"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:09.385472+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:09.608312+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:09.608633+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:09.608850+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:09.609072+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_connect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1849.4977951049805,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-aa58d3c6",
+            "routeKey": "$connect",
+            "eventType": "CONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:11.458996+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:11.688204+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:11.688628+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:11.688932+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:11.689220+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_disconnect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1714.8160934448242,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-92d577ed",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:13.404441+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:13.626170+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:13.626635+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:13.627478+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:13.628013+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_default - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_sns_client' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1760.263442993164,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-c81c9933",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_sns_client' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:15.388683+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:15.617174+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:15.617532+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:15.617801+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:5",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:15.618082+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_broadcast - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)",
+      "details": {
+        "execution_time_ms": 1779.5658111572266,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-8bb1be62",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'get_dynamodb_resource' from 'aws_clients' (/opt/python/aws_clients.py)"
+      },
+      "timestamp": "2025-08-12T10:08:17.398101+00:00"
+    },
+    {
+      "test_name": "Integration Test - SNS Topics - Existence",
+      "status": "PASS",
+      "message": "All 8 SNS topics exist and are accessible",
+      "details": {},
+      "timestamp": "2025-08-12T10:08:18.812908+00:00"
+    }
+  ],
+  "timestamp": "2025-08-12T10:08:18.815099+00:00"
+}

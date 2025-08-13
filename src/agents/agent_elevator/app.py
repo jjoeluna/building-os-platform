@@ -1,48 +1,209 @@
+# =============================================================================
+# BuildingOS Platform - Agent Elevator (Building Elevator System Integration)
+# =============================================================================
+#
+# **Purpose:** Integrates with building elevator systems for automated control
+# **Scope:** Handles elevator operations, status monitoring, and floor management
+# **Usage:** Invoked by SNS when Coordinator Agent distributes elevator-related tasks
+#
+# **Key Features:**
+# - Receives elevator task assignments from Agent Coordinator
+# - Interfaces with building elevator control systems via REST APIs
+# - Executes elevator operations (call, status check, floor listing)
+# - Monitors elevator arrival and operational status with JWT authentication
+# - Reports task completion results back to coordination layer
+# - Uses common utilities layer for AWS client management
+#
+# **Event Flow (Incoming - Tasks):**
+# 1. Agent Coordinator distributes tasks → coordinator_task_topic
+# 2. This Lambda receives elevator-specific tasks
+# 3. Interfaces with elevator control systems via authenticated API calls
+# 4. Monitors operation completion and status
+#
+# **Event Flow (Outgoing - Results):**
+# 1. Elevator operations complete (success/failure)
+# 2. Task results formatted with operational details
+# 3. Published to agent_task_result_topic → Agent Coordinator
+# 4. Coordinator aggregates results for mission completion
+#
+# **Dependencies:**
+# - Common utilities layer for AWS client management
+# - DynamoDB table for elevator monitoring data (optional)
+# - SNS topics for event-driven communication
+# - Building elevator control system APIs with JWT authentication
+# - EventBridge for elevator monitoring schedules
+#
+# **Integration:**
+# - Triggers: SNS coordinator_task_topic, EventBridge schedules, API Gateway
+# - Publishes to: agent_task_result_topic
+# - External APIs: Building elevator control systems (authenticated)
+# - Monitoring: CloudWatch logs, X-Ray tracing, DynamoDB monitoring data
+#
+# =============================================================================
+
 import json
 import os
-import boto3
-import requests
-import jwt
 import time
+import jwt
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
-# AWS clients
-sns = boto3.client("sns")
-events = boto3.client("events")
-dynamodb = boto3.resource("dynamodb")
+# HTTP client for elevator system integration
+import requests
 
-# Environment variables
-ELEVATOR_API_BASE_URL = os.environ["ELEVATOR_API_BASE_URL"]
-ELEVATOR_API_SECRET = os.environ["ELEVATOR_API_SECRET"]
+# Import common utilities from Lambda layer
+from aws_clients import get_dynamodb_resource, get_sns_client, get_events_client
+from utils import (
+    get_required_env_var,
+    get_optional_env_var,
+    create_error_response,
+    create_success_response,
+    setup_logging,
+    generate_correlation_id,
+    serialize_dynamodb_item,
+)
+from models import SNSMessage, TaskResult, ElevatorOperation
 
-# New standardized topics
-COORDINATOR_TASK_TOPIC_ARN = os.environ.get("COORDINATOR_TASK_TOPIC_ARN")
-AGENT_TASK_RESULT_TOPIC_ARN = os.environ.get("AGENT_TASK_RESULT_TOPIC_ARN")
+# Initialize structured logging
+logger = setup_logging(__name__)
 
-# Determine which architecture to use (prefer new if available)
-USE_NEW_ARCHITECTURE = bool(COORDINATOR_TASK_TOPIC_ARN and AGENT_TASK_RESULT_TOPIC_ARN)
-print(
-    f"Agent Elevator using {'NEW' if USE_NEW_ARCHITECTURE else 'LEGACY'} architecture"
+
+def _determine_elevator_event_source(event: Dict[str, Any]) -> str:
+    """
+    Helper function to determine the source of an incoming elevator event.
+
+    Args:
+        event: The Lambda event dictionary
+
+    Returns:
+        str: Event source type ('sns', 'api_gateway', 'eventbridge', 'cors', 'unknown')
+    """
+    # Handle CORS preflight requests first
+    if event.get("httpMethod") == "OPTIONS":
+        return "cors"
+    elif "Records" in event:
+        for record in event["Records"]:
+            if record.get("EventSource") == "aws:sns":
+                return "sns"
+    elif event.get("httpMethod") in ["GET", "POST"]:
+        return "api_gateway"
+    elif "source" in event and event["source"] == "aws.events":
+        return "eventbridge"
+    return "unknown"
+
+
+def _handle_cors_request() -> Dict[str, Any]:
+    """
+    Helper function to handle CORS preflight requests.
+
+    Returns:
+        dict: CORS response with appropriate headers
+    """
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+        "body": json.dumps({"message": "CORS preflight successful"}),
+    }
+
+
+def _extract_elevator_task_data(message_body: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Helper function to extract and validate elevator task data from SNS message.
+
+    Args:
+        message_body: The parsed SNS message content
+
+    Returns:
+        dict: Extracted task data with mission_id, task_id, and action
+    """
+    return {
+        "mission_id": message_body.get("mission_id"),
+        "task_id": message_body.get("task_id"),
+        "action": message_body.get("action"),
+        "agent": message_body.get("agent"),
+        "task_data": message_body,
+    }
+
+
+# Environment variables configured by Terraform (validated at startup)
+ELEVATOR_API_BASE_URL = get_required_env_var("ELEVATOR_API_BASE_URL")
+ELEVATOR_API_SECRET = get_required_env_var("ELEVATOR_API_SECRET")
+COORDINATOR_TASK_TOPIC_ARN = get_required_env_var("COORDINATOR_TASK_TOPIC_ARN")
+AGENT_TASK_RESULT_TOPIC_ARN = get_required_env_var("AGENT_TASK_RESULT_TOPIC_ARN")
+MONITORING_TABLE_NAME = get_optional_env_var("ELEVATOR_MONITORING_TABLE_NAME", None)
+ENVIRONMENT = get_optional_env_var("ENVIRONMENT", "dev")
+
+# Initialize AWS clients using common utilities layer
+sns_client = get_sns_client()
+events_client = get_events_client()
+dynamodb_resource = get_dynamodb_resource() if MONITORING_TABLE_NAME else None
+
+# Validate event-driven architecture configuration
+logger.info(
+    "Agent Elevator initialized with building system integration",
+    extra={
+        "elevator_api_base_url": ELEVATOR_API_BASE_URL,
+        "coordinator_task_topic": COORDINATOR_TASK_TOPIC_ARN,
+        "agent_task_result_topic": AGENT_TASK_RESULT_TOPIC_ARN,
+        "monitoring_table": MONITORING_TABLE_NAME,
+        "environment": ENVIRONMENT,
+        "authentication": "JWT enabled",
+    },
 )
 
-MONITORING_TABLE_NAME = os.environ.get("ELEVATOR_MONITORING_TABLE_NAME")
 
-
-def handler(event, context):
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
-    Elevator Agent - Handles elevator-related tasks and monitoring
+    Agent Elevator Main Handler with enhanced building system integration.
 
-    Can be invoked by:
-    1. SNS Events (from coordinator-task-topic or task_result_topic)
-    2. Coordinator Agent (direct Lambda invocation - legacy)
-    3. EventBridge (for monitoring)
-    4. API Gateway (HTTP requests)
+    Handles elevator operations and monitoring in the BuildingOS event-driven architecture.
+    Interfaces with building elevator control systems via authenticated REST APIs.
+
+    Args:
+        event: Event data from various sources
+            SNS Events:
+            - coordinator_task_topic: Elevator tasks from Agent Coordinator
+            EventBridge Events:
+            - Scheduled elevator monitoring and status checks
+            API Gateway Events:
+            - GET/POST: Direct elevator operations (testing/debugging)
+            - OPTIONS: CORS preflight requests
+        context: Lambda runtime context information
+
+    Returns:
+        dict: Response appropriate to event source
+            SNS: Task completion status with elevator operation results
+            EventBridge: Monitoring status and metrics
+            API Gateway: HTTP response with CORS headers
+
+    Event Routing:
+        1. SNS Events → Elevator task execution
+        2. EventBridge → Monitoring and status checks
+        3. API Gateway → Direct elevator operations
+        4. Unknown → Error response with details
+
+    Raises:
+        Exception: Logs and handles all exceptions gracefully
     """
+    # Generate correlation ID for request tracing
+    correlation_id = generate_correlation_id()
+
+    logger.info(
+        "Agent Elevator processing started",
+        extra={
+            "correlation_id": correlation_id,
+            "function_name": context.function_name if context else "unknown",
+            "request_id": context.aws_request_id if context else "unknown",
+            "event_keys": list(event.keys()),
+        },
+    )
+
     try:
-        print(f"Agent Elevator received event: {json.dumps(event)}")
-
-        # Handle OPTIONS requests for CORS
+        # Handle CORS preflight requests first
         if event.get("httpMethod") == "OPTIONS":
             return {
                 "statusCode": 200,
@@ -67,8 +228,12 @@ def handler(event, context):
                     if message_body.get("agent") == "agent_elevator":
                         return handle_task_from_sns(message_body)
                     else:
-                        print(
-                            f"Task not for agent_elevator, ignoring: {message_body.get('agent')}"
+                        logger.warning(
+                            "Received task for different agent, ignoring",
+                            extra={
+                                "expected_agent": "agent_elevator",
+                                "received_agent": message_body.get("agent"),
+                            },
                         )
                         return {
                             "status": "IGNORED",
@@ -144,7 +309,10 @@ def handler(event, context):
         }
 
     except Exception as e:
-        print(f"Error in elevator agent: {str(e)}")
+        logger.error(
+            "Critical error in elevator agent handler",
+            extra={"correlation_id": correlation_id, "error": str(e)},
+        )
 
         # Try to publish failure if we have the required info
         if "mission_id" in locals() and "task_id" in locals():
@@ -194,7 +362,14 @@ def handle_task_from_sns(message_body: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"Error processing SNS task: {str(e)}")
+        logger.error(
+            "Error processing SNS task",
+            extra={
+                "task_id": message_body.get("task_id"),
+                "mission_id": message_body.get("mission_id"),
+                "error": str(e),
+            },
+        )
 
         # Try to publish failure
         try:
@@ -205,7 +380,14 @@ def handle_task_from_sns(message_body: Dict[str, Any]) -> Dict[str, Any]:
                     mission_id, task_id, "failed", {"error": str(e)}
                 )
         except Exception as pub_error:
-            print(f"Error publishing failure: {str(pub_error)}")
+            logger.error(
+                "Error publishing task failure notification",
+                extra={
+                    "mission_id": mission_id,
+                    "task_id": task_id,
+                    "error": str(pub_error),
+                },
+            )
 
         return {
             "statusCode": 500,
@@ -311,7 +493,10 @@ def call_elevator(from_floor: int, to_floor: int) -> Dict[str, Any]:
             }
         elif response.status_code == 400 and "Elevador não permitido" in response.text:
             # API externa não tem elevador configurado - simular sucesso para demo
-            print(f"External API not configured, simulating success for demo")
+            logger.warning(
+                "External elevator API not configured, simulating success for demo",
+                extra={"status_code": response.status_code},
+            )
 
             return {
                 "status": "success",
@@ -497,7 +682,10 @@ def list_floors() -> Dict[str, Any]:
             }
         elif response.status_code == 400 and "Elevador não permitido" in response.text:
             # API externa não tem elevador configurado - simular lista para demo
-            print(f"External API not configured, simulating floors for demo")
+            logger.warning(
+                "External elevator API not configured, simulating floors list for demo",
+                extra={"status_code": response.status_code},
+            )
 
             simulated_floors = [
                 {"floor": 1, "description": "Térreo"},
@@ -564,7 +752,10 @@ def list_active_monitoring() -> Dict[str, Any]:
 
     except Exception as e:
         error_msg = f"Error listing active monitoring: {str(e)}"
-        print(error_msg)
+        logger.error(
+            "Error listing active monitoring from DynamoDB",
+            extra={"error": str(e)},
+        )
         return {"status": "error", "message": error_msg}
 
 
@@ -620,7 +811,14 @@ def monitor_elevator_arrival(target_floor: int, mission_id: str) -> Dict[str, An
 
     except Exception as e:
         error_msg = f"Error monitoring elevator arrival: {str(e)}"
-        print(error_msg)
+        logger.error(
+            "Error monitoring elevator arrival",
+            extra={
+                "target_floor": target_floor,
+                "mission_id": mission_id,
+                "error": str(e),
+            },
+        )
         return {"status": "error", "message": error_msg}
 
 
@@ -640,7 +838,10 @@ def generate_jwt_token() -> str:
         return token
 
     except Exception as e:
-        print(f"Error generating JWT token: {str(e)}")
+        logger.error(
+            "Error generating JWT token for elevator API",
+            extra={"error": str(e)},
+        )
         raise
 
 
@@ -680,13 +881,24 @@ def publish_task_completion(
         print(f"Published task completion for {task_id}")
 
     except Exception as e:
-        print(f"Error publishing task completion: {str(e)}")
+        logger.error(
+            "Error publishing task completion to SNS",
+            extra={
+                "mission_id": mission_id,
+                "task_id": task_id,
+                "status": status,
+                "error": str(e),
+            },
+        )
         # Don't raise here to avoid infinite loops
 
 
 def start_monitoring(mission_id: str, target_floor: int) -> None:
     """
-    Start monitoring elevator arrival with continuous polling
+    Start monitoring elevator arrival with continuous polling.
+
+    ARCHITECTURAL NOTE: This polling approach is inefficient for Lambda.
+    TODO: Replace with EventBridge scheduled rules or Step Functions for better cost/performance.
     This function will:
     1. Save monitoring state to DynamoDB for persistence
     2. Block and poll every 1 second until elevator arrives
@@ -721,7 +933,7 @@ def start_monitoring(mission_id: str, target_floor: int) -> None:
         consecutive_matches = 0
         retry_count = 0
         max_retries = 5
-        timeout_seconds = 300  # 5 minutes
+        timeout_seconds = 90  # 1.5 minutes - reduced for Lambda efficiency
 
         while True:
             # Check timeout
@@ -730,7 +942,7 @@ def start_monitoring(mission_id: str, target_floor: int) -> None:
                 notify_user(
                     mission_id,
                     "timeout",
-                    "⏰ Timeout: Elevador demorou mais de 5 minutos",
+                    "⏰ Timeout: Elevador demorou mais de 1.5 minutos",
                 )
                 cleanup_monitoring_state(mission_id)
                 print(f"Monitoring timeout for mission {mission_id}")
@@ -881,7 +1093,10 @@ def notify_user(mission_id: str, notification_type: str, message: str) -> None:
         # Use the appropriate topic based on architecture
         topic_arn = AGENT_TASK_RESULT_TOPIC_ARN if USE_NEW_ARCHITECTURE else None
         if not topic_arn:
-            print("ERROR: No topic ARN available for notifications")
+            logger.warning(
+                "No topic ARN available for notifications",
+                extra={"mission_id": mission_id, "message": message},
+            )
             return
 
         sns.publish(
@@ -893,5 +1108,8 @@ def notify_user(mission_id: str, notification_type: str, message: str) -> None:
         print(f"Sent notification for mission {mission_id}: {message}")
 
     except Exception as e:
-        print(f"Error sending notification: {str(e)}")
+        logger.error(
+            "Error sending monitoring notification",
+            extra={"mission_id": mission_id, "message": message, "error": str(e)},
+        )
         # Don't raise - notification failure shouldn't break monitoring

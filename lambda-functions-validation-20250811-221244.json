@@ -1,0 +1,129 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 8.694769382476807,
+    "total_tests": 13,
+    "passed_tests": 5,
+    "warned_tests": 7,
+    "failed_tests": 1,
+    "success_rate_percentage": 38.46153846153847,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Functional Test - agent-persona - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (60s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:36.467162+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-director - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (45s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:36.730052+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-coordinator - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (45s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:36.975183+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-elevator - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (360s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:37.227714+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-psim - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (30s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:37.455397+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-health-check - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 588.35ms",
+      "details": {
+        "execution_time_ms": 588.35,
+        "response_keys": [
+          "statusCode",
+          "headers",
+          "body"
+        ]
+      },
+      "timestamp": "2025-08-11T22:12:38.284123+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent-health-check - Performance",
+      "status": "PASS",
+      "message": "Excellent performance: 588.35ms execution time",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:38.284294+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-default - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (30s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:38.570158+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-broadcast - Timeout Check",
+      "status": "WARN",
+      "message": "Skipped: Lambda timeout (30s) exceeds test timeout (10s)",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:38.820483+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-connect - Execution",
+      "status": "PASS",
+      "message": "Function executed successfully in 1702.99ms",
+      "details": {
+        "execution_time_ms": 1702.99,
+        "response_keys": [
+          "statusCode",
+          "body"
+        ]
+      },
+      "timestamp": "2025-08-11T22:12:40.762856+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-connect - Performance",
+      "status": "PASS",
+      "message": "Excellent performance: 1702.99ms execution time",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:40.763044+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-disconnect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: An error occurred (ValidationException) when calling the DeleteItem operation: The provided key element does not match the schema",
+      "details": {
+        "execution_time_ms": 1720.97,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-123",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          }
+        }
+      },
+      "timestamp": "2025-08-11T22:12:43.908515+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket-disconnect - Performance",
+      "status": "PASS",
+      "message": "Excellent performance: 1720.97ms execution time",
+      "details": {},
+      "timestamp": "2025-08-11T22:12:43.912503+00:00"
+    }
+  ],
+  "timestamp": "2025-08-11T22:12:44.336396+00:00"
+}

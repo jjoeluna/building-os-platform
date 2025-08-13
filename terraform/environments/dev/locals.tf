@@ -48,6 +48,7 @@ locals {
 
   # SNS topic naming convention
   sns_topic_names = {
+    # Current BuildingOS topics (maintained for compatibility)
     chat_intention             = "${local.resource_prefix}-chat-intention-topic"
     persona_intention          = "${local.resource_prefix}-persona-intention-topic"
     director_mission           = "${local.resource_prefix}-director-mission-topic"
@@ -56,6 +57,12 @@ locals {
     coordinator_mission_result = "${local.resource_prefix}-coordinator-mission-result-topic"
     director_response          = "${local.resource_prefix}-director-response-topic"
     persona_response           = "${local.resource_prefix}-persona-response-topic"
+
+    # ACP Standard topics (new protocol compliance)
+    acp_task      = "${local.resource_prefix}-acp-task-topic"
+    acp_result    = "${local.resource_prefix}-acp-result-topic"
+    acp_event     = "${local.resource_prefix}-acp-event-topic"
+    acp_heartbeat = "${local.resource_prefix}-acp-heartbeat-topic"
   }
 
   # Lambda function names

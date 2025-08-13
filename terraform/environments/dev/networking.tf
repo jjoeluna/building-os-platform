@@ -1,7 +1,26 @@
 # =============================================================================
 # NETWORKING AND VPC - BuildingOS Platform
 # =============================================================================
-# This file contains VPC, subnets, NAT gateways, security groups, and NACLs
+# Purpose: Define VPC, subnets, route tables, NAT gateway, security groups, NACLs,
+# and VPC Endpoints for AWS service access from private subnets.
+#
+# Variable usage:
+# - local.resource_prefix: naming prefix (bos-${var.environment}) applied to all resources
+# - data.aws_region.current.id: region identifier used in VPC Endpoint service names
+# - data.aws_availability_zones.available.names: AZ list used for multi-AZ subnets
+#
+# CIDR allocation strategy:
+# - VPC: 10.0.0.0/16
+# - Public subnets: 10.0.1.0/24 and 10.0.2.0/24 (mapped to first two AZs)
+# - Private subnets: 10.0.10.0/24 and 10.0.11.0/24 (mapped to first two AZs)
+#
+# VPC Endpoints (cost and security optimization):
+# - Gateway: S3, DynamoDB
+# - Interface: Secrets Manager, Lambda, SNS, Bedrock Runtime, KMS
+#
+# Outputs:
+# - vpc_id, vpc_cidr_block, public_subnet_ids, private_subnet_ids,
+#   nat_gateway_id, lambda_security_group_id, api_gateway_security_group_id
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -171,6 +190,14 @@ resource "aws_security_group" "lambda" {
   name        = "${local.resource_prefix}-lambda-sg"
   description = "Security group for Lambda functions"
   vpc_id      = aws_vpc.main.id
+
+  # Allow inbound HTTPS traffic for VPC Endpoints (SNS, etc.)
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
 
   # Allow Lambda to access the internet (for AWS services)
   egress {
@@ -415,6 +442,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 }
 
 # VPC Endpoint for Secrets Manager
+# Purpose: Private secret retrieval from private subnets without NAT/IGW
 resource "aws_vpc_endpoint" "secretsmanager" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${data.aws_region.current.id}.secretsmanager"
@@ -433,6 +461,7 @@ resource "aws_vpc_endpoint" "secretsmanager" {
 }
 
 # VPC Endpoint for Lambda
+# Purpose: Private access to Lambda control-plane APIs from private subnets
 resource "aws_vpc_endpoint" "lambda" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${data.aws_region.current.id}.lambda"
@@ -451,6 +480,7 @@ resource "aws_vpc_endpoint" "lambda" {
 }
 
 # VPC Endpoint for SNS
+# Purpose: Private publish/subscribe access for event bus from private subnets
 resource "aws_vpc_endpoint" "sns" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${data.aws_region.current.id}.sns"
@@ -469,6 +499,7 @@ resource "aws_vpc_endpoint" "sns" {
 }
 
 # VPC Endpoint for Bedrock
+# Purpose: Private model invocation for Bedrock Runtime from private subnets
 resource "aws_vpc_endpoint" "bedrock" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${data.aws_region.current.id}.bedrock-runtime"
@@ -487,6 +518,7 @@ resource "aws_vpc_endpoint" "bedrock" {
 }
 
 # VPC Endpoint for KMS
+# Purpose: Private key management and encryption API access from private subnets
 resource "aws_vpc_endpoint" "kms" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${data.aws_region.current.id}.kms"

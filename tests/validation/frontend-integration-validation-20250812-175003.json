@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-08-12T17:49:58.256754",
+  "environment": "dev",
+  "total_tests": 0,
+  "passed_tests": 0,
+  "failed_tests": 0,
+  "test_details": [],
+  "frontend_urls": {
+    "cloudfront": "https://d16gzj1xbb7lzw.cloudfront.net",
+    "s3_website": "http://buildingos-frontend-dev.s3-website-us-east-1.amazonaws.com",
+    "api_gateway": "https://wo8q9fl0hj.execute-api.us-east-1.amazonaws.com/dev",
+    "websocket": "wss://wo8q9fl0hj.execute-api.us-east-1.amazonaws.com/dev"
+  },
+  "performance_metrics": {
+    "cloudfront_response_time": 0.6515517234802246,
+    "api_response_time": 2.162710428237915
+  },
+  "integration_status": {}
+}

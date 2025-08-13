@@ -88,7 +88,7 @@ resource "aws_s3_bucket_cors_configuration" "website" {
   }
 }
 
-# Upload frontend files
+# Upload main index.html file
 resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.website.id
   key          = "index.html"
@@ -99,44 +99,13 @@ resource "aws_s3_object" "index" {
   depends_on = [aws_s3_bucket_policy.website]
 }
 
-resource "aws_s3_object" "chat" {
-  bucket       = aws_s3_bucket.website.id
-  key          = "chat.html"
-  source       = "${var.frontend_path}/chat.html"
-  etag         = filemd5("${var.frontend_path}/chat.html")
-  content_type = "text/html"
-
-  depends_on = [aws_s3_bucket_policy.website]
-}
-
-resource "aws_s3_object" "chat_simple" {
-  bucket       = aws_s3_bucket.website.id
-  key          = "chat-simple.html"
-  source       = "${var.frontend_path}/chat-simple.html"
-  etag         = filemd5("${var.frontend_path}/chat-simple.html")
-  content_type = "text/html"
-
-  depends_on = [aws_s3_bucket_policy.website]
-}
-
-resource "aws_s3_object" "test_complete" {
-  bucket       = aws_s3_bucket.website.id
-  key          = "test-complete.html"
-  source       = "${var.frontend_path}/test-complete.html"
-  etag         = filemd5("${var.frontend_path}/test-complete.html")
-  content_type = "text/html"
-
-  depends_on = [aws_s3_bucket_policy.website]
-}
-
-# Create a simple error page
+# Upload error.html file
 resource "aws_s3_object" "error" {
   bucket       = aws_s3_bucket.website.id
   key          = "error.html"
+  source       = "${var.frontend_path}/error.html"
+  etag         = filemd5("${var.frontend_path}/error.html")
   content_type = "text/html"
-  content = templatefile("${path.module}/templates/error.html", {
-    environment = var.environment
-  })
 
   depends_on = [aws_s3_bucket_policy.website]
 }

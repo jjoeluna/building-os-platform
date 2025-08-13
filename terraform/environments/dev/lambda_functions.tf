@@ -1,8 +1,69 @@
 # =============================================================================
-# Lambda Functions - BuildingOS Platform
+# Lambda Functions Configuration - Enhanced with CodeBuild Layer Support
 # =============================================================================
-# This file contains all Lambda function definitions using the global lambda_function module
-# =============================================================================
+
+# S3 Buckets for CodeBuild
+resource "aws_s3_bucket" "lambda_build_artifacts" {
+  bucket = "buildingos-lambda-artifacts-${var.environment}"
+
+  tags = {
+    Name        = "buildingos-lambda-artifacts-${var.environment}"
+    Environment = var.environment
+    Component   = "Lambda Build"
+    ManagedBy   = "Terraform"
+    Project     = "BuildingOS"
+  }
+}
+
+resource "aws_s3_bucket" "lambda_build_source" {
+  bucket = "buildingos-lambda-source-${var.environment}"
+
+  tags = {
+    Name        = "buildingos-lambda-source-${var.environment}"
+    Environment = var.environment
+    Component   = "Lambda Build"
+    ManagedBy   = "Terraform"
+    Project     = "BuildingOS"
+  }
+}
+
+# Create source archive for CodeBuild
+data "archive_file" "layer_source" {
+  type        = "zip"
+  source_dir  = "../../../src/layers/common_utils"
+  output_path = "../../.terraform/layer_source.zip"
+}
+
+# Common Utils Layer with CodeBuild (Pydantic-compatible)
+module "common_utils_layer_codebuild" {
+  source = "../../modules/lambda_layer_codebuild"
+
+  environment          = var.environment
+  layer_name           = "bos-${var.environment}-common-utils-layer"
+  requirements_file    = "../../../src/layers/common_utils/requirements.txt"
+  source_dir           = "../../../src/layers/common_utils"
+  source_archive       = data.archive_file.layer_source.output_path
+  source_bucket        = aws_s3_bucket.lambda_build_source.bucket
+  source_key           = "common_utils/source.zip"
+  source_bucket_arn    = aws_s3_bucket.lambda_build_source.arn
+  artifacts_bucket     = aws_s3_bucket.lambda_build_artifacts.bucket
+  artifacts_bucket_arn = aws_s3_bucket.lambda_build_artifacts.arn
+}
+
+# Fallback layer removed - using CodeBuild layer only
+# module "common_utils_layer" {
+#   source = "../../modules/lambda_layer"
+#
+#   layer_name        = "bos-${var.environment}-common-utils-layer-fallback"
+#   requirements_file = "../../../src/layers/common_utils/requirements.txt"
+#   source_dir        = "../../../src/layers/common_utils/python"
+#   runtime          = "python3.11"
+# }
+
+# Use CodeBuild layer exclusively
+locals {
+  common_layer_arn = module.common_utils_layer_codebuild.layer_arn
+}
 
 # --- WebSocket Lambda Functions ---
 
@@ -27,11 +88,14 @@ module "websocket_connect" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
+
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   enable_api_gateway_integration = true
   api_gateway_source_arn         = "${module.websocket_api.websocket_api_execution_arn}/*"
@@ -66,11 +130,14 @@ module "websocket_disconnect" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
+
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   enable_api_gateway_integration = true
   api_gateway_source_arn         = "${module.websocket_api.websocket_api_execution_arn}/*"
@@ -106,11 +173,14 @@ module "websocket_default" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
+
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   enable_api_gateway_integration = true
   api_gateway_source_arn         = "${module.websocket_api.websocket_api_execution_arn}/*"
@@ -145,11 +215,14 @@ module "websocket_broadcast" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
+
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   enable_sns_integration = true
   sns_topic_arn          = module.persona_response_topic.topic_arn
@@ -179,17 +252,25 @@ module "agent_health_check" {
   memory_size   = local.lambda_performance_configs.agent_health_check.memory_size
 
   environment_variables = {
-    LOG_LEVEL = local.lambda_defaults.log_level
+    # ACP Standard Topics (Health monitoring via heartbeat)
+    ACP_TASK_TOPIC_ARN      = module.acp_task_topic.topic_arn
+    ACP_RESULT_TOPIC_ARN    = module.acp_result_topic.topic_arn
+    ACP_EVENT_TOPIC_ARN     = module.acp_event_topic.topic_arn
+    ACP_HEARTBEAT_TOPIC_ARN = module.acp_heartbeat_topic.topic_arn
+    LOG_LEVEL               = local.lambda_defaults.log_level
   }
 
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
+
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   tags = merge(local.common_tags, {
     Name      = "agent-health-check"
@@ -215,21 +296,31 @@ module "agent_persona" {
 
   environment_variables = {
     SHORT_TERM_MEMORY_TABLE_NAME = module.short_term_memory_db.table_name
-    PERSONA_INTENTION_TOPIC_ARN  = module.persona_intention_topic.topic_arn
-    DIRECTOR_RESPONSE_TOPIC_ARN  = module.director_response_topic.topic_arn
-    PERSONA_RESPONSE_TOPIC_ARN   = module.persona_response_topic.topic_arn
-    LOG_LEVEL                    = local.lambda_defaults.log_level
+    # Persona Topics (Current)
+    PERSONA_INTENTION_TOPIC_ARN = module.persona_intention_topic.topic_arn
+    DIRECTOR_RESPONSE_TOPIC_ARN = module.director_response_topic.topic_arn
+    PERSONA_RESPONSE_TOPIC_ARN  = module.persona_response_topic.topic_arn
+    # ACP Standard Topics (New)
+    ACP_TASK_TOPIC_ARN      = module.acp_task_topic.topic_arn
+    ACP_RESULT_TOPIC_ARN    = module.acp_result_topic.topic_arn
+    ACP_EVENT_TOPIC_ARN     = module.acp_event_topic.topic_arn
+    ACP_HEARTBEAT_TOPIC_ARN = module.acp_heartbeat_topic.topic_arn
+    LOG_LEVEL               = local.lambda_defaults.log_level
   }
 
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED FOR TESTING
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
 
+  # VPC Configuration - Enabled for secure private subnet deployment FOR TESTING
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  # SNS Integration - Multiple topic subscriptions for Persona Agent
   enable_sns_integration = true
   sns_topic_arn          = module.chat_intention_topic.topic_arn
 
@@ -240,6 +331,22 @@ module "agent_persona" {
     Function  = "Persona"
     ManagedBy = "Terraform"
   })
+}
+
+# Additional SNS subscription for Persona Agent - Director Responses
+resource "aws_sns_topic_subscription" "persona_director_responses" {
+  topic_arn = module.director_response_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_persona.function_arn
+}
+
+# Lambda permission for Persona Agent - Director Responses
+resource "aws_lambda_permission" "persona_director_responses" {
+  statement_id  = "AllowExecutionFromDirectorResponses"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_persona.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.director_response_topic.topic_arn
 }
 
 # Agent Director
@@ -256,9 +363,16 @@ module "agent_director" {
   memory_size   = local.lambda_performance_configs.agent_director.memory_size
 
   environment_variables = {
-    # Mission Topics
-    DIRECTOR_MISSION_TOPIC_ARN  = module.director_mission_topic.topic_arn
-    DIRECTOR_RESPONSE_TOPIC_ARN = module.director_response_topic.topic_arn
+    # Director Topics (Current)
+    PERSONA_INTENTION_TOPIC_ARN          = module.persona_intention_topic.topic_arn
+    DIRECTOR_MISSION_TOPIC_ARN           = module.director_mission_topic.topic_arn
+    DIRECTOR_RESPONSE_TOPIC_ARN          = module.director_response_topic.topic_arn
+    COORDINATOR_MISSION_RESULT_TOPIC_ARN = module.coordinator_mission_result_topic.topic_arn
+    # ACP Standard Topics (New)
+    ACP_TASK_TOPIC_ARN      = module.acp_task_topic.topic_arn
+    ACP_RESULT_TOPIC_ARN    = module.acp_result_topic.topic_arn
+    ACP_EVENT_TOPIC_ARN     = module.acp_event_topic.topic_arn
+    ACP_HEARTBEAT_TOPIC_ARN = module.acp_heartbeat_topic.topic_arn
     # Memory and Logging
     MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
     LOG_LEVEL                = local.lambda_defaults.log_level
@@ -267,12 +381,16 @@ module "agent_director" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED FOR TESTING
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
 
+  # VPC Configuration - Enabled for secure private subnet deployment FOR TESTING
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  # SNS Integration - Multiple topic subscriptions for Director Agent
   enable_sns_integration = true
   sns_topic_arn          = module.persona_intention_topic.topic_arn
 
@@ -283,6 +401,22 @@ module "agent_director" {
     Function  = "Director"
     ManagedBy = "Terraform"
   })
+}
+
+# Additional SNS subscription for Director Agent - Coordinator Mission Results
+resource "aws_sns_topic_subscription" "director_coordinator_results" {
+  topic_arn = module.coordinator_mission_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_director.function_arn
+}
+
+# Lambda permission for Director Agent - Coordinator Mission Results
+resource "aws_lambda_permission" "director_coordinator_results" {
+  statement_id  = "AllowExecutionFromCoordinatorResults"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_director.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.coordinator_mission_result_topic.topic_arn
 }
 
 # Agent Coordinator
@@ -299,10 +433,15 @@ module "agent_coordinator" {
   memory_size   = local.lambda_performance_configs.agent_coordinator.memory_size
 
   environment_variables = {
-    # Coordinator Topics
+    # Coordinator Topics (Current)
     COORDINATOR_TASK_TOPIC_ARN           = module.coordinator_task_topic.topic_arn
     AGENT_TASK_RESULT_TOPIC_ARN          = module.agent_task_result_topic.topic_arn
     COORDINATOR_MISSION_RESULT_TOPIC_ARN = module.coordinator_mission_result_topic.topic_arn
+    # ACP Standard Topics (New)
+    ACP_TASK_TOPIC_ARN      = module.acp_task_topic.topic_arn
+    ACP_RESULT_TOPIC_ARN    = module.acp_result_topic.topic_arn
+    ACP_EVENT_TOPIC_ARN     = module.acp_event_topic.topic_arn
+    ACP_HEARTBEAT_TOPIC_ARN = module.acp_heartbeat_topic.topic_arn
     # Memory and Logging
     MISSION_STATE_TABLE_NAME = module.mission_state_db.table_name
     LOG_LEVEL                = local.lambda_defaults.log_level
@@ -311,12 +450,16 @@ module "agent_coordinator" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
 
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  # SNS Integration - Multiple topic subscriptions for Coordinator Agent  
   enable_sns_integration = true
   sns_topic_arn          = module.director_mission_topic.topic_arn
 
@@ -327,6 +470,22 @@ module "agent_coordinator" {
     Function  = "Coordinator"
     ManagedBy = "Terraform"
   })
+}
+
+# Additional SNS subscription for Coordinator Agent - Agent Task Results
+resource "aws_sns_topic_subscription" "coordinator_task_results" {
+  topic_arn = module.agent_task_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_coordinator.function_arn
+}
+
+# Lambda permission for Coordinator Agent - Agent Task Results
+resource "aws_lambda_permission" "coordinator_task_results" {
+  statement_id  = "AllowExecutionFromTaskResults"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_coordinator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.agent_task_result_topic.topic_arn
 }
 
 # Agent Elevator
@@ -346,9 +505,14 @@ module "agent_elevator" {
     # Elevator API Configuration
     ELEVATOR_API_BASE_URL = "http://elevador.clevertown.io:9090"
     ELEVATOR_API_SECRET   = "ACME_ELEVATOR_SECRET"
-    # Agent Task Topics
+    # Agent Task Topics (Current)
     COORDINATOR_TASK_TOPIC_ARN  = module.coordinator_task_topic.topic_arn
     AGENT_TASK_RESULT_TOPIC_ARN = module.agent_task_result_topic.topic_arn
+    # ACP Standard Topics (New)
+    ACP_TASK_TOPIC_ARN      = module.acp_task_topic.topic_arn
+    ACP_RESULT_TOPIC_ARN    = module.acp_result_topic.topic_arn
+    ACP_EVENT_TOPIC_ARN     = module.acp_event_topic.topic_arn
+    ACP_HEARTBEAT_TOPIC_ARN = module.acp_heartbeat_topic.topic_arn
     # Monitoring and Logging
     ELEVATOR_MONITORING_TABLE_NAME = module.elevator_monitoring_db.table_name
     LOG_LEVEL                      = local.lambda_defaults.log_level
@@ -357,14 +521,14 @@ module "agent_elevator" {
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # Lambda layers
-  layers = [module.common_utils_layer.layer_arn]
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
 
-  # VPC Configuration - TEMPORARILY DISABLED FOR TESTING
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # VPC Configuration - Enabled for secure private subnet deployment FOR TESTING
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   enable_sns_integration = true
   sns_topic_arn          = module.coordinator_task_topic.topic_arn
@@ -395,23 +559,28 @@ module "agent_psim" {
     PSIM_API_BASE_URL = "http://psim.clevertown.io:9091"
     PSIM_API_USERNAME = "integration_blubrain"
     PSIM_API_PASSWORD = "Blubrain@4565"
-    # Agent Task Topics
+    # Agent Task Topics (Current)
     COORDINATOR_TASK_TOPIC_ARN  = module.coordinator_task_topic.topic_arn
     AGENT_TASK_RESULT_TOPIC_ARN = module.agent_task_result_topic.topic_arn
-    LOG_LEVEL                   = local.lambda_defaults.log_level
+    # ACP Standard Topics (New)
+    ACP_TASK_TOPIC_ARN      = module.acp_task_topic.topic_arn
+    ACP_RESULT_TOPIC_ARN    = module.acp_result_topic.topic_arn
+    ACP_EVENT_TOPIC_ARN     = module.acp_event_topic.topic_arn
+    ACP_HEARTBEAT_TOPIC_ARN = module.acp_heartbeat_topic.topic_arn
+    LOG_LEVEL               = local.lambda_defaults.log_level
   }
 
   tracing_mode       = "Active"
   log_retention_days = 14
 
-  # Lambda layers
-  layers = [module.common_utils_layer.layer_arn]
+  # Lambda layers - Common utilities for all functions
+  layers = [local.common_layer_arn]
 
-  # VPC Configuration - TEMPORARILY DISABLED
-  # vpc_config = {
-  #   subnet_ids         = aws_subnet.private[*].id
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  # VPC Configuration - Enabled for secure private subnet deployment
+  vpc_config = {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   enable_sns_integration = true
   sns_topic_arn          = module.coordinator_task_topic.topic_arn
@@ -425,12 +594,144 @@ module "agent_psim" {
   })
 }
 
-# --- Lambda Layer ---
+# =============================================================================
+# ACP Standard Topic Subscriptions - Protocol Compliance
+# =============================================================================
 
-module "common_utils_layer" {
-  source = "../../modules/lambda_layer"
+# ACP Task Topic Subscriptions - All agents can receive tasks
+resource "aws_sns_topic_subscription" "acp_task_coordinator" {
+  topic_arn = module.acp_task_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_coordinator.function_arn
+}
 
-  layer_name        = local.lambda_layer_names.common_utils
-  requirements_file = "../../../src/layers/common_utils/requirements.txt"
-  runtime           = local.lambda_defaults.runtime
+resource "aws_sns_topic_subscription" "acp_task_elevator" {
+  topic_arn = module.acp_task_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_elevator.function_arn
+}
+
+resource "aws_sns_topic_subscription" "acp_task_psim" {
+  topic_arn = module.acp_task_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_psim.function_arn
+}
+
+# ACP Result Topic Subscriptions - Coordinator and Director receive results
+resource "aws_sns_topic_subscription" "acp_result_coordinator" {
+  topic_arn = module.acp_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_coordinator.function_arn
+}
+
+resource "aws_sns_topic_subscription" "acp_result_director" {
+  topic_arn = module.acp_result_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_director.function_arn
+}
+
+# ACP Event Topic Subscriptions - All agents can receive events
+resource "aws_sns_topic_subscription" "acp_event_persona" {
+  topic_arn = module.acp_event_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_persona.function_arn
+}
+
+resource "aws_sns_topic_subscription" "acp_event_director" {
+  topic_arn = module.acp_event_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_director.function_arn
+}
+
+resource "aws_sns_topic_subscription" "acp_event_coordinator" {
+  topic_arn = module.acp_event_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_coordinator.function_arn
+}
+
+# ACP Heartbeat Topic Subscription - Health check monitors all heartbeats
+resource "aws_sns_topic_subscription" "acp_heartbeat_health_check" {
+  topic_arn = module.acp_heartbeat_topic.topic_arn
+  protocol  = "lambda"
+  endpoint  = module.agent_health_check.function_arn
+}
+
+# =============================================================================
+# ACP Lambda Permissions - Allow SNS to invoke functions
+# =============================================================================
+
+# ACP Task Topic Permissions
+resource "aws_lambda_permission" "acp_task_coordinator" {
+  statement_id  = "AllowExecutionFromACPTask"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_coordinator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_task_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "acp_task_elevator" {
+  statement_id  = "AllowExecutionFromACPTask"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_elevator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_task_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "acp_task_psim" {
+  statement_id  = "AllowExecutionFromACPTask"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_psim.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_task_topic.topic_arn
+}
+
+# ACP Result Topic Permissions
+resource "aws_lambda_permission" "acp_result_coordinator" {
+  statement_id  = "AllowExecutionFromACPResult"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_coordinator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_result_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "acp_result_director" {
+  statement_id  = "AllowExecutionFromACPResult"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_director.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_result_topic.topic_arn
+}
+
+# ACP Event Topic Permissions
+resource "aws_lambda_permission" "acp_event_persona" {
+  statement_id  = "AllowExecutionFromACPEvent"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_persona.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_event_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "acp_event_director" {
+  statement_id  = "AllowExecutionFromACPEvent"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_director.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_event_topic.topic_arn
+}
+
+resource "aws_lambda_permission" "acp_event_coordinator" {
+  statement_id  = "AllowExecutionFromACPEvent"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_coordinator.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_event_topic.topic_arn
+}
+
+# ACP Heartbeat Topic Permission
+resource "aws_lambda_permission" "acp_heartbeat_health_check" {
+  statement_id  = "AllowExecutionFromACPHeartbeat"
+  action        = "lambda:InvokeFunction"
+  function_name = module.agent_health_check.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.acp_heartbeat_topic.topic_arn
 }

@@ -1,0 +1,151 @@
+{
+  "validation_type": "api_gateway_step_2_4",
+  "timestamp": "2025-08-12T11:25:17.146800+00:00",
+  "overall_status": "FAIL",
+  "summary": {
+    "total_tests": 16,
+    "passed_tests": 11,
+    "failed_tests": 5,
+    "warned_tests": 0,
+    "success_rate": 68.75,
+    "execution_time": 27.73970317840576
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - WebSocket API - Discovery",
+      "status": "PASS",
+      "message": "WebSocket API found: bos-websocket-api-dev (08ozbst1md)",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "Infrastructure Test - HTTP API - Discovery",
+      "status": "PASS",
+      "message": "HTTP API found: bos-dev-http-api (wo8q9fl0hj)",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - health - Status Code",
+      "status": "FAIL",
+      "message": "GET /health returned 503, expected [200]",
+      "details": {
+        "response_body": "{\"status\": \"UNHEALTHY\", \"error\": \"Critical error during health check\", \"correlation_id\": \"3ca1a2d2-291b-4579-a4a1-da79f51dda0f\", \"timestamp\": \"2025-08-12T11:24:54.790103+00:00\"}",
+        "execution_time_ms": 3615.7116889953613
+      },
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - persona_post - Status Code",
+      "status": "FAIL",
+      "message": "POST /persona returned 500, expected [200, 400]",
+      "details": {
+        "response_body": "{\"error\": \"Error processing API Gateway request\", \"correlation_id\": \"7e207b95-be2c-4ff6-983b-aa280608ca33\"}",
+        "execution_time_ms": 4217.792749404907
+      },
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - persona_get - Status Code",
+      "status": "FAIL",
+      "message": "GET /persona/conversations returned 500, expected [200]",
+      "details": {
+        "response_body": "{\"error\": \"Error processing API Gateway request\", \"correlation_id\": \"2128c7f3-df63-4e90-ad51-4d034a93a240\"}",
+        "execution_time_ms": 2429.3596744537354
+      },
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - director - Status Code",
+      "status": "PASS",
+      "message": "GET /director returned 200",
+      "details": {
+        "response_body": "{\"message\": \"Mission status request processed\", \"correlation_id\": \"77f8cdbc-74a5-45f8-8217-5952ba5f4d1e\"}",
+        "execution_time_ms": 2709.3045711517334
+      },
+      "execution_time": 2709.3045711517334
+    },
+    {
+      "test_name": "HTTP API Test - director - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2709.3ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - elevator - Status Code",
+      "status": "PASS",
+      "message": "POST /elevator/call returned 400",
+      "details": {
+        "response_body": "{\"error\": \"mission_id is required in request body\"}",
+        "execution_time_ms": 2639.5087242126465
+      },
+      "execution_time": 2639.5087242126465
+    },
+    {
+      "test_name": "HTTP API Test - elevator - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2639.5ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - psim - Status Code",
+      "status": "FAIL",
+      "message": "POST /psim/search returned 500, expected [200, 400]",
+      "details": {
+        "response_body": "{\"error\": \"Internal server error during PSIM processing\", \"correlation_id\": \"f3ee14d0-c290-4f23-bc60-344de56482d8\"}",
+        "execution_time_ms": 2309.3020915985107
+      },
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_mission - Status Code",
+      "status": "PASS",
+      "message": "GET /coordinator/missions/test-123 returned 404",
+      "details": {
+        "response_body": "{\"error\": \"Mission test-123 not found\"}",
+        "execution_time_ms": 2650.6495475769043
+      },
+      "execution_time": 2650.6495475769043
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_mission - Performance",
+      "status": "PASS",
+      "message": "Acceptable performance: 2650.6ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_status - Status Code",
+      "status": "PASS",
+      "message": "GET /coordinator/status returned 200",
+      "details": {
+        "response_body": "{\"status\": \"healthy\", \"service\": \"coordinator\", \"timestamp\": 1754997913, \"message\": \"Coordinator agent is running\"}",
+        "execution_time_ms": 1214.4443988800049
+      },
+      "execution_time": 1214.4443988800049
+    },
+    {
+      "test_name": "HTTP API Test - coordinator_status - Performance",
+      "status": "PASS",
+      "message": "Good performance: 1214.4ms response time",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "CORS Test - Preflight Request",
+      "status": "PASS",
+      "message": "CORS preflight successful with headers: {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'DELETE,GET,OPTIONS,POST,PUT', 'Access-Control-Allow-Headers': 'authorization,content-type,x-requested-with'}",
+      "details": null,
+      "execution_time": null
+    },
+    {
+      "test_name": "WebSocket Test - Connectivity",
+      "status": "FAIL",
+      "message": "WebSocket connection failed: Handshake status 500 Internal Server Error -+-+- {'date': 'Tue, 12 Aug 2025 11:25:16 GMT', 'content-type': 'application/json; charset=UTF-8', 'content-length': '146', 'connection': 'keep-alive', 'x-amz-apigw-id': 'PMKoWHspIAMEAqw='} -+-+- b'{\"error\": \"Failed to store connection\", \"correlation_id\": \"3dfc62d7-fd63-49ae-971d-044bc865e9b4\", \"timestamp\": \"2025-08-12T11:25:16.620445+00:00\"}'",
+      "details": null,
+      "execution_time": null
+    }
+  ]
+}

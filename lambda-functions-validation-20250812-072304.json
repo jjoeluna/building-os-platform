@@ -1,0 +1,493 @@
+{
+  "summary": {
+    "overall_status": "FAIL",
+    "execution_time_seconds": 22.84285569190979,
+    "total_tests": 51,
+    "passed_tests": 41,
+    "warned_tests": 0,
+    "failed_tests": 10,
+    "success_rate_percentage": 80.3921568627451,
+    "functions_analyzed": 10,
+    "aws_integration_tested": true
+  },
+  "results": [
+    {
+      "test_name": "Infrastructure Test - agent_persona - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:43.130600+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 512MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:43.130949+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:43.131213+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_persona - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:43.131475+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_persona - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1628.4325122833252,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:22:43.131787+00:00",
+          "function_type": "agent_persona"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:44.760336+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:45.004496+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:45.004846+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:45.005095+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_director - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:45.005338+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_director - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1768.3722972869873,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:22:45.005657+00:00",
+          "function_type": "agent_director"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:46.774131+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:46.999717+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 20s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:47.000085+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:47.000343+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_coordinator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:47.000574+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_coordinator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1774.6131420135498,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:22:47.000817+00:00",
+          "function_type": "agent_coordinator"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:48.775532+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:49.094351+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 30s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:49.094706+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:49.094927+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_elevator - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:49.095132+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_elevator - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1950.8681297302246,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:22:49.095371+00:00",
+          "function_type": "agent_elevator"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:51.046338+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:51.270331+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:51.270669+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:51.270886+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_psim - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:51.271122+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_psim - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1999.9828338623047,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:22:51.271374+00:00",
+          "function_type": "agent_psim"
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:53.271492+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:53.690834+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:53.691192+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:53.691458+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - agent_health_check - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:53.691674+00:00"
+    },
+    {
+      "test_name": "Functional Test - agent_health_check - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1875.68998336792,
+        "payload": {
+          "test": true,
+          "source": "validation-script",
+          "timestamp": "2025-08-12T10:22:53.692030+00:00",
+          "function_type": "agent_health_check"
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:22:55.567827+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:55.841590+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:55.889255+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:55.890086+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_connect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:55.890625+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_connect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1568.2132244110107,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-c03376a5",
+            "routeKey": "$connect",
+            "eventType": "CONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:57.459552+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:57.693316+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 10s, Memory: 128MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:57.693667+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:57.693915+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_disconnect - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:57.694163+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_disconnect - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)",
+      "details": {
+        "execution_time_ms": 1754.3208599090576,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-3be408ed",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "Runtime.ImportModuleError",
+        "error_message": "Unable to import module 'app': cannot import name 'serialize_dynamodb_item' from 'utils' (/opt/python/utils.py)"
+      },
+      "timestamp": "2025-08-12T10:22:59.448875+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:59.688373+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:59.688728+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:59.689015+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_default - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:22:59.689284+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_default - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1898.538589477539,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-3dcb463b",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:23:01.588273+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - State Check",
+      "status": "PASS",
+      "message": "Function is active and ready",
+      "details": {},
+      "timestamp": "2025-08-12T10:23:01.818087+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Performance Config",
+      "status": "PASS",
+      "message": "Timeout: 15s, Memory: 256MB - Optimized for validation",
+      "details": {},
+      "timestamp": "2025-08-12T10:23:01.818557+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - VPC Config",
+      "status": "PASS",
+      "message": "VPC-enabled with 2 subnets",
+      "details": {},
+      "timestamp": "2025-08-12T10:23:01.818781+00:00"
+    },
+    {
+      "test_name": "Infrastructure Test - websocket_broadcast - Layer Config",
+      "status": "PASS",
+      "message": "Common utilities layer configured: arn:aws:lambda:us-east-1:481251881947:layer:bos-dev-common-utils-layer:8",
+      "details": {},
+      "timestamp": "2025-08-12T10:23:01.819007+00:00"
+    },
+    {
+      "test_name": "Functional Test - websocket_broadcast - Execution",
+      "status": "FAIL",
+      "message": "Function returned error: non-default argument 'connection_id' follows default argument",
+      "details": {
+        "execution_time_ms": 1755.3832530975342,
+        "payload": {
+          "requestContext": {
+            "connectionId": "test-connection-878e9f9b",
+            "routeKey": "$disconnect",
+            "eventType": "DISCONNECT"
+          },
+          "headers": {
+            "User-Agent": "BuildingOS-Test/1.0",
+            "Origin": "https://test.buildingos.com"
+          }
+        },
+        "error_type": "TypeError",
+        "error_message": "non-default argument 'connection_id' follows default argument"
+      },
+      "timestamp": "2025-08-12T10:23:03.574731+00:00"
+    },
+    {
+      "test_name": "Integration Test - SNS Topics - Existence",
+      "status": "PASS",
+      "message": "All 8 SNS topics exist and are accessible",
+      "details": {},
+      "timestamp": "2025-08-12T10:23:04.812046+00:00"
+    }
+  ],
+  "timestamp": "2025-08-12T10:23:04.814267+00:00"
+}
