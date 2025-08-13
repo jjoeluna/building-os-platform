@@ -1,0 +1,69 @@
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'scripts/sync_tf_outputs.py'
+      - 'terraform/environments/dev/**'
+  workflow_dispatch:
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Terraform Init (dev)
+        working-directory: terraform/environments/dev
+        run: terraform init -input=false -upgrade
+
+      - name: Sync Terraform outputs to docs
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs==1.5.3 mkdocs-material==9.5.14 mkdocs-mermaid2-plugin==1.2.1 pymdown-extensions==10.8.1
+          python scripts/sync_tf_outputs.py
+
+      - name: Commit docs changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/infra/environments/dev/README.md
+          git diff --cached --quiet || git commit -m "docs: sync dev outputs"
+
+      - name: Install MkDocs deps
+        run: |
+          pip install -r docs/requirements.txt
+
+      - name: Build site
+        run: mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+
+
