@@ -1,0 +1,1 @@
+# Event Taxonomy\n\n- Naming: bos-{env}-acp-{domain}-{purpose}\n- Attributes: message_type, agent_type, priority, mission_id, conversation_id\n- Delivery: SNS→SQS para TASK/RESULT; SNS direto para EVENT/HEARTBEAT\n- DLQ: obrigatório para filas críticas; maxReceiveCount=5 (exemplo)\n- Retention: TASK/RESULT 4d; EVENT/HEARTBEAT 1-3d\n- Security: least privilege publish/subscribe\n

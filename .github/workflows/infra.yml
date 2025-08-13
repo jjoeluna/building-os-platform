@@ -1,0 +1,61 @@
+name: Infra
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+
+jobs:
+  validate-plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install linters
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          pip install checkov
+
+      - name: tflint
+        working-directory: terraform/environments/dev
+        run: tflint --init && tflint -f compact || true
+
+      - name: checkov
+        run: checkov -d terraform || true
+
+      - name: Terraform Init
+        working-directory: terraform/environments/dev
+        run: terraform init -input=false -upgrade
+
+      - name: Terraform Validate
+        working-directory: terraform/environments/dev
+        run: terraform validate
+
+      - name: Terraform Plan (dev)
+        working-directory: terraform/environments/dev
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-dev
+          path: terraform/environments/dev/tfplan
+
+
