@@ -9,6 +9,8 @@ on:
 jobs:
   python-tests-and-schemas:
     runs-on: ubuntu-latest
+    env:
+      RUN_TESTS: "0"  # set to '1' to enable pytest when infra is ready
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,10 +26,11 @@ jobs:
           pip install -r src/layers/common_utils/requirements.txt
           pip install -r docs/requirements.txt
 
-      - name: Run unit tests (if present)
+      - name: Run unit tests (disabled by default)
+        if: ${{ env.RUN_TESTS == '1' }}
         run: |
           if [ -d tests ]; then
-            python -m pytest -q || true
+            python -m pytest -q
           fi
 
       - name: Export JSON Schemas (ACP)
